@@ -1424,6 +1424,33 @@ function downloadText(filename, text, type = 'application/json') {
   URL.revokeObjectURL(url);
 }
 
+function dataUrlToBlob(dataUrl) {
+  const [header, payload] = String(dataUrl || '').split(',');
+  const mime = (header.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+  const binary = atob(payload || '');
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type: mime });
+}
+
+function openStoredFile(entry) {
+  if (!entry?.dataUrl) return;
+  const url = URL.createObjectURL(dataUrlToBlob(entry.dataUrl));
+  const opened = window.open(url, '_blank');
+  if (opened) {
+    opened.opener = null;
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = entry.originalName || entry.title || 'saved-file';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
 window.financeApi = {
   async load() {
     return loadStoredData();
@@ -1475,7 +1502,7 @@ window.financeApi = {
   },
   async openSalarySheet(storedName) {
     const sheet = (state.salarySheets || []).find((item) => item.storedName === storedName);
-    if (sheet?.dataUrl) window.open(sheet.dataUrl, '_blank', 'noopener');
+    openStoredFile(sheet);
     return '';
   },
   async salarySheetPreviewUrl(storedName) {
@@ -1499,7 +1526,7 @@ window.financeApi = {
   },
   async openUnpaidBill(storedName) {
     const bill = (state.unpaidBills || []).find((item) => item.storedName === storedName);
-    if (bill?.dataUrl) window.open(bill.dataUrl, '_blank', 'noopener');
+    openStoredFile(bill);
     return '';
   },
   async unpaidBillPreviewUrl(storedName) {
