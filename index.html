@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finance Tracker Web</title>
+  <link rel="icon" href="data:image/png;base64,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">
+  
+  <script type="module" crossorigin src="./assets/index-940e0392.js"></script>
+  <link rel="stylesheet" href="./assets/index-ef4d93b0.css">
+</head>
+<body>
+  <div id="setupOverlay" class="setup-overlay" hidden>
+    <section class="setup-card">
+      <div class="brand-mark">¥</div>
+      <h1>Finance Tracker</h1>
+        <p>Track income, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
+      <div class="setup-actions">
+        <button id="startBlank">Start Blank</button>
+        <button id="setupImportExcel">Import Backup</button>
+      </div>
+      <small>Start fresh, load demo data, or restore a JSON backup.</small>
+    </section>
+  </div>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">¥</div>
+      <div>
+        <h1>Finance Tracker</h1>
+        <p>Web dashboard</p>
+      </div>
+    </div>
+    <nav id="nav">
+      <button data-view="dashboard" class="active">Dashboard</button>
+      <button data-view="salary">Monthly Savings</button>
+      <button data-view="details">Salary Details</button>
+      <button data-view="overtime">Overtime</button>
+      <button data-view="stocks">Stock Revenue</button>
+      <button data-view="daily">Daily Records</button>
+      <button data-view="balances">Debt Records</button>
+      <button data-view="data">Backup & Import</button>
+    </nav>
+  </aside>
+
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Finance Tracker Web</p>
+        <h2 id="viewTitle">Dashboard</h2>
+      </div>
+      <div class="top-actions">
+        <input id="globalSearch" type="search" placeholder="Search records">
+        <span id="saveState">Loading...</span>
+        <button id="saveNow">Save</button>
+      </div>
+    </header>
+
+    <section id="dashboard" class="view active">
+      <div class="kpi-grid" id="kpis"></div>
+      <div class="dashboard-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Net Income vs Savings</h3>
+            <select id="dashboardYear"></select>
+          </div>
+          <canvas id="salaryChart" width="760" height="380"></canvas>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Stock Win Target</h3>
+          </div>
+          <canvas id="stockChart" width="520" height="380"></canvas>
+        </section>
+      </div>
+      <section class="panel insights-panel">
+        <div class="panel-head">
+          <h3>Monthly Snapshot</h3>
+        </div>
+        <div id="insights" class="insights"></div>
+      </section>
+    </section>
+
+    <section id="salary" class="view">
+      <div class="toolbar">
+        <select id="salaryYearFilter"></select>
+        <button data-add="salary">Add Manual Income</button>
+      </div>
+      <div id="salaryTable"></div>
+    </section>
+
+    <section id="details" class="view">
+      <div class="toolbar">
+        <select id="detailsYearFilter"></select>
+        <button data-add="monthlyDetails">Add Salary Detail</button>
+      </div>
+      <div id="detailsTable"></div>
+    </section>
+
+    <section id="overtime" class="view">
+      <div class="ot-layout">
+        <section class="panel ot-entry-panel">
+          <div class="panel-head">
+            <h3>Daily Overtime Entry</h3>
+          </div>
+          <form id="otQuickForm" class="ot-form">
+            <label>
+              <span>Year</span>
+              <input id="otYear" type="number" min="2000" max="2100" required>
+            </label>
+            <label>
+              <span>Month</span>
+              <select id="otMonth" required></select>
+            </label>
+            <label>
+              <span>Day</span>
+              <input id="otDay" type="number" min="1" max="31" required>
+            </label>
+            <label>
+              <span>OT Hours</span>
+              <input id="otHours" type="number" min="0" step="0.25" required>
+            </label>
+            <label>
+              <span>Extra OT</span>
+              <input id="otMiscHours" type="number" min="0" step="0.25" value="0">
+            </label>
+            <label>
+              <span>Hourly Rate</span>
+              <input id="otRate" type="number" min="0" step="1" required>
+            </label>
+            <label class="wide">
+              <span>Note</span>
+              <input id="otNote" type="text" placeholder="Optional memo">
+            </label>
+            <button>Add Daily OT</button>
+          </form>
+        </section>
+        <section class="panel ot-summary-panel">
+          <div class="panel-head">
+            <h3 id="otSummaryTitle">Monthly OT Summary</h3>
+            <div class="ot-filter">
+              <select id="otYearFilter"></select>
+              <select id="otMonthFilter"></select>
+              <button id="editOtSalaryDetail" type="button">Edit Salary Detail</button>
+            </div>
+          </div>
+          <div id="otSummary" class="ot-summary"></div>
+        </section>
+      </div>
+      <div id="overtimeTable"></div>
+    </section>
+
+    <section id="stocks" class="view">
+      <div class="toolbar">
+        <select id="stockYearFilter"></select>
+      </div>
+      <div id="stockTable"></div>
+    </section>
+
+    <section id="daily" class="view">
+      <div class="toolbar">
+        <select id="dailyYearFilter"></select>
+        <select id="dailyMonthFilter"></select>
+      </div>
+      <div id="dailyTable"></div>
+    </section>
+
+    <section id="balances" class="view">
+      <div class="toolbar">
+        <button data-add="personalBalances">Add Debt Record</button>
+      </div>
+      <div id="balanceTable"></div>
+      <section class="panel unpaid-bills-panel">
+        <div class="panel-head">
+          <h3>Unpaid Bills Archive</h3>
+          <button id="chooseUnpaidBills" type="button">Add Bill Files</button>
+        </div>
+        <div id="unpaidBillDropZone" class="salary-sheet-drop">
+          <strong>Drop unpaid bills here</strong>
+          <span>Photos, PDFs, and document files are copied into this app after you enter a title.</span>
+        </div>
+        <div id="unpaidBillList" class="salary-sheet-list"></div>
+      </section>
+    </section>
+
+    <section id="data" class="view">
+      <div class="data-grid">
+        <section class="panel">
+          <h3>Saved Records</h3>
+          <p class="muted">Data is stored privately inside this browser on this computer. Export a backup before clearing browser data.</p>
+          <dl class="meta-list">
+            <dt>Database</dt><dd id="dataPathText">-</dd>
+            <dt>Started</dt><dd id="startedAtText">-</dd>
+            <dt>Last Updated</dt><dd id="updatedAtText">-</dd>
+            <dt>Imported From</dt><dd id="sourceFileText">None</dd>
+          </dl>
+        </section>
+        <section class="panel">
+          <h3>Backup Tools</h3>
+          <div class="backup-actions">
+            <button id="dataImportExcel">Import Backup</button>
+            <button id="dataExportExcel">Export JSON Backup</button>
+            <button id="loadDemoData" type="button">Load Demo Data</button>
+            <button id="clearAllData" type="button" class="danger-button">Clear All Data</button>
+          </div>
+          <p class="muted">Importing replaces current browser records. Exporting creates a JSON backup file.</p>
+          <p class="muted clear-warning">Before clearing all data, export a backup and keep it somewhere safe.</p>
+        </section>
+        <section class="panel salary-sheets-panel">
+          <div class="panel-head">
+            <h3>Salary Sheet Archive</h3>
+            <button id="chooseSalarySheets" type="button">Add Files</button>
+          </div>
+          <div id="salarySheetDropZone" class="salary-sheet-drop">
+            <strong>Drop salary sheets here</strong>
+            <span>Excel, Numbers, PDF, CSV, text, or images are stored in this browser for later viewing.</span>
+          </div>
+          <div id="salarySheetList" class="salary-sheet-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="recordDialog">
+    <form method="dialog" id="recordForm">
+      <header>
+        <h3 id="dialogTitle">Edit record</h3>
+        <button value="cancel" class="icon-button" aria-label="Close">×</button>
+      </header>
+      <div id="dialogFields" class="dialog-fields"></div>
+      <footer>
+        <button value="cancel" type="button" id="cancelDialog">Cancel</button>
+        <button value="save" id="confirmDialog">Save</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="previewDialog" class="preview-dialog">
+    <header>
+      <h3 id="previewTitle">Preview</h3>
+      <button id="closePreview" type="button" class="icon-button" aria-label="Close preview">×</button>
+    </header>
+    <div id="previewBody" class="preview-body"></div>
+  </dialog>
+
+  
+</body>
+</html>
