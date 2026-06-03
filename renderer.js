@@ -1122,7 +1122,26 @@ function editCurrentOtSalaryDetail() {
   });
 }
 
-function buildDemoData() {
+async function buildDemoData() {
+  try {
+    const response = await fetch('./public-seed.json');
+    if (response.ok) {
+      const seed = normalizeLoadedData(await response.json());
+      seed.meta = {
+        ...seed.meta,
+        sourceFile: 'Sample finance records',
+        startedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        dataPath: 'Browser private storage'
+      };
+      seed.personalBalances = [];
+      seed.salarySheets = [];
+      seed.unpaidBills = [];
+      return seed;
+    }
+  } catch (error) {
+    // Fall back to generated sample data when the static seed file is unavailable.
+  }
   const year = 2026;
   const monthlyDetails = monthOptions.map(([month], index) => {
     const basic = 240000 + (index % 3) * 5000;
@@ -1492,7 +1511,7 @@ window.financeApi = {
 async function loadDemoData() {
   if (!confirm('Load demo data? This replaces current records. Export a backup first if you need to keep current data.')) return;
   await window.financeApi.clearAll();
-  state = buildDemoData();
+  state = await buildDemoData();
   render();
   await save();
   setSaveState('Demo loaded');

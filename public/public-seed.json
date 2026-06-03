@@ -1,0 +1,3380 @@
+{
+  "meta": {
+    "version": 1,
+    "sourceFile": "Sample finance records",
+    "importedAt": "",
+    "startedAt": "2026-06-03T00:00:00.000Z",
+    "updatedAt": "2026-06-03T00:00:00.000Z",
+    "dataPath": "Browser private storage"
+  },
+  "salary": [
+    {
+      "id": "salary-1780469484744-644caf05eee98",
+      "year": 2024,
+      "month": "244298",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-b57274cfa1dee",
+      "year": 2024,
+      "month": "236763",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-f081b8437e167",
+      "year": 2024,
+      "month": "234103",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-e144af496e82",
+      "year": 2024,
+      "month": "240309",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-095734312457c",
+      "year": 2024,
+      "month": "248360",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-1f27ffee68213",
+      "year": 2024,
+      "month": "268554",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-3a6efc583c797",
+      "year": 2024,
+      "month": "306900",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-f4a8e5a3c3e97",
+      "year": 2024,
+      "month": "260028",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-78fec36c717b9",
+      "year": 2024,
+      "month": "258758",
+      "salary": 0,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-2b6b8f4e7bdf6",
+      "year": 2024,
+      "month": "265041",
+      "salary": 63000,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-24bbfeee5d361",
+      "year": 2024,
+      "month": "259206.25",
+      "salary": 63000,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-bbb66d68cc365",
+      "year": 2024,
+      "month": "254270",
+      "salary": 106000,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-9e799a02e88c5",
+      "year": 2024,
+      "month": "261450",
+      "salary": 123995.29999999999,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-9b06e17d9209a",
+      "year": 2024,
+      "month": "353400",
+      "salary": 261000,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-5c8c5eb3e64ea",
+      "year": 2024,
+      "month": "3691440.25",
+      "salary": 616995.3,
+      "plannedSavings": 0,
+      "actualSavings": 0,
+      "savingsRate": 0,
+      "cumulativeCapital": 0,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-649e334629deb",
+      "year": 2025,
+      "month": "Jan",
+      "salary": 257860,
+      "plannedSavings": 100000,
+      "actualSavings": 141889,
+      "savingsRate": 0.5502559528426277,
+      "cumulativeCapital": 758884.3,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-437dc6f6df6e2",
+      "year": 2025,
+      "month": "Feb",
+      "salary": 268420.5,
+      "plannedSavings": 100000,
+      "actualSavings": 117010.5,
+      "savingsRate": 0.4359223680754637,
+      "cumulativeCapital": 875894.8,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-7fb1d2b0a469c",
+      "year": 2025,
+      "month": "Mar",
+      "salary": 255167.5,
+      "plannedSavings": 100000,
+      "actualSavings": 160606.495,
+      "savingsRate": 0.6294159522666484,
+      "cumulativeCapital": 1036501.295,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-037a7c7f6cec8",
+      "year": 2025,
+      "month": "Apr",
+      "salary": 268501.25,
+      "plannedSavings": 100000,
+      "actualSavings": 115608.2425,
+      "savingsRate": 0.43056873105804905,
+      "cumulativeCapital": 1152109.5375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-e55bb733204f3",
+      "year": 2025,
+      "month": "May",
+      "salary": 300736,
+      "plannedSavings": 100000,
+      "actualSavings": 65864,
+      "savingsRate": 0.21900936369440308,
+      "cumulativeCapital": 1217973.5375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-f3bf462b3dfc9",
+      "year": 2025,
+      "month": "Jun",
+      "salary": 317992.5,
+      "plannedSavings": 350000,
+      "actualSavings": 92241.5,
+      "savingsRate": 0.2900744514414648,
+      "cumulativeCapital": 1310215.0375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-657b5ee73f496",
+      "year": 2025,
+      "month": "Bonus",
+      "salary": 362000,
+      "plannedSavings": 0,
+      "actualSavings": 300000,
+      "savingsRate": 0.8287292817679558,
+      "cumulativeCapital": 1610215.0375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-321f8f49b7b9f",
+      "year": 2025,
+      "month": "Jul",
+      "salary": 272308,
+      "plannedSavings": 100000,
+      "actualSavings": 128501,
+      "savingsRate": 0.4718957944680289,
+      "cumulativeCapital": 1738716.0375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-823cf7aab01b7",
+      "year": 2025,
+      "month": "Aug",
+      "salary": 271587,
+      "plannedSavings": 100000,
+      "actualSavings": 63926,
+      "savingsRate": 0.23537945483399425,
+      "cumulativeCapital": 1802642.0375,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-429a9be573766",
+      "year": 2025,
+      "month": "Sep",
+      "salary": 275517,
+      "plannedSavings": 100000,
+      "actualSavings": 120683.23045,
+      "savingsRate": 0.43802462443333806,
+      "cumulativeCapital": 1923325.26795,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-b26daae5974dd",
+      "year": 2025,
+      "month": "Oct",
+      "salary": 279185,
+      "plannedSavings": 100000,
+      "actualSavings": 112595.31224999999,
+      "savingsRate": 0.403300006268245,
+      "cumulativeCapital": 2035920.5802,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-e173342308fae",
+      "year": 2025,
+      "month": "Nov",
+      "salary": 295233,
+      "plannedSavings": 100000,
+      "actualSavings": 123223.65705000001,
+      "savingsRate": 0.41737765442887487,
+      "cumulativeCapital": 2159144.23725,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-5469d60eeec2f",
+      "year": 2025,
+      "month": "Dec",
+      "salary": 297067,
+      "plannedSavings": 350000,
+      "actualSavings": 132887.71032,
+      "savingsRate": 0.4473324546987717,
+      "cumulativeCapital": 2292031.94757,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-3ef43317dd174",
+      "year": 2025,
+      "month": "Bonus",
+      "salary": 400000,
+      "plannedSavings": 0,
+      "actualSavings": 300000,
+      "savingsRate": 0.75,
+      "cumulativeCapital": 2592031.94757,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-15886afe2b754",
+      "year": 2026,
+      "month": "Jan",
+      "salary": 294316,
+      "plannedSavings": 115000,
+      "actualSavings": 130194.59135999999,
+      "savingsRate": 0.44236328082740994,
+      "cumulativeCapital": 1152226.5389299998,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-7995a4a5d3d1e",
+      "year": 2026,
+      "month": "Feb",
+      "salary": 276893,
+      "plannedSavings": 115000,
+      "actualSavings": 113965,
+      "savingsRate": 0.41158498047982434,
+      "cumulativeCapital": 1266191.5389299998,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-475b0c568de83",
+      "year": 2026,
+      "month": "Mar",
+      "salary": 288355.5,
+      "plannedSavings": 115000,
+      "actualSavings": 113816.5,
+      "savingsRate": 0.3947089616809806,
+      "cumulativeCapital": 1380008.0389299998,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-f66e2b9141382",
+      "year": 2026,
+      "month": "Apr",
+      "salary": 279644,
+      "plannedSavings": 115000,
+      "actualSavings": 136601,
+      "savingsRate": 0.48848178398249203,
+      "cumulativeCapital": 1516609.0389299998,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-a1f74a21846a8",
+      "year": 2026,
+      "month": "May",
+      "salary": 317687,
+      "plannedSavings": 115000,
+      "actualSavings": 173384,
+      "savingsRate": 0.5457698930078977,
+      "cumulativeCapital": 1689993.0389299998,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-f6c5df42b92a2",
+      "year": 2026,
+      "month": "Jun",
+      "salary": 310523.1,
+      "plannedSavings": 415000,
+      "actualSavings": 166220.09999999998,
+      "savingsRate": 0.5352906112298892,
+      "cumulativeCapital": 1856213.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-117e148c99549",
+      "year": 2026,
+      "month": "Bonus",
+      "salary": 350000,
+      "plannedSavings": 0,
+      "actualSavings": 300000,
+      "savingsRate": 0.8571428571428571,
+      "cumulativeCapital": 2156213.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-fe2a803322704",
+      "year": 2026,
+      "month": "Jul",
+      "salary": 275309,
+      "plannedSavings": 115000,
+      "actualSavings": 131006,
+      "savingsRate": 0.4758507713151404,
+      "cumulativeCapital": 2287219.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-06a12bd3eb91f",
+      "year": 2026,
+      "month": "Aug",
+      "salary": 274300,
+      "plannedSavings": 115000,
+      "actualSavings": 129997,
+      "savingsRate": 0.4739227123587313,
+      "cumulativeCapital": 2417216.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-682a6b214379",
+      "year": 2026,
+      "month": "Sep",
+      "salary": 274300,
+      "plannedSavings": 115000,
+      "actualSavings": 129997,
+      "savingsRate": 0.4739227123587313,
+      "cumulativeCapital": 2547213.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-971665f33a24b",
+      "year": 2026,
+      "month": "Oct",
+      "salary": 274300,
+      "plannedSavings": 115000,
+      "actualSavings": 129997,
+      "savingsRate": 0.4739227123587313,
+      "cumulativeCapital": 2677210.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-49b6896d15f",
+      "year": 2026,
+      "month": "Nov",
+      "salary": 274300,
+      "plannedSavings": 115000,
+      "actualSavings": 129997,
+      "savingsRate": 0.4739227123587313,
+      "cumulativeCapital": 2807207.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-0b5a0fabf518e",
+      "year": 2026,
+      "month": "Dec",
+      "salary": 274300,
+      "plannedSavings": 415000,
+      "actualSavings": 129997,
+      "savingsRate": 0.4739227123587313,
+      "cumulativeCapital": 2937204.13893,
+      "note": ""
+    },
+    {
+      "id": "salary-1780469484744-1464fead10b23",
+      "year": 2026,
+      "month": "Bonus",
+      "salary": 350000,
+      "plannedSavings": 0,
+      "actualSavings": 300000,
+      "savingsRate": 0.8571428571428571,
+      "cumulativeCapital": 3237204.13893,
+      "note": ""
+    }
+  ],
+  "monthlyDetails": [
+    {
+      "id": "detail-1780469484747-9f94930154db3",
+      "year": 2024,
+      "month": "12",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 17950,
+      "transportation": 9500,
+      "grossTotal": 261450,
+      "insurance": 13026,
+      "pension": 23790,
+      "employmentInsurance": 1568.7,
+      "residentTax": 7700,
+      "incomeTax": 5250,
+      "totalDeduction": 51334.7,
+      "received": 210115.3
+    },
+    {
+      "id": "detail-1780469484747-b5c0527c60f41",
+      "year": 2024,
+      "month": "11",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 10770,
+      "transportation": 9500,
+      "grossTotal": 254270,
+      "insurance": 15030,
+      "pension": 27450,
+      "employmentInsurance": 1525.62,
+      "residentTax": 7700,
+      "incomeTax": 5037.076823965212,
+      "totalDeduction": 56742.69682396521,
+      "received": 197527.3031760348
+    },
+    {
+      "id": "detail-1780469484748-bc44572c2106a",
+      "year": 2024,
+      "month": "10",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 15706.25,
+      "transportation": 9500,
+      "grossTotal": 259206.25,
+      "insurance": 15030,
+      "pension": 27450,
+      "employmentInsurance": 1555,
+      "residentTax": 7700,
+      "incomeTax": 4970,
+      "totalDeduction": 56705,
+      "received": 202501.25
+    },
+    {
+      "id": "detail-1780469484748-a3045d5500b9d",
+      "year": 2024,
+      "month": "9",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 21540,
+      "transportation": 9500,
+      "grossTotal": 265040,
+      "insurance": 15030,
+      "pension": 27450,
+      "employmentInsurance": 1590.0692543082623,
+      "residentTax": 7700,
+      "incomeTax": 1789,
+      "totalDeduction": 53559.06925430826,
+      "received": 211480.93074569173
+    },
+    {
+      "id": "detail-1780469484748-d184ed9d89d0d",
+      "year": 2024,
+      "month": "8",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 15257.5,
+      "transportation": 0,
+      "grossTotal": 249257.5,
+      "insurance": 15030,
+      "pension": 27450,
+      "employmentInsurance": 1552.3783016588823,
+      "residentTax": 1837,
+      "incomeTax": 8600,
+      "totalDeduction": 54469.378301658886,
+      "received": 194788.1216983411
+    },
+    {
+      "id": "detail-1780469484748-a2824fa0058c3",
+      "year": 2024,
+      "month": "6",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 34553.75,
+      "transportation": 0,
+      "grossTotal": 268553.75,
+      "insurance": 19312.74096889952,
+      "pension": 27450,
+      "employmentInsurance": 1611.1494906587213,
+      "residentTax": 0,
+      "incomeTax": 5320.037244322757,
+      "totalDeduction": 53693.927703880996,
+      "received": 214859.822296119
+    },
+    {
+      "id": "detail-1780469484749-b677998ae2043",
+      "year": 2024,
+      "month": "5",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 14360,
+      "transportation": 0,
+      "grossTotal": 248360,
+      "insurance": 17860.53014354067,
+      "pension": 27450,
+      "employmentInsurance": 1490,
+      "residentTax": 0,
+      "incomeTax": 4920,
+      "totalDeduction": 51720.53014354067,
+      "received": 196639.46985645933
+    },
+    {
+      "id": "detail-1780469484749-000ef429f650a",
+      "year": 2024,
+      "month": "4",
+      "basic": 206000,
+      "allowance": 25000,
+      "overtimePay": 9308.999999984999,
+      "transportation": 0,
+      "grossTotal": 240308.999999985,
+      "insurance": 15015,
+      "pension": 27450,
+      "employmentInsurance": 1442,
+      "residentTax": 0,
+      "incomeTax": 4640,
+      "totalDeduction": 48547,
+      "received": 191761.999999985
+    },
+    {
+      "id": "detail-1780469484773-6ec465b17aa65",
+      "year": 2025,
+      "month": "12",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 46767,
+      "transportation": 11300,
+      "grossTotal": 297067,
+      "insurance": 15045,
+      "pension": 27450,
+      "employmentInsurance": 1634,
+      "residentTax": 12100,
+      "incomeTax": 6250.28968,
+      "totalDeduction": 62479.28968,
+      "received": 234587.71032
+    },
+    {
+      "id": "detail-1780469484773-3673e8b1729ca",
+      "year": 2025,
+      "month": "11",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 44933,
+      "transportation": 11300,
+      "grossTotal": 295233,
+      "insurance": 13039,
+      "pension": 27450,
+      "employmentInsurance": 1623.7815,
+      "residentTax": 12100,
+      "incomeTax": 6096.56145,
+      "totalDeduction": 60309.34295,
+      "received": 234923.65705
+    },
+    {
+      "id": "detail-1780469484774-0cfad4a89aebf",
+      "year": 2025,
+      "month": "10",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 28885,
+      "transportation": 11300,
+      "grossTotal": 279185,
+      "insurance": 13039,
+      "pension": 27450,
+      "employmentInsurance": 1535.5175,
+      "residentTax": 12100,
+      "incomeTax": 5765.17025,
+      "totalDeduction": 59889.687750000005,
+      "received": 219295.31225
+    },
+    {
+      "id": "detail-1780469484774-c30f57f30ced5",
+      "year": 2025,
+      "month": "9",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 25217,
+      "transportation": 11300,
+      "grossTotal": 275517,
+      "insurance": 13039,
+      "pension": 23790,
+      "employmentInsurance": 1515.3435,
+      "residentTax": 12100,
+      "incomeTax": 5689.42605,
+      "totalDeduction": 56133.769550000005,
+      "received": 219383.23045
+    },
+    {
+      "id": "detail-1780469484774-652fa955b49b8",
+      "year": 2025,
+      "month": "8",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 20907,
+      "transportation": 11300,
+      "grossTotal": 271207,
+      "insurance": 13039,
+      "pension": 23790,
+      "employmentInsurance": 1492,
+      "residentTax": 12100,
+      "incomeTax": 5540,
+      "totalDeduction": 55961,
+      "received": 215246
+    },
+    {
+      "id": "detail-1780469484775-a4acc80518cb5",
+      "year": 2025,
+      "month": "7",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 22008,
+      "transportation": 11300,
+      "grossTotal": 272308,
+      "insurance": 13039,
+      "pension": 23790,
+      "employmentInsurance": 1498,
+      "residentTax": 13200,
+      "incomeTax": 5580,
+      "totalDeduction": 57107,
+      "received": 215201
+    },
+    {
+      "id": "detail-1780469484775-aa71ded7e5bed",
+      "year": 2025,
+      "month": "6",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 57312.5,
+      "transportation": 11300,
+      "grossTotal": 307612.5,
+      "insurance": 13039,
+      "pension": 23790,
+      "employmentInsurance": 1692,
+      "residentTax": 7700,
+      "incomeTax": 6830,
+      "totalDeduction": 53051,
+      "received": 254561.5
+    },
+    {
+      "id": "detail-1780469484776-9741753338c94",
+      "year": 2025,
+      "month": "5",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 50436,
+      "transportation": 11300,
+      "grossTotal": 300736,
+      "insurance": 13039,
+      "pension": 23790,
+      "employmentInsurance": 1654,
+      "residentTax": 7700,
+      "incomeTax": 6590,
+      "totalDeduction": 52773,
+      "received": 247963
+    },
+    {
+      "id": "detail-1780469484777-0d41b660e2067",
+      "year": 2025,
+      "month": "4",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 17501.25,
+      "transportation": 9500,
+      "grossTotal": 261001.25,
+      "insurance": 13026,
+      "pension": 23790,
+      "employmentInsurance": 1611.0075,
+      "residentTax": 7700,
+      "incomeTax": 5066,
+      "totalDeduction": 51193.0075,
+      "received": 209808.2425
+    },
+    {
+      "id": "detail-1780469484777-03eb4b33d78ac",
+      "year": 2025,
+      "month": "3",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 11667.5,
+      "transportation": 9500,
+      "grossTotal": 255167.5,
+      "insurance": 13026,
+      "pension": 23790,
+      "employmentInsurance": 1531.005,
+      "residentTax": 7700,
+      "incomeTax": 5030,
+      "totalDeduction": 51077.005,
+      "received": 204090.495
+    },
+    {
+      "id": "detail-1780469484778-45d2d496f05d2",
+      "year": 2025,
+      "month": "2",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 11667.5,
+      "transportation": 9500,
+      "grossTotal": 255167.5,
+      "insurance": 13026,
+      "pension": 23790,
+      "employmentInsurance": 1531,
+      "residentTax": 7700,
+      "incomeTax": 5030,
+      "totalDeduction": 51077,
+      "received": 204090.5
+    },
+    {
+      "id": "detail-1780469484778-b31ae7ea46b68",
+      "year": 2025,
+      "month": "1",
+      "basic": 209000,
+      "allowance": 25000,
+      "overtimePay": 14360,
+      "transportation": 9500,
+      "grossTotal": 257860,
+      "insurance": 13026,
+      "pension": 23790,
+      "employmentInsurance": 1547.16,
+      "residentTax": 7700,
+      "incomeTax": 4725.010404979493,
+      "totalDeduction": 50788.17040497949,
+      "received": 207071.8295950205
+    },
+    {
+      "id": "detail-1780469484788-f18bec0e87487",
+      "year": 2026,
+      "month": "12",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 0,
+      "transportation": 11300,
+      "grossTotal": 274300,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 211697
+    },
+    {
+      "id": "detail-1780469484789-45d8cb8550b83",
+      "year": 2026,
+      "month": "11",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 0,
+      "transportation": 11300,
+      "grossTotal": 274300,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 211697
+    },
+    {
+      "id": "detail-1780469484790-7d724b79ad47f",
+      "year": 2026,
+      "month": "10",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 0,
+      "transportation": 11300,
+      "grossTotal": 274300,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 211697
+    },
+    {
+      "id": "detail-1780469484791-fbe547869fb66",
+      "year": 2026,
+      "month": "9",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 0,
+      "transportation": 11300,
+      "grossTotal": 274300,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 211697
+    },
+    {
+      "id": "detail-1780469484791-1203fd2929654",
+      "year": 2026,
+      "month": "8",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 0,
+      "transportation": 11300,
+      "grossTotal": 274300,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 211697
+    },
+    {
+      "id": "detail-1780469484792-d4e60e7a01804",
+      "year": 2026,
+      "month": "7",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 1009,
+      "transportation": 11300,
+      "grossTotal": 275309,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 212706
+    },
+    {
+      "id": "detail-1780469484793-f08e666cd7ecf",
+      "year": 2026,
+      "month": "6",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 36223.1,
+      "transportation": 11300,
+      "grossTotal": 310523.1,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 247920.09999999998
+    },
+    {
+      "id": "detail-1780469484794-b9f1073b32fa4",
+      "year": 2026,
+      "month": "5",
+      "basic": 238000,
+      "allowance": 25000,
+      "overtimePay": 43387,
+      "transportation": 11300,
+      "grossTotal": 317687,
+      "insurance": 14895,
+      "pension": 27450,
+      "employmentInsurance": 1588,
+      "residentTax": 12100,
+      "incomeTax": 6570,
+      "totalDeduction": 62603,
+      "received": 255084
+    },
+    {
+      "id": "detail-1780469484794-b05d5ff244346",
+      "year": 2026,
+      "month": "4",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 29344,
+      "transportation": 11300,
+      "grossTotal": 279644,
+      "insurance": 15045,
+      "pension": 27450,
+      "employmentInsurance": 1538,
+      "residentTax": 12100,
+      "incomeTax": 5210,
+      "totalDeduction": 61343,
+      "received": 218301
+    },
+    {
+      "id": "detail-1780469484795-0e1d1c0f62807",
+      "year": 2026,
+      "month": "3",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 38055.5,
+      "transportation": 11300,
+      "grossTotal": 288355.5,
+      "insurance": 15045,
+      "pension": 27450,
+      "employmentInsurance": 1654,
+      "residentTax": 12100,
+      "incomeTax": 6590,
+      "totalDeduction": 62839,
+      "received": 225516.5
+    },
+    {
+      "id": "detail-1780469484795-c03b12fcf61c4",
+      "year": 2026,
+      "month": "2",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 26593,
+      "transportation": 11300,
+      "grossTotal": 276893,
+      "insurance": 15045,
+      "pension": 27450,
+      "employmentInsurance": 1523,
+      "residentTax": 12100,
+      "incomeTax": 5110,
+      "totalDeduction": 61228,
+      "received": 215665
+    },
+    {
+      "id": "detail-1780469484796-135231bae8b0d",
+      "year": 2026,
+      "month": "1",
+      "basic": 214000,
+      "allowance": 25000,
+      "overtimePay": 44016,
+      "transportation": 11300,
+      "grossTotal": 294316,
+      "insurance": 15045,
+      "pension": 27450,
+      "employmentInsurance": 1634,
+      "residentTax": 12100,
+      "incomeTax": 6192.408640000001,
+      "totalDeduction": 62421.40864,
+      "received": 231894.59136
+    }
+  ],
+  "overtime": [
+    {
+      "id": "ot-1780469484796-5a14e712fb5bc",
+      "month": "September",
+      "day": 1,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:00:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-4c0c1c0a95dc2",
+      "month": "September",
+      "day": 2,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:00:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-ce7c31b0c9836",
+      "month": "September",
+      "day": 3,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:00:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-2f74295a088bd",
+      "month": "September",
+      "day": 4,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:00:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-cd2a305844b07",
+      "month": "September",
+      "day": 5,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:15:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-c5dcf44f0538a",
+      "month": "September",
+      "day": 6,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:00:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-fe530ded4b9b6",
+      "month": "September",
+      "day": 7,
+      "hours": 0,
+      "note": "Sat Dec 30 1899 00:15:00 GMT+0900 (Japan Standard Time)"
+    },
+    {
+      "id": "ot-1780469484796-7dd3828cb8cda",
+      "month": "September",
+      "day": 9,
+      "hours": 0,
+      "note": "Sun Dec 31 1899 01:00:00 GMT+0900 (Japan Standard Time)"
+    }
+  ],
+  "stockRevenue": [
+    {
+      "id": "stock-1780469484797-9b60fa31c0691",
+      "year": 2025,
+      "month": "Jan",
+      "targetCumulative": 25000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-cccaf654f3fb2",
+      "year": 2025,
+      "month": "Feb",
+      "targetCumulative": 50000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-1dca9094c16e2",
+      "year": 2025,
+      "month": "Mar",
+      "targetCumulative": 90000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-538f47051e928",
+      "year": 2025,
+      "month": "Apr",
+      "targetCumulative": 150000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-bfbccfe3f27e8",
+      "year": 2025,
+      "month": "May",
+      "targetCumulative": 26000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-66d3a515c0b78",
+      "year": 2025,
+      "month": "Jun",
+      "targetCumulative": 383278,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-e415007af40c4",
+      "year": 2025,
+      "month": "Jul",
+      "targetCumulative": 401000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-c452d48d28617",
+      "year": 2025,
+      "month": "Aug",
+      "targetCumulative": 419000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-f21811a4bfaa8",
+      "year": 2025,
+      "month": "Sep",
+      "targetCumulative": 419000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-c71bf5e2a257a",
+      "year": 2025,
+      "month": "Oct",
+      "targetCumulative": 419000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-9d104350277b4",
+      "year": 2025,
+      "month": "Nov",
+      "targetCumulative": 419000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-9cfee18deaf43",
+      "year": 2025,
+      "month": "Dec",
+      "targetCumulative": 419000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-76753aef3731c",
+      "year": 2026,
+      "month": "Dec'25",
+      "targetCumulative": 419000,
+      "actualCumulative": 419000,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-7478e53de696",
+      "year": 2026,
+      "month": "Jan'26",
+      "targetCumulative": 593281,
+      "actualCumulative": 593281,
+      "monthlyRevenue": 174281,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-e3ae23c347fa1",
+      "year": 2026,
+      "month": "Feb",
+      "targetCumulative": 700000,
+      "actualCumulative": 1012064,
+      "monthlyRevenue": 418783,
+      "surplus": 312064,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-9a61b41b6e726",
+      "year": 2026,
+      "month": "Mar",
+      "targetCumulative": 1000000,
+      "actualCumulative": 807314,
+      "monthlyRevenue": -204750,
+      "surplus": -192686,
+      "verdict": "❌"
+    },
+    {
+      "id": "stock-1780469484797-8644dfff16e9c",
+      "year": 2026,
+      "month": "Apr",
+      "targetCumulative": 1200000,
+      "actualCumulative": 963007,
+      "monthlyRevenue": 155693,
+      "surplus": -236993,
+      "verdict": "❌"
+    },
+    {
+      "id": "stock-1780469484797-0b19062e78c7f",
+      "year": 2026,
+      "month": "May",
+      "targetCumulative": 1500000,
+      "actualCumulative": 1375140,
+      "monthlyRevenue": 412133,
+      "surplus": -124860,
+      "verdict": "❌"
+    },
+    {
+      "id": "stock-1780469484797-725b77fe0dd1",
+      "year": 2026,
+      "month": "Jun",
+      "targetCumulative": 1700000,
+      "actualCumulative": 1532413,
+      "monthlyRevenue": 157273,
+      "surplus": -167587,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-b5cb7399127de",
+      "year": 2026,
+      "month": "Jul",
+      "targetCumulative": 2000000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-4f26bf116db12",
+      "year": 2026,
+      "month": "Aug",
+      "targetCumulative": 2500000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-636cbb330215b",
+      "year": 2026,
+      "month": "Sep",
+      "targetCumulative": 3000000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-41bb90dbe3058",
+      "year": 2026,
+      "month": "Oct",
+      "targetCumulative": 3500000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-09aee456f3bd8",
+      "year": 2026,
+      "month": "Nov",
+      "targetCumulative": 4000000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    },
+    {
+      "id": "stock-1780469484797-f524717a6243f",
+      "year": 2026,
+      "month": "Dec",
+      "targetCumulative": 5000000,
+      "actualCumulative": 0,
+      "monthlyRevenue": 0,
+      "surplus": 0,
+      "verdict": ""
+    }
+  ],
+  "daily": [
+    {
+      "id": "daily-1780469484797-49fb4f6ae3487",
+      "year": 2026,
+      "month": "Jan",
+      "day": 1,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484797-35d4d712176ef",
+      "year": 2026,
+      "month": "Jan",
+      "day": 2,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484797-d6e8f7558ea26",
+      "year": 2026,
+      "month": "Jan",
+      "day": 3,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484797-c543d24cff074",
+      "year": 2026,
+      "month": "Jan",
+      "day": 4,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-b4cefb4ecbaf6",
+      "year": 2026,
+      "month": "Jan",
+      "day": 5,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-099e60f026e23",
+      "year": 2026,
+      "month": "Jan",
+      "day": 6,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-f047aa9a2edf1",
+      "year": 2026,
+      "month": "Jan",
+      "day": 7,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-1efcb3ce4a0ae",
+      "year": 2026,
+      "month": "Jan",
+      "day": 8,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-65d15116d47e3",
+      "year": 2026,
+      "month": "Jan",
+      "day": 9,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-176b1ad88d8b1",
+      "year": 2026,
+      "month": "Jan",
+      "day": 10,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-08b8cef40578c",
+      "year": 2026,
+      "month": "Jan",
+      "day": 11,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-0cc9ca263423c",
+      "year": 2026,
+      "month": "Jan",
+      "day": 12,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484797-2339e84e91dd4",
+      "year": 2026,
+      "month": "Jan",
+      "day": 13,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-ca3fd1cb9fc8a",
+      "year": 2026,
+      "month": "Jan",
+      "day": 14,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-817cf0d0f57bc",
+      "year": 2026,
+      "month": "Jan",
+      "day": 15,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-8631a59ae542",
+      "year": 2026,
+      "month": "Jan",
+      "day": 16,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-ec9e0dd7a6b63",
+      "year": 2026,
+      "month": "Jan",
+      "day": 17,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-1f3deeeb24e79",
+      "year": 2026,
+      "month": "Jan",
+      "day": 18,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-5055f547ecdf5",
+      "year": 2026,
+      "month": "Jan",
+      "day": 19,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-b6ee5df30cc3f",
+      "year": 2026,
+      "month": "Jan",
+      "day": 20,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484797-78828547d4e3d",
+      "year": 2026,
+      "month": "Jan",
+      "day": 21,
+      "amount": -219000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-4207e337281d4",
+      "year": 2026,
+      "month": "Jan",
+      "day": 22,
+      "amount": 37548,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-66ce70b896173",
+      "year": 2026,
+      "month": "Jan",
+      "day": 23,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-1256f66d3eef3",
+      "year": 2026,
+      "month": "Jan",
+      "day": 24,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484797-f249390da30b2",
+      "year": 2026,
+      "month": "Jan",
+      "day": 25,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484797-a4b43e895703b",
+      "year": 2026,
+      "month": "Jan",
+      "day": 26,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-9b019b9bf96e9",
+      "year": 2026,
+      "month": "Jan",
+      "day": 27,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-6e2484a3227c9",
+      "year": 2026,
+      "month": "Jan",
+      "day": 28,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-d969d058996bd",
+      "year": 2026,
+      "month": "Jan",
+      "day": 29,
+      "amount": 217500,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-b9d9641d28d6e",
+      "year": 2026,
+      "month": "Jan",
+      "day": 30,
+      "amount": 52032,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-0784bace687df",
+      "year": 2026,
+      "month": "Jan",
+      "day": 31,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484797-a5753c36517b9",
+      "year": 2026,
+      "month": "Feb",
+      "day": 1,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484797-1f4e597b7f1da",
+      "year": 2026,
+      "month": "Feb",
+      "day": 2,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-666715b8b85bd",
+      "year": 2026,
+      "month": "Feb",
+      "day": 3,
+      "amount": 52080,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-4791a27d71a46",
+      "year": 2026,
+      "month": "Feb",
+      "day": 4,
+      "amount": 45960,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-9079e7631e809",
+      "year": 2026,
+      "month": "Feb",
+      "day": 5,
+      "amount": 22620,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-35d673c47cba1",
+      "year": 2026,
+      "month": "Feb",
+      "day": 6,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484797-babc4a3e27188",
+      "year": 2026,
+      "month": "Feb",
+      "day": 7,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484797-81f97e1d2600f",
+      "year": 2026,
+      "month": "Feb",
+      "day": 8,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484797-288f62279497",
+      "year": 2026,
+      "month": "Feb",
+      "day": 9,
+      "amount": 62480,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-453d8dd8978aa",
+      "year": 2026,
+      "month": "Feb",
+      "day": 10,
+      "amount": 12550,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-a519ab9156e54",
+      "year": 2026,
+      "month": "Feb",
+      "day": 11,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-cf4ac85edd3c5",
+      "year": 2026,
+      "month": "Feb",
+      "day": 12,
+      "amount": 140150,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-7e041628ae81f",
+      "year": 2026,
+      "month": "Feb",
+      "day": 13,
+      "amount": 20050,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-0a31a976fe5f7",
+      "year": 2026,
+      "month": "Feb",
+      "day": 14,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-211e0eaa5717d",
+      "year": 2026,
+      "month": "Feb",
+      "day": 15,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-acef070f816a9",
+      "year": 2026,
+      "month": "Feb",
+      "day": 16,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-df134ca5c407a",
+      "year": 2026,
+      "month": "Feb",
+      "day": 17,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-b0f1f5861b0fc",
+      "year": 2026,
+      "month": "Feb",
+      "day": 18,
+      "amount": 7550,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-87468bd1480a5",
+      "year": 2026,
+      "month": "Feb",
+      "day": 19,
+      "amount": 5600,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-9f121d514af1f",
+      "year": 2026,
+      "month": "Feb",
+      "day": 20,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-d3298796fa3a3",
+      "year": 2026,
+      "month": "Feb",
+      "day": 21,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-65181252475d7",
+      "year": 2026,
+      "month": "Feb",
+      "day": 22,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-81d2ce6fc6015",
+      "year": 2026,
+      "month": "Feb",
+      "day": 23,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-2121078bd753e",
+      "year": 2026,
+      "month": "Feb",
+      "day": 24,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-0ce8f55836d99",
+      "year": 2026,
+      "month": "Feb",
+      "day": 25,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-7800b2ab92ad3",
+      "year": 2026,
+      "month": "Feb",
+      "day": 26,
+      "amount": 50100,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-88c2b7f85594c",
+      "year": 2026,
+      "month": "Feb",
+      "day": 27,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-613a3323f09c6",
+      "year": 2026,
+      "month": "Feb",
+      "day": 28,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-1f063dedfd9ba",
+      "year": 2026,
+      "month": "Feb",
+      "day": 29,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-412e407e24e35",
+      "year": 2026,
+      "month": "Feb",
+      "day": 30,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-d8acc30d09233",
+      "year": 2026,
+      "month": "Feb",
+      "day": 31,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-fee596ceceb29",
+      "year": 2026,
+      "month": "Mar",
+      "day": 1,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-5576cae67f187",
+      "year": 2026,
+      "month": "Mar",
+      "day": 2,
+      "amount": -31000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-c8da78c692e26",
+      "year": 2026,
+      "month": "Mar",
+      "day": 3,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-611bfff96e067",
+      "year": 2026,
+      "month": "Mar",
+      "day": 4,
+      "amount": 65287,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-58196fe3b1784",
+      "year": 2026,
+      "month": "Mar",
+      "day": 5,
+      "amount": -97767,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-be8ebd0f1863",
+      "year": 2026,
+      "month": "Mar",
+      "day": 7,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3a77d9b9c0f06",
+      "year": 2026,
+      "month": "Mar",
+      "day": 8,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-3e002575f2076",
+      "year": 2026,
+      "month": "Mar",
+      "day": 14,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-e6a13fc5ad827",
+      "year": 2026,
+      "month": "Mar",
+      "day": 15,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-27ab25fe14a64",
+      "year": 2026,
+      "month": "Mar",
+      "day": 20,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-25d6a1c9b9b6f",
+      "year": 2026,
+      "month": "Mar",
+      "day": 21,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-b16b99662c38c",
+      "year": 2026,
+      "month": "Mar",
+      "day": 22,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-4ed4f1b4d306d",
+      "year": 2026,
+      "month": "Mar",
+      "day": 25,
+      "amount": 4100,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-346ad197ab8d1",
+      "year": 2026,
+      "month": "Mar",
+      "day": 26,
+      "amount": 69000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-06859ef877071",
+      "year": 2026,
+      "month": "Mar",
+      "day": 27,
+      "amount": 2000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-6b67a6b311e15",
+      "year": 2026,
+      "month": "Mar",
+      "day": 28,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-d06aa17b115fb",
+      "year": 2026,
+      "month": "Mar",
+      "day": 29,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-7fb58f8971abe",
+      "year": 2026,
+      "month": "Mar",
+      "day": 30,
+      "amount": 3720,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-8445f2573516a",
+      "year": 2026,
+      "month": "Mar",
+      "day": 31,
+      "amount": 2500,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-64f0a13e01427",
+      "year": 2026,
+      "month": "Apr",
+      "day": 1,
+      "amount": 20220,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-030c97c77369d",
+      "year": 2026,
+      "month": "Apr",
+      "day": 2,
+      "amount": 5960,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-847c43c7008d8",
+      "year": 2026,
+      "month": "Apr",
+      "day": 3,
+      "amount": 3825,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-8022410edbce8",
+      "year": 2026,
+      "month": "Apr",
+      "day": 4,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-bcf85902ff138",
+      "year": 2026,
+      "month": "Apr",
+      "day": 5,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-0b73306f526c4",
+      "year": 2026,
+      "month": "Apr",
+      "day": 6,
+      "amount": 4790,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-486501ffdc66a",
+      "year": 2026,
+      "month": "Apr",
+      "day": 7,
+      "amount": -240,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-d1f23725c84e5",
+      "year": 2026,
+      "month": "Apr",
+      "day": 8,
+      "amount": 56900,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-7f2621cd62b7d",
+      "year": 2026,
+      "month": "Apr",
+      "day": 9,
+      "amount": 11170,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-b6a45e30e03f5",
+      "year": 2026,
+      "month": "Apr",
+      "day": 10,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-a45790dbab179",
+      "year": 2026,
+      "month": "Apr",
+      "day": 11,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-86a28f28a2912",
+      "year": 2026,
+      "month": "Apr",
+      "day": 12,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-2c6b761d3cf16",
+      "year": 2026,
+      "month": "Apr",
+      "day": 13,
+      "amount": 15284,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-bf63a42b5410e",
+      "year": 2026,
+      "month": "Apr",
+      "day": 14,
+      "amount": 52573,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-c2f5f8a3fac67",
+      "year": 2026,
+      "month": "Apr",
+      "day": 15,
+      "amount": 11206,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-0dea6ae0f8112",
+      "year": 2026,
+      "month": "Apr",
+      "day": 16,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-a06aa0deeaaa2",
+      "year": 2026,
+      "month": "Apr",
+      "day": 17,
+      "amount": -15000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-c2db60deb7f81",
+      "year": 2026,
+      "month": "Apr",
+      "day": 18,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-55f82e6e93be",
+      "year": 2026,
+      "month": "Apr",
+      "day": 19,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-f7842ec14e57e",
+      "year": 2026,
+      "month": "Apr",
+      "day": 20,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-636f0b8226b45",
+      "year": 2026,
+      "month": "Apr",
+      "day": 21,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-968fb404c9b65",
+      "year": 2026,
+      "month": "Apr",
+      "day": 22,
+      "amount": -1610,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-fb8c661cd9469",
+      "year": 2026,
+      "month": "Apr",
+      "day": 23,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-8de4f9c1ce3ac",
+      "year": 2026,
+      "month": "Apr",
+      "day": 24,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-dc72f75434a73",
+      "year": 2026,
+      "month": "Apr",
+      "day": 25,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-52eeec06f194d",
+      "year": 2026,
+      "month": "Apr",
+      "day": 26,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-b84c9a6da18cc",
+      "year": 2026,
+      "month": "Apr",
+      "day": 27,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-4b751943ae34a",
+      "year": 2026,
+      "month": "Apr",
+      "day": 28,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-2befedb1ac2e2",
+      "year": 2026,
+      "month": "Apr",
+      "day": 29,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-f10d19232fbb2",
+      "year": 2026,
+      "month": "Apr",
+      "day": 30,
+      "amount": 1000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-150a079fd13c8",
+      "year": 2026,
+      "month": "Apr",
+      "day": 31,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-6ac0811d8fdb4",
+      "year": 2026,
+      "month": "May",
+      "day": 1,
+      "amount": 7350,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-956805d545795",
+      "year": 2026,
+      "month": "May",
+      "day": 2,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-8414a4f778bf9",
+      "year": 2026,
+      "month": "May",
+      "day": 3,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-9e0a711eedb14",
+      "year": 2026,
+      "month": "May",
+      "day": 4,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-f2b9a1d14ef22",
+      "year": 2026,
+      "month": "May",
+      "day": 5,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-a2cd999cfcfe6",
+      "year": 2026,
+      "month": "May",
+      "day": 6,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-140c3288f045a",
+      "year": 2026,
+      "month": "May",
+      "day": 7,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-68b937bcf18f9",
+      "year": 2026,
+      "month": "May",
+      "day": 8,
+      "amount": 5560,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-a61b25b55c3d8",
+      "year": 2026,
+      "month": "May",
+      "day": 9,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-8933148f22c3f",
+      "year": 2026,
+      "month": "May",
+      "day": 10,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-3a0b982a477d4",
+      "year": 2026,
+      "month": "May",
+      "day": 11,
+      "amount": 106000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-f7c8b489e0c37",
+      "year": 2026,
+      "month": "May",
+      "day": 12,
+      "amount": 3468,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-c8b51c0aecace",
+      "year": 2026,
+      "month": "May",
+      "day": 13,
+      "amount": 22500,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-62c360bb7daf6",
+      "year": 2026,
+      "month": "May",
+      "day": 14,
+      "amount": 92500,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-ceb4a0c98512b",
+      "year": 2026,
+      "month": "May",
+      "day": 15,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-b9ee022b3328a",
+      "year": 2026,
+      "month": "May",
+      "day": 16,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-50069c4eb80a5",
+      "year": 2026,
+      "month": "May",
+      "day": 17,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-6f4e090d4dc71",
+      "year": 2026,
+      "month": "May",
+      "day": 18,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-0e0e52628db13",
+      "year": 2026,
+      "month": "May",
+      "day": 19,
+      "amount": 10000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-a4bd698bfa048",
+      "year": 2026,
+      "month": "May",
+      "day": 20,
+      "amount": -13762,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-2fbe3f0a1aa32",
+      "year": 2026,
+      "month": "May",
+      "day": 21,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-6488c5df17ada",
+      "year": 2026,
+      "month": "May",
+      "day": 22,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-f6c7557be3145",
+      "year": 2026,
+      "month": "May",
+      "day": 23,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-b38a00438bb3f",
+      "year": 2026,
+      "month": "May",
+      "day": 24,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-369208e7befea",
+      "year": 2026,
+      "month": "May",
+      "day": 25,
+      "amount": 45000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-fb74e4fcd95db",
+      "year": 2026,
+      "month": "May",
+      "day": 26,
+      "amount": 0,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-f0dbb27a7a715",
+      "year": 2026,
+      "month": "May",
+      "day": 27,
+      "amount": 117050,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-07ec281886f6e",
+      "year": 2026,
+      "month": "May",
+      "day": 28,
+      "amount": 60000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-78b5991f04f1c",
+      "year": 2026,
+      "month": "May",
+      "day": 29,
+      "amount": -41410,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-d03e135ecf3bd",
+      "year": 2026,
+      "month": "May",
+      "day": 30,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-0632355d73d6d",
+      "year": 2026,
+      "month": "May",
+      "day": 31,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-c073bc2cffe25",
+      "year": 2026,
+      "month": "June",
+      "day": 1,
+      "amount": 66000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-3a595ff8316b3",
+      "year": 2026,
+      "month": "June",
+      "day": 2,
+      "amount": 32810,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-d80b824442391",
+      "year": 2026,
+      "month": "June",
+      "day": 3,
+      "amount": 59000,
+      "status": "recorded",
+      "note": ""
+    },
+    {
+      "id": "daily-1780469484798-7a799d3056632",
+      "year": 2026,
+      "month": "June",
+      "day": 6,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-a1110406c694a",
+      "year": 2026,
+      "month": "June",
+      "day": 7,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-9ff57e928843b",
+      "year": 2026,
+      "month": "June",
+      "day": 13,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-b14ceea30d1ae",
+      "year": 2026,
+      "month": "June",
+      "day": 14,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-119f667e4dc27",
+      "year": 2026,
+      "month": "June",
+      "day": 20,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-a27b740551596",
+      "year": 2026,
+      "month": "June",
+      "day": 21,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-d2f140c22a16c",
+      "year": 2026,
+      "month": "June",
+      "day": 27,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-14eb6ec8c2c4f",
+      "year": 2026,
+      "month": "June",
+      "day": 28,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-7bba097b4088f",
+      "year": 2026,
+      "month": "June",
+      "day": 31,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-4145765c284cb",
+      "year": 2026,
+      "month": "July",
+      "day": 4,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-7a427c817a3d9",
+      "year": 2026,
+      "month": "July",
+      "day": 5,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-1212f0522bce2",
+      "year": 2026,
+      "month": "July",
+      "day": 11,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-0e58a0cc10306",
+      "year": 2026,
+      "month": "July",
+      "day": 12,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-cc669ba0598a3",
+      "year": 2026,
+      "month": "July",
+      "day": 18,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-c203c4007b3c8",
+      "year": 2026,
+      "month": "July",
+      "day": 19,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-f2c993f95996b",
+      "year": 2026,
+      "month": "July",
+      "day": 20,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-444f40e90a1e9",
+      "year": 2026,
+      "month": "July",
+      "day": 25,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-d0ee74ccd1f91",
+      "year": 2026,
+      "month": "July",
+      "day": 26,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-309cd3487b5a1",
+      "year": 2026,
+      "month": "Aug",
+      "day": 1,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-f33770268b4f2",
+      "year": 2026,
+      "month": "Aug",
+      "day": 2,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-3698c7ea660ad",
+      "year": 2026,
+      "month": "Aug",
+      "day": 3,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-990d6ab9457f5",
+      "year": 2026,
+      "month": "Aug",
+      "day": 4,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-c94e02cdb7f0e",
+      "year": 2026,
+      "month": "Aug",
+      "day": 5,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-41d81e2336bc8",
+      "year": 2026,
+      "month": "Aug",
+      "day": 6,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-902410316491",
+      "year": 2026,
+      "month": "Aug",
+      "day": 7,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-db938014dfcdb",
+      "year": 2026,
+      "month": "Aug",
+      "day": 8,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-9217d9b340d8f",
+      "year": 2026,
+      "month": "Aug",
+      "day": 9,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-05131c992ec3b",
+      "year": 2026,
+      "month": "Aug",
+      "day": 11,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-f6760ac2e508d",
+      "year": 2026,
+      "month": "Aug",
+      "day": 15,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-f0cebe0757a3a",
+      "year": 2026,
+      "month": "Aug",
+      "day": 16,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-53651cabbb561",
+      "year": 2026,
+      "month": "Aug",
+      "day": 22,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-089d31566d847",
+      "year": 2026,
+      "month": "Aug",
+      "day": 23,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-abb5cfe09b9fc",
+      "year": 2026,
+      "month": "Aug",
+      "day": 29,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3cff193faf6c6",
+      "year": 2026,
+      "month": "Aug",
+      "day": 30,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-fce79ad75a0f4",
+      "year": 2026,
+      "month": "Sep",
+      "day": 5,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3de0d7fbf0684",
+      "year": 2026,
+      "month": "Sep",
+      "day": 6,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-a7236ccc4882d",
+      "year": 2026,
+      "month": "Sep",
+      "day": 12,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3e83b148808e6",
+      "year": 2026,
+      "month": "Sep",
+      "day": 13,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-6932f7e124cd7",
+      "year": 2026,
+      "month": "Sep",
+      "day": 19,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3142c8cde74b4",
+      "year": 2026,
+      "month": "Sep",
+      "day": 20,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-c5eacf3b35b84",
+      "year": 2026,
+      "month": "Sep",
+      "day": 21,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-7e8a79144409",
+      "year": 2026,
+      "month": "Sep",
+      "day": 22,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-ac94dc2fe86f5",
+      "year": 2026,
+      "month": "Sep",
+      "day": 23,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-76b2234959dea",
+      "year": 2026,
+      "month": "Sep",
+      "day": 26,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-ace494ed840d",
+      "year": 2026,
+      "month": "Sep",
+      "day": 27,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-be4d88c836a4d",
+      "year": 2026,
+      "month": "Sep",
+      "day": 31,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-90a4e7041be4b",
+      "year": 2026,
+      "month": "Oct",
+      "day": 3,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-9cf5e3643937f",
+      "year": 2026,
+      "month": "Oct",
+      "day": 4,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-2f168c468f1c5",
+      "year": 2026,
+      "month": "Oct",
+      "day": 10,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-ee2b44bb90e4c",
+      "year": 2026,
+      "month": "Oct",
+      "day": 11,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-8bb06a951b859",
+      "year": 2026,
+      "month": "Oct",
+      "day": 12,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-c60c11472e1b",
+      "year": 2026,
+      "month": "Oct",
+      "day": 17,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-d1ccdf38e104",
+      "year": 2026,
+      "month": "Oct",
+      "day": 18,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-8ba13b38c3fd2",
+      "year": 2026,
+      "month": "Oct",
+      "day": 24,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-ad0357eedd3df",
+      "year": 2026,
+      "month": "Oct",
+      "day": 25,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-36b01e2024c31",
+      "year": 2026,
+      "month": "Oct",
+      "day": 31,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-957f3e1d9874",
+      "year": 2026,
+      "month": "Nov",
+      "day": 1,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-934eb26103873",
+      "year": 2026,
+      "month": "Nov",
+      "day": 3,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-5d1270b647ffe",
+      "year": 2026,
+      "month": "Nov",
+      "day": 7,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-cc1bac048e13d",
+      "year": 2026,
+      "month": "Nov",
+      "day": 8,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-fd6956d8c185b",
+      "year": 2026,
+      "month": "Nov",
+      "day": 14,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-a6dd152f5feee",
+      "year": 2026,
+      "month": "Nov",
+      "day": 15,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-5cf4f80e812c1",
+      "year": 2026,
+      "month": "Nov",
+      "day": 21,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-917be6d6a4ede",
+      "year": 2026,
+      "month": "Nov",
+      "day": 22,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-baea2aeecaa5a",
+      "year": 2026,
+      "month": "Nov",
+      "day": 23,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    },
+    {
+      "id": "daily-1780469484798-bda58f2c68ade",
+      "year": 2026,
+      "month": "Nov",
+      "day": 28,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-863f1f80b5787",
+      "year": 2026,
+      "month": "Nov",
+      "day": 29,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-0c17fb81a7291",
+      "year": 2026,
+      "month": "Nov",
+      "day": 31,
+      "amount": 0,
+      "status": "N/A",
+      "note": "N/A"
+    },
+    {
+      "id": "daily-1780469484798-2abb734127a4a",
+      "year": 2026,
+      "month": "Dec",
+      "day": 5,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-3ec3d430de9f5",
+      "year": 2026,
+      "month": "Dec",
+      "day": 6,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-4879dab802eff",
+      "year": 2026,
+      "month": "Dec",
+      "day": 12,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-ee9a87304165e",
+      "year": 2026,
+      "month": "Dec",
+      "day": 13,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-7e5d6bb17ccae",
+      "year": 2026,
+      "month": "Dec",
+      "day": 19,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-383ee151f28b5",
+      "year": 2026,
+      "month": "Dec",
+      "day": 20,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-39bea2ffba164",
+      "year": 2026,
+      "month": "Dec",
+      "day": 26,
+      "amount": 0,
+      "status": "SAT",
+      "note": "SAT"
+    },
+    {
+      "id": "daily-1780469484798-d89a81b23585a",
+      "year": 2026,
+      "month": "Dec",
+      "day": 27,
+      "amount": 0,
+      "status": "SUN",
+      "note": "SUN"
+    },
+    {
+      "id": "daily-1780469484798-c7b1b04d2bc74",
+      "year": 2026,
+      "month": "Dec",
+      "day": 28,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-e0a37fff10834",
+      "year": 2026,
+      "month": "Dec",
+      "day": 29,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-b68511232f9a4",
+      "year": 2026,
+      "month": "Dec",
+      "day": 30,
+      "amount": 0,
+      "status": "-chance",
+      "note": "-chance"
+    },
+    {
+      "id": "daily-1780469484798-a0c893edddac1",
+      "year": 2026,
+      "month": "Dec",
+      "day": 31,
+      "amount": 0,
+      "status": "CLOSED",
+      "note": "CLOSED"
+    }
+  ],
+  "personalBalances": [],
+  "salarySheets": [],
+  "unpaidBills": []
+}
