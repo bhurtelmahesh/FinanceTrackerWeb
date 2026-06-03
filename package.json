@@ -1,0 +1,14 @@
+{
+  "name": "finance-tracker-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-based finance tracker for savings, salary, overtime, stock wins, daily records, and debts.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "vite": "^4.5.14"
+  }
+}
