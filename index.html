@@ -4,8 +4,11 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A private browser-based finance tracker for income, savings, overtime, stock wins, daily records, debt records, and JSON backups.">
+  <meta name="theme-color" content="#2b83a8">
   <title>Finance Tracker Web</title>
   <link rel="icon" href="./build/app-icon.iconset/icon_32x32@2x.png">
+  <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -16,6 +19,7 @@
         <p>Track income, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
       <div class="setup-actions">
         <button id="startBlank">Start Blank</button>
+        <button id="setupLoadDemoData" type="button">Load Demo Data</button>
         <button id="setupImportExcel">Import Backup</button>
       </div>
       <small>Start fresh, load demo data, or restore a JSON backup.</small>
@@ -30,8 +34,8 @@
         <p>Web dashboard</p>
       </div>
     </div>
-    <nav id="nav">
-      <button data-view="dashboard" class="active">Dashboard</button>
+    <nav id="nav" aria-label="Primary sections">
+      <button data-view="dashboard" class="active" aria-current="page">Dashboard</button>
       <button data-view="salary">Monthly Savings</button>
       <button data-view="details">Salary Details</button>
       <button data-view="overtime">Overtime</button>
@@ -49,8 +53,8 @@
         <h2 id="viewTitle">Dashboard</h2>
       </div>
       <div class="top-actions">
-        <input id="globalSearch" type="search" placeholder="Search records">
-        <span id="saveState">Loading...</span>
+        <input id="globalSearch" type="search" placeholder="Search records" aria-label="Search records">
+        <span id="saveState" role="status" aria-live="polite">Loading...</span>
         <button id="saveNow">Save</button>
       </div>
     </header>
@@ -61,15 +65,15 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Net Income vs Savings</h3>
-            <select id="dashboardYear"></select>
+            <select id="dashboardYear" aria-label="Dashboard year"></select>
           </div>
-          <canvas id="salaryChart" width="760" height="380"></canvas>
+          <canvas id="salaryChart" width="760" height="380" role="img" aria-label="Net income and savings chart">Net income and savings chart</canvas>
         </section>
         <section class="panel">
           <div class="panel-head">
             <h3>Stock Win Target</h3>
           </div>
-          <canvas id="stockChart" width="520" height="380"></canvas>
+          <canvas id="stockChart" width="520" height="380" role="img" aria-label="Stock win target chart">Stock win target chart</canvas>
         </section>
       </div>
       <section class="panel insights-panel">
@@ -82,7 +86,7 @@
 
     <section id="salary" class="view">
       <div class="toolbar">
-        <select id="salaryYearFilter"></select>
+        <select id="salaryYearFilter" aria-label="Monthly savings year"></select>
         <button data-add="salary">Add Manual Income</button>
       </div>
       <div id="salaryTable"></div>
@@ -90,7 +94,7 @@
 
     <section id="details" class="view">
       <div class="toolbar">
-        <select id="detailsYearFilter"></select>
+        <select id="detailsYearFilter" aria-label="Salary details year"></select>
         <button data-add="monthlyDetails">Add Salary Detail</button>
       </div>
       <div id="detailsTable"></div>
@@ -109,7 +113,7 @@
             </label>
             <label>
               <span>Month</span>
-              <select id="otMonth" required></select>
+              <select id="otMonth" required aria-label="Overtime entry month"></select>
             </label>
             <label>
               <span>Day</span>
@@ -138,8 +142,8 @@
           <div class="panel-head">
             <h3 id="otSummaryTitle">Monthly OT Summary</h3>
             <div class="ot-filter">
-              <select id="otYearFilter"></select>
-              <select id="otMonthFilter"></select>
+              <select id="otYearFilter" aria-label="Overtime summary year"></select>
+              <select id="otMonthFilter" aria-label="Overtime summary month"></select>
               <button id="editOtSalaryDetail" type="button">Edit Salary Detail</button>
             </div>
           </div>
@@ -151,15 +155,15 @@
 
     <section id="stocks" class="view">
       <div class="toolbar">
-        <select id="stockYearFilter"></select>
+        <select id="stockYearFilter" aria-label="Stock revenue year"></select>
       </div>
       <div id="stockTable"></div>
     </section>
 
     <section id="daily" class="view">
       <div class="toolbar">
-        <select id="dailyYearFilter"></select>
-        <select id="dailyMonthFilter"></select>
+        <select id="dailyYearFilter" aria-label="Daily records year"></select>
+        <select id="dailyMonthFilter" aria-label="Daily records month"></select>
       </div>
       <div id="dailyTable"></div>
     </section>

@@ -1,0 +1,9 @@
+{
+  "name": "Finance Tracker Web",
+  "short_name": "Finance Tracker",
+  "description": "Private browser-based finance tracking for income, savings, overtime, stocks, daily records, debts, and backups.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f7fa",
+  "theme_color": "#2b83a8"
+}

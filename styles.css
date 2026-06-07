@@ -22,9 +22,7 @@ body {
   display: grid;
   grid-template-columns: 292px minmax(0, 1fr);
   color: var(--ink);
-  background:
-    radial-gradient(circle at 84% 2%, rgba(63, 168, 140, .14), transparent 30%),
-    linear-gradient(180deg, #f8fbfd 0%, var(--bg) 45%, #eef5f8 100%);
+  background: linear-gradient(180deg, #f8fbfd 0%, var(--bg) 45%, #eef5f8 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -100,6 +98,13 @@ button {
 }
 
 button:hover { border-color: var(--blue); }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(47, 128, 237, .28);
+  outline-offset: 2px;
+}
 
 .sidebar {
   position: sticky;
@@ -698,6 +703,7 @@ canvas {
   border-radius: 16px;
   overflow: auto;
   box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
 }
 
 .stock-grid-wrap {
@@ -982,5 +988,36 @@ canvas {
   .ot-sheet {
     grid-template-columns: 1fr;
     min-width: 0;
+  }
+  .daily-grid {
+    min-width: 1480px;
+  }
+  .daily-month-col,
+  .daily-month-cell,
+  .daily-annual-label {
+    width: 92px;
+    min-width: 92px;
+  }
+  .daily-day-col,
+  .daily-day-cell {
+    width: 40px;
+  }
+  .daily-total-col,
+  .daily-total-head,
+  .daily-total-cell,
+  .daily-annual-total {
+    width: 112px;
+  }
+  .daily-grid th,
+  .daily-grid td {
+    padding: 4px;
+  }
+  .daily-cell-input {
+    height: 30px;
+    padding: 3px 4px;
+    font-size: 11px;
+  }
+  .weekend-label {
+    font-size: 10px;
   }
 }

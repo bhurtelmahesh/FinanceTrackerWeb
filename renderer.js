@@ -122,9 +122,14 @@ function showSetupIfNeeded() {
 
 async function save() {
   setSaveState('Saving...');
-  await window.financeApi.save(state);
-  setSaveState('Saved');
-  setTimeout(() => setSaveState('Ready'), 1200);
+  try {
+    await window.financeApi.save(state);
+    setSaveState('Saved');
+    setTimeout(() => setSaveState('Ready'), 1200);
+  } catch (error) {
+    console.error(error);
+    setSaveState('Save failed');
+  }
 }
 
 function yearsFrom(records) {
@@ -617,6 +622,10 @@ function formatValue(key, value) {
   return value ?? '';
 }
 
+function tableValue(key, value) {
+  return escapeHtml(formatValue(key, value));
+}
+
 function cellClass(collection, key, item, type) {
   const classes = [];
   if (type === 'number') classes.push('number');
@@ -637,14 +646,14 @@ function cellClass(collection, key, item, type) {
 function renderTable(containerId, collection, fields, records) {
   const rows = records.map((item) => `
     <tr>
-      ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${formatValue(key, item[key])}</td>`).join('')}
-      <td><div class="row-actions"><button data-edit="${collection}" data-id="${item.id}">Edit</button><button class="delete" data-delete="${collection}" data-id="${item.id}">Delete</button></div></td>
+      ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
+      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button><button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button></div></td>
     </tr>
   `).join('');
   const html = `
     <div class="table-wrap">
       <table>
-        <thead><tr>${fields.map(([, label]) => `<th>${label}</th>`).join('')}<th>Actions</th></tr></thead>
+        <thead><tr>${fields.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join('')}<th>Actions</th></tr></thead>
         <tbody>
           ${rows || `<tr><td colspan="${fields.length + 1}" class="empty-cell">No records found.</td></tr>`}
         </tbody>
@@ -713,10 +722,11 @@ function renderStockGrid(records, year) {
     const verdictClass = verdict === '✓' ? 'stock-pass' : verdict === 'X' ? 'stock-fail' : 'stock-flat';
     return `
       <tr>
-        <th class="stock-month-cell">${month}</th>
+        <th class="stock-month-cell">${escapeHtml(month)}</th>
         ${fields.map(([key]) => `
           <td>
             <input class="grid-input stock-cell-input" type="number" step="any"
+              aria-label="${escapeHtml(month)} ${escapeHtml(key === 'targetCumulative' ? 'target cumulative' : 'actual win cumulative')}"
               data-stock-year="${year}" data-stock-month="${month}" data-stock-field="${key}"
               value="${item[key] ?? ''}">
           </td>
@@ -734,7 +744,7 @@ function renderStockGrid(records, year) {
     <div class="stock-grid-wrap">
       <table class="stock-grid">
         <thead>
-          <tr><th>Month</th>${[...fields, ...calculatedFields].map(([, label]) => `<th>${label}</th>`).join('')}<th>Result</th></tr>
+          <tr><th>Month</th>${[...fields, ...calculatedFields].map(([, label]) => `<th>${escapeHtml(label)}</th>`).join('')}<th>Result</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
@@ -772,12 +782,12 @@ function renderDailyGrid(records, selectedMonth, year) {
       monthTotal += amount;
       const cls = amount > 0 ? 'daily-plus' : amount < 0 ? 'daily-minus' : 'daily-zero';
       if (!stateForDay.valid) {
-        return `<td class="daily-day-cell invalid-day" aria-label="${month} ${day} is not a valid day"></td>`;
+        return `<td class="daily-day-cell invalid-day" aria-label="${escapeHtml(month)} ${day} is not a valid day"></td>`;
       }
       if (stateForDay.weekend) {
         return `
           <td class="daily-day-cell weekend ${amount ? 'has-records' : ''}">
-            <span class="weekend-label">${stateForDay.label}</span>
+            <span class="weekend-label">${escapeHtml(stateForDay.label)}</span>
             ${amount ? `<span class="daily-weekend-value ${cls}">${amount}</span>` : ''}
           </td>
         `;
@@ -785,6 +795,7 @@ function renderDailyGrid(records, selectedMonth, year) {
       return `
         <td class="daily-day-cell ${amount ? 'has-records' : ''}">
           <input class="grid-input daily-cell-input ${cls}" type="number" step="any"
+            aria-label="${escapeHtml(month)} ${day} amount"
             data-daily-year="${year}" data-daily-month="${month}" data-daily-day="${day}"
             value="${amount ? amount : ''}">
         </td>
@@ -792,7 +803,7 @@ function renderDailyGrid(records, selectedMonth, year) {
     }).join('');
     monthTotals.push(monthTotal);
     const totalClass = monthTotal > 0 ? 'daily-plus' : monthTotal < 0 ? 'daily-minus' : 'daily-zero';
-    return `<tr><th class="daily-month-cell">${month}</th>${cells}<td class="daily-total-cell ${totalClass}">${monthTotal ? yen(monthTotal) : '-'}</td></tr>`;
+    return `<tr><th class="daily-month-cell">${escapeHtml(month)}</th>${cells}<td class="daily-total-cell ${totalClass}">${monthTotal ? yen(monthTotal) : '-'}</td></tr>`;
   }).join('');
   const annualTotal = monthTotals.reduce((total, value) => total + value, 0);
   const annualClass = annualTotal > 0 ? 'daily-plus' : annualTotal < 0 ? 'daily-minus' : 'daily-zero';
@@ -938,7 +949,15 @@ function render() {
 function switchView(view) {
   activeView = view;
   document.querySelectorAll('.view').forEach((el) => el.classList.toggle('active', el.id === view));
-  document.querySelectorAll('#nav button').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+  document.querySelectorAll('#nav button').forEach((btn) => {
+    const selected = btn.dataset.view === view;
+    btn.classList.toggle('active', selected);
+    if (selected) {
+      btn.setAttribute('aria-current', 'page');
+    } else {
+      btn.removeAttribute('aria-current');
+    }
+  });
   document.getElementById('viewTitle').textContent = titles[view];
 }
 
@@ -948,8 +967,8 @@ function openEditor(collection, record) {
   const fields = schemas[collection];
   document.getElementById('dialogFields').innerHTML = fields.map(([key, label, type]) => `
     <div class="field ${key === 'note' ? 'full' : ''}">
-      <label for="field-${key}">${label}</label>
-      <input id="field-${key}" name="${key}" type="${type === 'number' ? 'number' : 'text'}" step="any" value="${record && record[key] !== undefined ? String(record[key]).replace(/"/g, '&quot;') : ''}">
+      <label for="field-${key}">${escapeHtml(label)}</label>
+      <input id="field-${key}" name="${key}" type="${type === 'number' ? 'number' : 'text'}" step="any" value="${record && record[key] !== undefined ? escapeHtml(record[key]) : ''}">
     </div>
   `).join('');
   document.getElementById('recordDialog').showModal();
@@ -996,13 +1015,19 @@ function deleteRecord(collection, recordId) {
 
 async function importExcelWithConfirmation() {
   if (hasRecords() && !confirm('Importing a backup will replace the current browser records. Continue?')) return;
-  const imported = await window.financeApi.importExcel();
-  if (imported) {
-    state = imported;
-    state.salarySheets = state.salarySheets || [];
-    state.unpaidBills = state.unpaidBills || [];
-    render();
-    setSaveState('Imported');
+  try {
+    const imported = await window.financeApi.importExcel();
+    if (imported) {
+      state = imported;
+      state.salarySheets = state.salarySheets || [];
+      state.unpaidBills = state.unpaidBills || [];
+      render();
+      setSaveState('Imported');
+    }
+  } catch (error) {
+    console.error(error);
+    setSaveState('Import failed');
+    alert('Import failed. Please choose a valid Finance Tracker JSON backup.');
   }
 }
 
@@ -1287,8 +1312,9 @@ const dbRecordKey = 'finance-records';
 function normalizeLoadedData(data) {
   const next = { ...browserEmptyData(), ...(data || {}) };
   next.meta = { ...browserEmptyData().meta, ...(data?.meta || {}), dataPath: 'Browser private storage' };
-  next.salarySheets = next.salarySheets || [];
-  next.unpaidBills = next.unpaidBills || [];
+  [...collections, 'salarySheets', 'unpaidBills'].forEach((collection) => {
+    next[collection] = Array.isArray(next[collection]) ? next[collection] : [];
+  });
   return next;
 }
 
@@ -1675,6 +1701,7 @@ function bindEvents() {
   document.getElementById('globalSearch').addEventListener('input', render);
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);
+  document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);
   document.getElementById('startBlank').addEventListener('click', async () => {
     state = await window.financeApi.startBlank();
     render();
@@ -1725,13 +1752,21 @@ function bindEvents() {
 }
 
 async function init() {
-  state = await window.financeApi.load();
+  try {
+    state = await window.financeApi.load();
+  } catch (error) {
+    console.error(error);
+    state = browserEmptyData();
+    setSaveState('Storage unavailable');
+  }
   state.salarySheets = state.salarySheets || [];
   state.unpaidBills = state.unpaidBills || [];
   bindEvents();
   render();
   switchView('dashboard');
-  setSaveState('Ready');
+  if (document.getElementById('saveState').textContent === 'Loading...') {
+    setSaveState('Ready');
+  }
 }
 
 init();
