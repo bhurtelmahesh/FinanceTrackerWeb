@@ -7,3 +7,8 @@ dist/
 *.xls
 finance-data*.json
 FinanceTracker-*.json
+
+# Personal data exports — never commit these to a public repo
+FinanceRecords-*.json
+*-Backup-*.json
+*-backup-*.json

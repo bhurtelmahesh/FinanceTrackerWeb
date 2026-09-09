@@ -46,6 +46,12 @@ const titles = {
 };
 
 const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'personalBalances'];
+const computedFields = {
+  monthlyDetails: ['grossTotal', 'totalDeduction', 'received'],
+  overtime: ['amount'],
+  stockRevenue: ['monthlyRevenue', 'surplus', 'verdict'],
+  salary: ['savingsRate']
+};
 const monthOptions = [
   ['Jan', 'Jan'], ['Feb', 'Feb'], ['Mar', 'Mar'], ['Apr', 'Apr'], ['May', 'May'], ['Jun', 'Jun'],
   ['Jul', 'Jul'], ['Aug', 'Aug'], ['Sep', 'Sep'], ['Oct', 'Oct'], ['Nov', 'Nov'], ['Dec', 'Dec']
@@ -93,6 +99,14 @@ function escapeHtml(value) {
   }[ch]));
 }
 
+function debounce(fn, wait) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
 function setSaveState(text) {
   document.getElementById('saveState').textContent = text;
 }
@@ -105,10 +119,14 @@ function searchText() {
   return (document.getElementById('globalSearch')?.value || '').trim().toLowerCase();
 }
 
+const internalFields = new Set(['id', 'derivedFromDetail', 'savingsRate', 'dataUrl', 'storedName']);
+
 function matchesSearch(record) {
   const q = searchText();
   if (!q) return true;
-  return Object.values(record || {}).some((value) => String(value ?? '').toLowerCase().includes(q));
+  return Object.entries(record || {})
+    .filter(([key]) => !internalFields.has(key))
+    .some(([, value]) => String(value ?? '').toLowerCase().includes(q));
 }
 
 function filterRecords(records) {
@@ -120,6 +138,8 @@ function showSetupIfNeeded() {
   overlay.hidden = hasRecords() || Boolean(state.meta?.startedAt);
 }
 
+let saveErrorNotified = false;
+
 async function save() {
   setSaveState('Saving...');
   try {
@@ -129,6 +149,10 @@ async function save() {
   } catch (error) {
     console.error(error);
     setSaveState('Save failed');
+    if (!saveErrorNotified) {
+      saveErrorNotified = true;
+      alert(error?.message || 'Saving failed. Export a JSON backup so you do not lose records.');
+    }
   }
 }
 
@@ -179,10 +203,6 @@ function currentYear() {
 
 function sum(records, key) {
   return (records || []).reduce((total, item) => total + Number(item[key] || 0), 0);
-}
-
-function latestCapital(records) {
-  return (records || []).reduce((latest, item) => Number(item.cumulativeCapital || 0) || latest, 0);
 }
 
 function monthIndex(month) {
@@ -330,9 +350,22 @@ function normalizeDailyRecord(record) {
 }
 
 function normalizeMonthlyDetail(record) {
+  const year = Number(record.year || 0);
+  const month = normalizeMonth(record.month);
+  // Logged overtime is the source of truth when it exists.
+  const loggedOvertime = overtimeAmountFor(year, month);
+  const overtimePay = loggedOvertime > 0 ? loggedOvertime : Number(record.overtimePay || 0);
+  const grossTotal = Number(record.basic || 0) + Number(record.allowance || 0) +
+    overtimePay + Number(record.transportation || 0);
+  const totalDeduction = Number(record.insurance || 0) + Number(record.pension || 0) +
+    Number(record.employmentInsurance || 0) + Number(record.residentTax || 0) + Number(record.incomeTax || 0);
   return {
     ...record,
-    month: normalizeMonth(record.month)
+    month,
+    overtimePay,
+    grossTotal,
+    totalDeduction,
+    received: grossTotal - totalDeduction
   };
 }
 
@@ -416,11 +449,14 @@ function derivedSalaryRecords() {
       actualSavings,
       savingsRate: received ? actualSavings / received : 0,
       cumulativeCapital: Number(previous.cumulativeCapital || 0),
-      note: previous.note || ''
+      note: previous.note || '',
+      derivedFromDetail: true
     };
   });
   const detailKeys = new Set(derived.map((item) => `${item.year}-${item.month}`));
-  const manualOnly = (state.salary || []).filter((item) => !detailKeys.has(`${Number(item.year)}-${normalizeMonth(item.month)}`));
+  const manualOnly = (state.salary || [])
+    .filter((item) => !detailKeys.has(`${Number(item.year)}-${normalizeMonth(item.month)}`))
+    .map(({ derivedFromDetail, ...rest }) => rest);
   return sortRecordsByMonth([...derived, ...manualOnly]);
 }
 
@@ -453,7 +489,7 @@ function latestStockActualForYear(year) {
 
 function renderKpis() {
   const year = currentYear();
-  const salary = derivedSalaryRecords().filter((item) => Number(item.year) === year);
+  const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   const debts = state.personalBalances;
   const totalSalary = sum(salary, 'salary');
   const actualSavings = sum(salary, 'actualSavings');
@@ -472,18 +508,16 @@ function renderKpis() {
 
 function renderInsights() {
   const year = currentYear();
-  const salary = derivedSalaryRecords().filter((item) => Number(item.year) === year);
-  const details = state.monthlyDetails.filter((item) => Number(item.year) === year);
+  const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   const daily = state.daily.filter((item) => Number(item.year) === year);
   const actualSavings = sum(salary, 'actualSavings');
   const plannedSavings = sum(salary, 'plannedSavings');
-  const received = sum(details, 'received');
-  const spending = Math.max(0, received - actualSavings);
-  const positiveDays = daily.filter((item) => Number(item.amount) > 0).length;
+  const dailyTotal = sum(daily, 'amount');
+  const recordedDays = daily.filter((item) => Number(item.amount) !== 0).length;
   const insights = [
     ['Savings vs Goal', yen(actualSavings - plannedSavings), actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'],
-    ['Daily Record Total', yen(spending), 'Net income minus savings'],
-    ['Recorded Days', `${positiveDays}`, 'Days with entered amount']
+    ['Daily Record Total', yen(dailyTotal), 'Sum of daily record amounts'],
+    ['Recorded Days', `${recordedDays}`, 'Days with a non-zero amount']
   ];
   document.getElementById('insights').innerHTML = insights.map(([label, value, hint]) => `
     <div class="insight">
@@ -514,10 +548,14 @@ function drawBarChart(canvas, labels, series) {
   const rightPad = 30;
   const bottomPad = labels.length > 10 ? 78 : 68;
   const topPad = 42;
-  const max = Math.max(1, ...series.flatMap((s) => s.values.map((v) => Math.abs(Number(v || 0)))));
+  const allValues = series.flatMap((s) => s.values.map((v) => Number(v || 0)));
+  const maxValue = Math.max(0, ...allValues);
+  const minValue = Math.min(0, ...allValues);
+  const span = Math.max(1, maxValue - minValue);
   const chartBottom = h - bottomPad;
   const chartRight = w - rightPad;
   const chartHeight = chartBottom - topPad;
+  const zeroY = chartBottom - ((0 - minValue) / span) * chartHeight;
   const barGroup = (chartRight - leftPad) / Math.max(labels.length, 1);
   const shortYen = (value) => {
     const n = Number(value || 0);
@@ -528,8 +566,8 @@ function drawBarChart(canvas, labels, series) {
   };
   ctx.strokeStyle = '#d8e2e7';
   ctx.beginPath();
-  ctx.moveTo(leftPad, chartBottom);
-  ctx.lineTo(chartRight, chartBottom);
+  ctx.moveTo(leftPad, zeroY);
+  ctx.lineTo(chartRight, zeroY);
   ctx.stroke();
   ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.textAlign = 'right';
@@ -537,12 +575,12 @@ function drawBarChart(canvas, labels, series) {
   const tickCount = 8;
   Array.from({ length: tickCount + 1 }, (_, index) => index / tickCount).forEach((step) => {
     const y = chartBottom - chartHeight * step;
-    ctx.strokeStyle = step === 0 ? '#d8e2e7' : '#edf2f4';
+    ctx.strokeStyle = Math.abs(y - zeroY) < 0.5 ? '#c2d0d6' : '#edf2f4';
     ctx.beginPath();
     ctx.moveTo(leftPad, y);
     ctx.lineTo(chartRight, y);
     ctx.stroke();
-    ctx.fillText(shortYen(max * step), leftPad - 8, y + 4);
+    ctx.fillText(shortYen(minValue + span * step), leftPad - 8, y + 4);
   });
   labels.forEach((label, i) => {
     const groupStart = leftPad + i * barGroup + 6;
@@ -550,9 +588,9 @@ function drawBarChart(canvas, labels, series) {
     const barWidth = Math.max(8, (barGroup - 18) / series.length);
     series.forEach((s, j) => {
       const value = Number(s.values[i] || 0);
-      const bh = Math.abs(value) / max * chartHeight;
+      const bh = Math.abs(value) / span * chartHeight;
       const bx = groupStart + j * barWidth;
-      const by = chartBottom - bh;
+      const by = value >= 0 ? zeroY - bh : zeroY;
       ctx.fillStyle = s.colors ? s.colors[i] : s.color;
       ctx.fillRect(bx, by, barWidth - 2, bh);
     });
@@ -587,26 +625,26 @@ function drawBarChart(canvas, labels, series) {
 
 function renderCharts() {
   const year = currentYear();
-  const salary = derivedSalaryRecords().filter((item) => Number(item.year) === year);
+  const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   drawBarChart(document.getElementById('salaryChart'), salary.map((item) => item.month), [
-    { label: 'Net Income', color: '#277da1', values: salary.map((item) => item.salary) },
-    { label: 'Savings', color: '#43aa8b', values: salary.map((item) => item.actualSavings) }
+    { label: 'Net Income', color: '#256f8f', values: salary.map((item) => item.salary) },
+    { label: 'Savings', color: '#2e7d32', values: salary.map((item) => item.actualSavings) }
   ]);
   const normalizedStock = normalizeStockYear(year);
   drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
     { label: 'Target', color: '#f9c74f', values: normalizedStock.map((item) => item.targetCumulative) },
     {
       label: 'Actual',
-      color: '#d64f4f',
-      legendColors: ['#d64f4f', '#4caf50'],
+      color: '#2e7d32',
+      legendColors: ['#2e7d32', '#c33f3f'],
       values: normalizedStock.map((item) => item.actualCumulative),
-      colors: normalizedStock.map((item) => !stockHasActual(item) ? '#c8d3d8' : Number(item.surplus || 0) >= 0 ? '#d64f4f' : '#4caf50')
+      colors: normalizedStock.map((item) => !stockHasActual(item) ? '#c8d3d8' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
     }
   ]);
 }
 
 function renderDashboard() {
-  const years = yearsFrom(derivedSalaryRecords());
+  const years = yearsFrom(state.salary || []);
   fillSelect('dashboardYear', years, currentYear());
   renderKpis();
   renderCharts();
@@ -643,11 +681,15 @@ function cellClass(collection, key, item, type) {
   return classes.join(' ');
 }
 
-function renderTable(containerId, collection, fields, records) {
+function renderTable(containerId, collection, fields, records, options = {}) {
+  const canDelete = options.canDelete || (() => true);
+  const deleteHint = options.deleteHint || '';
   const rows = records.map((item) => `
     <tr>
       ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
-      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button><button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button></div></td>
+      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${canDelete(item)
+        ? `<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`
+        : `<button class="delete" type="button" disabled title="${escapeHtml(deleteHint)}" aria-label="Delete record">Delete</button>`}</div></td>
     </tr>
   `).join('');
   const html = `
@@ -663,13 +705,15 @@ function renderTable(containerId, collection, fields, records) {
 }
 
 function renderSalary() {
-  const salaryRecords = derivedSalaryRecords();
-  state.salary = salaryRecords;
+  const salaryRecords = state.salary || [];
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
   fillSelect('salaryYearFilter', years, selected, 'All years');
   const records = sortRecordsByMonth(filterRecords(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords));
-  renderTable('salaryTable', 'salary', schemas.salary, records);
+  renderTable('salaryTable', 'salary', schemas.salary, records, {
+    canDelete: (item) => !item.derivedFromDetail,
+    deleteHint: 'This row is generated from Salary Details. Delete the matching salary detail instead.'
+  });
 }
 
 function renderDetails() {
@@ -681,7 +725,6 @@ function renderDetails() {
 }
 
 function renderOvertime() {
-  state.overtime = (state.overtime || []).map(normalizeOvertimeRecord);
   const years = yearsFrom(state.overtime);
   const year = selectedOtYear();
   const month = normalizeMonth(selectedOtMonth());
@@ -753,7 +796,6 @@ function renderStockGrid(records, year) {
 }
 
 function renderDaily() {
-  state.daily = (state.daily || []).map(normalizeDailyRecord);
   const years = yearsFrom(state.daily);
   const year = selectedDailyYear();
   fillSelect('dailyYearFilter', years.length ? years : [year], year);
@@ -784,16 +826,9 @@ function renderDailyGrid(records, selectedMonth, year) {
       if (!stateForDay.valid) {
         return `<td class="daily-day-cell invalid-day" aria-label="${escapeHtml(month)} ${day} is not a valid day"></td>`;
       }
-      if (stateForDay.weekend) {
-        return `
-          <td class="daily-day-cell weekend ${amount ? 'has-records' : ''}">
-            <span class="weekend-label">${escapeHtml(stateForDay.label)}</span>
-            ${amount ? `<span class="daily-weekend-value ${cls}">${amount}</span>` : ''}
-          </td>
-        `;
-      }
       return `
-        <td class="daily-day-cell ${amount ? 'has-records' : ''}">
+        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${amount ? 'has-records' : ''}">
+          ${stateForDay.weekend ? `<span class="weekend-label">${escapeHtml(stateForDay.label)}</span>` : ''}
           <input class="grid-input daily-cell-input ${cls}" type="number" step="any"
             aria-label="${escapeHtml(month)} ${day} amount"
             data-daily-year="${year}" data-daily-month="${month}" data-daily-day="${day}"
@@ -933,17 +968,33 @@ function renderUnpaidBills() {
     `).join('') : '<p class="muted">No unpaid bill documents saved yet.</p>';
 }
 
+// Tidying records is a state concern, not a render concern. The views used to
+// normalize as a side effect, so whichever view went unrendered left records stale.
+function normalizeState() {
+  state.overtime = (state.overtime || []).map(normalizeOvertimeRecord);
+  state.daily = (state.daily || []).map(normalizeDailyRecord);
+  state.monthlyDetails = (state.monthlyDetails || []).map(normalizeMonthlyDetail);
+  state.salary = derivedSalaryRecords();
+}
+
+const viewRenderers = {
+  dashboard: renderDashboard,
+  salary: renderSalary,
+  details: renderDetails,
+  overtime: renderOvertime,
+  stocks: renderStocks,
+  daily: renderDaily,
+  balances: () => {
+    renderBalances();
+    renderUnpaidBills();
+  },
+  data: renderData
+};
+
 function render() {
+  normalizeState();
   showSetupIfNeeded();
-  renderDashboard();
-  renderSalary();
-  renderDetails();
-  renderOvertime();
-  renderStocks();
-  renderDaily();
-  renderBalances();
-  renderUnpaidBills();
-  renderData();
+  (viewRenderers[activeView] || renderDashboard)();
 }
 
 function switchView(view) {
@@ -959,18 +1010,23 @@ function switchView(view) {
     }
   });
   document.getElementById('viewTitle').textContent = titles[view];
+  render();
 }
 
 function openEditor(collection, record) {
   dialogContext = { collection, id: record && record.id };
-  document.getElementById('dialogTitle').textContent = record ? 'Edit record' : 'Add record';
+  document.getElementById('dialogTitle').textContent = record && record.id ? 'Edit record' : 'Add record';
   const fields = schemas[collection];
-  document.getElementById('dialogFields').innerHTML = fields.map(([key, label, type]) => `
+  const computed = new Set(computedFields[collection] || []);
+  document.getElementById('dialogFields').innerHTML = fields.map(([key, label, type]) => {
+    const isComputed = computed.has(key);
+    return `
     <div class="field ${key === 'note' ? 'full' : ''}">
-      <label for="field-${key}">${escapeHtml(label)}</label>
-      <input id="field-${key}" name="${key}" type="${type === 'number' ? 'number' : 'text'}" step="any" value="${record && record[key] !== undefined ? escapeHtml(record[key]) : ''}">
+      <label for="field-${key}">${escapeHtml(label)}${isComputed ? ' <span class="field-computed">calculated</span>' : ''}</label>
+      <input id="field-${key}" name="${key}" type="${type === 'number' ? 'number' : 'text'}" step="any"${isComputed ? ' readonly tabindex="-1" title="Calculated from the other fields when you save."' : ''} value="${record && record[key] !== undefined ? escapeHtml(record[key]) : ''}">
     </div>
-  `).join('');
+  `;
+  }).join('');
   document.getElementById('recordDialog').showModal();
 }
 
@@ -990,7 +1046,8 @@ function saveDialogRecord() {
     values.month = normalizeMonth(values.month);
     const calculatedOtPay = overtimeAmountFor(values.year, values.month);
     if (calculatedOtPay > 0) values.overtimePay = calculatedOtPay;
-    values.incomeTax = estimateMonthlyIncomeTax(values);
+    const enteredIncomeTax = Number(values.incomeTax || 0);
+    values.incomeTax = enteredIncomeTax > 0 ? enteredIncomeTax : estimateMonthlyIncomeTax(values);
     values.totalDeduction = Number(values.insurance || 0) + Number(values.pension || 0) +
       Number(values.employmentInsurance || 0) + Number(values.residentTax || 0) + Number(values.incomeTax || 0);
     values.grossTotal = Number(values.basic || 0) + Number(values.allowance || 0) +
@@ -1027,7 +1084,7 @@ async function importExcelWithConfirmation() {
   } catch (error) {
     console.error(error);
     setSaveState('Import failed');
-    alert('Import failed. Please choose a valid Finance Tracker JSON backup.');
+    alert(error?.message || 'Import failed. Please choose a valid Finance Tracker JSON backup.');
   }
 }
 
@@ -1070,22 +1127,24 @@ function saveDailyCell(input) {
   const month = normalizeMonth(input.dataset.dailyMonth);
   const day = Number(input.dataset.dailyDay);
   const raw = String(input.value || '').trim();
-  state.daily = (state.daily || []).filter((item) =>
-    !(Number(item.year) === year && normalizeMonth(item.month) === month && Number(item.day) === day)
-  );
-  if (raw !== '') {
-    const amount = Number(raw || 0);
-    if (Number.isFinite(amount) && amount !== 0) {
-      state.daily.push({
-        id: id('daily'),
-        year,
-        month,
-        day,
-        amount,
-        status: 'Realized',
-        note: ''
-      });
-    }
+  const matchesDay = (item) =>
+    Number(item.year) === year && normalizeMonth(item.month) === month && Number(item.day) === day;
+  const existing = (state.daily || []).filter(matchesDay);
+  const amount = raw === '' ? 0 : Number(raw);
+  state.daily = (state.daily || []).filter((item) => !matchesDay(item));
+  if (Number.isFinite(amount) && amount !== 0) {
+    const previous = existing[0] || {};
+    const notes = existing.map((item) => String(item.note || '').trim()).filter(Boolean);
+    state.daily.push({
+      ...previous,
+      id: previous.id || id('daily'),
+      year,
+      month,
+      day,
+      amount,
+      status: previous.status || 'Realized',
+      note: notes.join(' / ')
+    });
   }
   render();
   save();
@@ -1310,12 +1369,52 @@ const dbStore = 'app-data';
 const dbRecordKey = 'finance-records';
 
 function normalizeLoadedData(data) {
-  const next = { ...browserEmptyData(), ...(data || {}) };
+  const next = rehydrateArchives({ ...browserEmptyData(), ...(data || {}) });
   next.meta = { ...browserEmptyData().meta, ...(data?.meta || {}), dataPath: 'Browser private storage' };
   [...collections, 'salarySheets', 'unpaidBills'].forEach((collection) => {
-    next[collection] = Array.isArray(next[collection]) ? next[collection] : [];
+    const records = Array.isArray(next[collection]) ? next[collection] : [];
+    next[collection] = records
+      .filter((record) => record && typeof record === 'object' && !Array.isArray(record))
+      .map((record) => (record.id ? record : { ...record, id: id(collection) }));
   });
   return next;
+}
+
+// Backups written by the desktop app keep file bytes in `_archives` instead of an
+// inline dataUrl. Rehydrate them so archived files are actually openable.
+function rehydrateArchives(data) {
+  const archives = data && data._archives;
+  if (!archives) return data;
+  const remaining = {};
+  ['salarySheets', 'unpaidBills'].forEach((collection) => {
+    const stored = Array.isArray(archives[collection]) ? archives[collection] : [];
+    remaining[collection] = stored;
+    if (!stored.length || !Array.isArray(data[collection])) return;
+    const byName = new Map(stored.map((entry) => [entry.storedName, entry.contentBase64]));
+    const merged = new Set();
+    data[collection] = data[collection].map((item) => {
+      if (item.dataUrl || !byName.get(item.storedName)) return item;
+      const mime = /\.pdf$/i.test(item.originalName || '') ? 'application/pdf' : 'application/octet-stream';
+      merged.add(item.storedName);
+      return { ...item, dataUrl: `data:${mime};base64,${byName.get(item.storedName)}` };
+    });
+    // Drop what we folded in, so exports don't carry the same bytes twice.
+    remaining[collection] = stored.filter((entry) => !merged.has(entry.storedName));
+  });
+  const leftover = Object.values(remaining).reduce((total, list) => total + list.length, 0);
+  if (leftover) {
+    data._archives = { ...archives, ...remaining };
+  } else {
+    delete data._archives;
+  }
+  return data;
+}
+
+function looksLikeBackup(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const known = [...collections, 'salarySheets', 'unpaidBills'];
+  return known.some((key) => Array.isArray(data[key])) ||
+    Boolean(data.meta && typeof data.meta === 'object' && !Array.isArray(data.meta));
 }
 
 function openAppDatabase() {
@@ -1395,7 +1494,11 @@ async function saveStoredData(data) {
     await idbSet(dbRecordKey, next);
     localStorage.removeItem(storageKey);
   } catch (error) {
-    localStorage.setItem(storageKey, JSON.stringify(next));
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch (fallbackError) {
+      throw new Error('Could not save: this browser\'s storage is full or unavailable. Export a JSON backup now.');
+    }
   }
   return next;
 }
@@ -1433,7 +1536,15 @@ function chooseFiles({ accept = '', multiple = false } = {}) {
     input.type = 'file';
     input.accept = accept;
     input.multiple = multiple;
-    input.addEventListener('change', () => resolve([...input.files]));
+    let settled = false;
+    const finish = (files) => {
+      if (settled) return;
+      settled = true;
+      resolve(files);
+    };
+    input.addEventListener('change', () => finish([...input.files]));
+    input.addEventListener('cancel', () => finish([]));
+    window.addEventListener('focus', () => setTimeout(() => finish([]), 500), { once: true });
     input.click();
   });
 }
@@ -1460,7 +1571,10 @@ function dataUrlToBlob(dataUrl) {
 }
 
 function openStoredFile(entry) {
-  if (!entry?.dataUrl) return;
+  if (!entry?.dataUrl) {
+    alert(`"${entry?.originalName || entry?.title || 'This file'}" is listed but its contents are missing from this backup, so it cannot be opened.`);
+    return;
+  }
   const url = URL.createObjectURL(dataUrlToBlob(entry.dataUrl));
   const opened = window.open(url, '_blank');
   if (opened) {
@@ -1499,6 +1613,9 @@ window.financeApi = {
     const [file] = await chooseFiles({ accept: '.json,application/json' });
     if (!file) return null;
     const imported = JSON.parse(await readFileAsText(file));
+    if (!looksLikeBackup(imported)) {
+      throw new Error(`"${file.name}" is not a Finance Tracker backup, so nothing was imported.`);
+    }
     const data = normalizeLoadedData(imported);
     data.meta.sourceFile = file.name;
     data.meta.importedAt = new Date().toISOString();
@@ -1640,7 +1757,10 @@ async function previewArchivedFile(kind, storedName, title) {
   const url = kind === 'salary'
     ? await window.financeApi.salarySheetPreviewUrl(storedName)
     : await window.financeApi.unpaidBillPreviewUrl(storedName);
-  if (!url) return;
+  if (!url) {
+    alert(`"${title || storedName}" is listed but its file contents are missing from this backup, so there is nothing to preview.`);
+    return;
+  }
   document.getElementById('previewTitle').textContent = title || 'Preview';
   document.getElementById('previewBody').innerHTML = isImageFile(storedName) || isImageFile(title)
     ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(title || 'Preview')}">`
@@ -1651,7 +1771,13 @@ async function previewArchivedFile(kind, storedName, title) {
 function bindEvents() {
   document.getElementById('nav').addEventListener('click', (event) => {
     const button = event.target.closest('button[data-view]');
-    if (button) switchView(button.dataset.view);
+    if (!button) return;
+    switchView(button.dataset.view);
+    // On the stacked layout the nav sits above the content, so a tap would
+    // otherwise leave you looking at the menu you just used.
+    if (window.matchMedia('(max-width: 980px)').matches) {
+      document.querySelector('.topbar')?.scrollIntoView({ block: 'start' });
+    }
   });
   document.body.addEventListener('click', (event) => {
     const previewSheet = event.target.closest('[data-preview-salary-sheet]');
@@ -1698,7 +1824,7 @@ function bindEvents() {
   document.getElementById('otQuickForm').addEventListener('submit', addQuickOtEntry);
   document.getElementById('editOtSalaryDetail').addEventListener('click', editCurrentOtSalaryDetail);
   document.getElementById('saveNow').addEventListener('click', save);
-  document.getElementById('globalSearch').addEventListener('input', render);
+  document.getElementById('globalSearch').addEventListener('input', debounce(render, 180));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);
@@ -1741,9 +1867,12 @@ function bindEvents() {
   });
   document.getElementById('closePreview').addEventListener('click', () => {
     document.getElementById('previewDialog').close();
-    document.getElementById('previewBody').innerHTML = '';
   });
   document.getElementById('cancelDialog').addEventListener('click', () => document.getElementById('recordDialog').close());
+  document.getElementById('closeDialog').addEventListener('click', () => document.getElementById('recordDialog').close());
+  document.getElementById('previewDialog').addEventListener('close', () => {
+    document.getElementById('previewBody').innerHTML = '';
+  });
   document.getElementById('recordForm').addEventListener('submit', (event) => {
     event.preventDefault();
     saveDialogRecord();
@@ -1762,7 +1891,6 @@ async function init() {
   state.salarySheets = state.salarySheets || [];
   state.unpaidBills = state.unpaidBills || [];
   bindEvents();
-  render();
   switchView('dashboard');
   if (document.getElementById('saveState').textContent === 'Loading...') {
     setSaveState('Ready');

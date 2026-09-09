@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; manifest-src 'self'; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A private browser-based finance tracker for income, savings, overtime, stock wins, daily records, debt records, and JSON backups.">
   <meta name="theme-color" content="#2b83a8">
   <title>Finance Tracker Web</title>
-  <link rel="icon" href="./build/app-icon.iconset/icon_32x32@2x.png">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -228,7 +229,7 @@
     <form method="dialog" id="recordForm">
       <header>
         <h3 id="dialogTitle">Edit record</h3>
-        <button value="cancel" class="icon-button" aria-label="Close">×</button>
+        <button type="button" id="closeDialog" class="icon-button" aria-label="Close">×</button>
       </header>
       <div id="dialogFields" class="dialog-fields"></div>
       <footer>
@@ -245,6 +246,12 @@
     </header>
     <div id="previewBody" class="preview-body"></div>
   </dialog>
+
+  <noscript>
+    <p style="padding:24px;font:16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+      Finance Tracker needs JavaScript enabled to load your records from this browser's storage.
+    </p>
+  </noscript>
 
   <script type="module" src="./renderer.js"></script>
 </body>

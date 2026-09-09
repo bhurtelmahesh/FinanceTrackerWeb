@@ -1,11 +1,11 @@
 :root {
   --ink: #22313a;
-  --muted: #657983;
+  --muted: #5b6d76;
   --line: #d7e4ea;
-  --blue: #2b83a8;
+  --blue: #256f8f;
   --teal: #3fa88c;
-  --green: #4caf50;
-  --red: #d64f4f;
+  --green: #2e7d32;
+  --red: #c33f3f;
   --yellow: #fff2c6;
   --bg: #f3f7fa;
   --panel: #ffffff;
@@ -215,9 +215,9 @@ nav button.active {
 }
 .kpi span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
 .kpi strong { display: block; font-size: clamp(22px, 2.2vw, 30px); margin-top: 5px; }
-.kpi.positive strong { color: var(--red); }
-.kpi.negative strong { color: var(--green); }
-.kpi.debt strong { color: var(--green); }
+.kpi.positive strong { color: var(--green); }
+.kpi.negative strong { color: var(--red); }
+.kpi.debt strong { color: var(--red); }
 
 .dashboard-grid {
   display: grid;
@@ -327,11 +327,11 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; }
 .stock-pass { color: var(--green); }
 .stock-fail { color: var(--red); }
 .stock-flat { color: var(--muted); }
-.amount-plus { color: var(--red); }
-.amount-minus { color: var(--green); }
+.amount-plus { color: var(--green); }
+.amount-minus { color: var(--red); }
 .amount-zero { color: var(--muted); }
 .debt-amount {
-  color: var(--green);
+  color: var(--red);
   font-weight: 800;
 }
 .empty-cell {
@@ -343,6 +343,26 @@ tr:hover td { background: #fbfdff; }
 .row-actions { display: flex; gap: 6px; }
 .row-actions button { padding: 5px 8px; }
 .delete { color: var(--red); }
+.field-computed {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+
+.dialog-fields input[readonly] {
+  background: #f3f6f8;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.row-actions button[disabled] {
+  color: var(--muted);
+  opacity: .55;
+  cursor: not-allowed;
+}
 
 dialog {
   border: 1px solid var(--line);
@@ -569,7 +589,7 @@ canvas {
 
 .ot-layout {
   display: grid;
-  grid-template-columns: minmax(340px, .75fr) minmax(620px, 1.65fr);
+  grid-template-columns: minmax(300px, .8fr) minmax(0, 1.6fr);
   gap: 18px;
   margin-bottom: 18px;
 }
@@ -633,9 +653,9 @@ canvas {
 
 .ot-sheet {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
   gap: 24px;
-  min-width: 620px;
+  min-width: 0;
   padding: 10px 6px 4px;
 }
 
@@ -764,8 +784,8 @@ canvas {
   font-variant-numeric: tabular-nums;
 }
 
-.calculated-cell.amount-plus { color: var(--red); }
-.calculated-cell.amount-minus { color: var(--green); }
+.calculated-cell.amount-plus { color: var(--green); }
+.calculated-cell.amount-minus { color: var(--red); }
 .calculated-cell.amount-zero { color: var(--muted); }
 
 .daily-grid {
@@ -884,23 +904,16 @@ canvas {
 
 .weekend-label {
   display: block;
-  color: #cf5555;
-  font-size: 11px;
+  color: var(--red);
+  font-size: 10px;
   font-weight: 900;
-  line-height: 1.15;
+  line-height: 1;
   text-align: center;
 }
 
-.daily-weekend-value {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  min-height: 26px;
-  margin-top: 5px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: 900;
+.daily-day-cell.weekend .daily-cell-input {
+  height: 26px;
+  font-size: 11px;
 }
 
 .daily-cell-input {
@@ -912,11 +925,11 @@ canvas {
   background: transparent;
 }
 
-.daily-day-cell:hover:not(.weekend):not(.invalid-day) {
+.daily-day-cell:hover:not(.invalid-day) {
   background: #f7fbfd;
 }
 
-.daily-day-cell:hover:not(.weekend):not(.invalid-day) .daily-cell-input,
+.daily-day-cell:hover:not(.invalid-day) .daily-cell-input,
 .daily-cell-input:focus {
   background: #ffffff;
   border-color: #b9cdd6;
@@ -970,7 +983,6 @@ canvas {
 }
 
 @media (max-width: 640px) {
-  nav,
   .top-actions,
   .backup-actions,
   .toolbar {
@@ -978,6 +990,18 @@ canvas {
     flex-direction: column;
     align-items: stretch;
   }
+  nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  nav button {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+  .sidebar {
+    padding: 12px 14px;
+  }
+  .brand h1 { font-size: 18px; }
   .brand {
     align-items: flex-start;
   }
