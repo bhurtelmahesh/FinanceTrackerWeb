@@ -562,34 +562,6 @@ function renderKpis() {
   ).join('');
 }
 
-function renderInsights() {
-  const year = currentYear();
-  const salary = (state.salary || []).filter((item) => Number(item.year) === year);
-  const daily = state.daily.filter((item) => Number(item.year) === year);
-  const recorded = salary.filter((item) => monthHasElapsed(item, year));
-  const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
-  const recordedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
-  const actualSavings = sum(recorded, 'actualSavings');
-  const plannedSavings = sum(recorded, 'plannedSavings');
-  const skipped = monthRows.length - recordedMonths;
-  const dailyTotal = sum(daily, 'amount');
-  const recordedDays = daily.filter((item) => Number(item.amount) !== 0).length;
-  const goalHint = `${actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'}` +
-    (skipped ? ` · ${recordedMonths} of ${monthRows.length} months counted` : '');
-  const insights = [
-    ['Salary · Take-home vs Goal', yen(actualSavings - plannedSavings), goalHint],
-    ['Stock · Daily Log Total', yen(dailyTotal), 'Sum of the daily stock entries'],
-    ['Stock · Days Traded', `${recordedDays}`, 'Days with a non-zero amount']
-  ];
-  document.getElementById('insights').innerHTML = insights.map(([label, value, hint]) => `
-    <div class="insight">
-      <span>${label}</span>
-      <strong>${value}</strong>
-      <small>${hint}</small>
-    </div>
-  `).join('');
-}
-
 function drawBarChart(canvas, labels, series) {
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
@@ -709,7 +681,6 @@ function renderDashboard() {
   fillSelect('dashboardYear', selectableYears(state.salary || []), currentYear());
   renderKpis();
   renderCharts();
-  renderInsights();
 }
 
 function formatValue(key, value) {

@@ -239,37 +239,6 @@ nav button.active {
   gap: 18px;
 }
 
-.insights-panel {
-  margin-top: 14px;
-}
-
-.insights {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(160px, 1fr));
-  gap: 14px;
-}
-
-.insight {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px 14px;
-  background: #fbfdff;
-}
-
-.insight span,
-.insight small {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.insight strong {
-  display: block;
-  font-size: 18px;
-  margin: 3px 0 2px;
-}
-
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -1037,7 +1006,7 @@ canvas {
   .nav-items {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .dashboard-grid, .kpi-grid, .insights, .data-grid, .ot-layout { grid-template-columns: 1fr; }
+  .dashboard-grid, .kpi-grid, .data-grid, .ot-layout { grid-template-columns: 1fr; }
   .topbar {
     height: auto;
     align-items: flex-start;
