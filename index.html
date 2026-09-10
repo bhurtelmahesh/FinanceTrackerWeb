@@ -11,8 +11,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-23311fc2.js"></script>
-  <link rel="stylesheet" href="./assets/index-a9ca41b0.css">
+  <script type="module" crossorigin src="./assets/index-fb2e3c9d.js"></script>
+  <link rel="stylesheet" href="./assets/index-80b010cb.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -46,6 +46,7 @@
       <button data-view="daily">Daily Records</button>
       <button data-view="balances">Debt Records</button>
       <button data-view="data">Backup & Import</button>
+      <button data-view="help">Help</button>
     </nav>
   </aside>
 
@@ -225,6 +226,116 @@
         </section>
       </div>
     </section>
+    <section id="help" class="view">
+      <div class="help-doc">
+        <section class="panel help-panel">
+          <h3>How every number is worked out</h3>
+          <p class="muted">Amounts are yen. Green means money gained, red means money lost or owed &mdash; the same rule everywhere in the app.</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Salary Details</h3>
+          <dl class="help-list">
+            <dt>Overtime Pay</dt>
+            <dd>The total of your Overtime entries for that month. Logged overtime wins: the figure typed here is used only for months with no overtime entries.</dd>
+            <dt>Gross Total</dt>
+            <dd>Basic + Allowance + Overtime Pay + Transportation.</dd>
+            <dt>Total Deduction</dt>
+            <dd>Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax.</dd>
+            <dt>Net Received</dt>
+            <dd>Gross Total &minus; Total Deduction.</dd>
+            <dt>Income Tax</dt>
+            <dd>Your own figure is kept whenever you enter one. Leave it blank and the app estimates it.</dd>
+          </dl>
+          <p class="help-note">Gross Total, Total Deduction and Net Received are always recalculated on save, so they are shown read-only.</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Income tax estimate</h3>
+          <p>Used only when Income Tax is left blank. It annualises Basic + Allowance + Overtime (Transportation is excluded, as commuting allowance is not taxable), subtracts the employment-income deduction, then social insurance and the basic deduction, applies the income tax brackets with the 2.1% surtax, and divides by twelve.</p>
+          <p class="help-warn">Treat this as a rough guide. It ignores bonuses, and Japan withholds monthly tax from a published table rather than by annualising, so it will not match a payslip exactly. It also mixes tax years: the employment-income deduction floor is the post-2025 figure while the basic deduction is the pre-2025 one. Enter the figure from your payslip whenever you have it.</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Daily Records</h3>
+          <dl class="help-list">
+            <dt>What a number means</dt>
+            <dd>A daily amount is money out. It is subtracted from that month&rsquo;s net income to give your savings, so enter income as a negative number.</dd>
+            <dt>A status instead of a number</dt>
+            <dd>Type a word instead of an amount &mdash; CLOSED for a holiday, for example &mdash; and the day is stored with a zero amount and that marker.</dd>
+            <dt>Zero versus empty</dt>
+            <dd>A cell showing 0 is a day recorded as zero. An empty cell has no record at all. Clearing a cell deletes its record.</dd>
+            <dt>Saturday and Sunday</dt>
+            <dd>Shown as a red chip until you enter something. Weekends are fully editable.</dd>
+            <dt>Monthly Total</dt>
+            <dd>The sum of that month&rsquo;s amounts. A dash means the month has no records at all.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Monthly Savings</h3>
+          <dl class="help-list">
+            <dt>Net Income</dt>
+            <dd>The Net Received from that month&rsquo;s salary detail.</dd>
+            <dt>Actual Savings</dt>
+            <dd>Net Income &minus; that month&rsquo;s Daily Records total.</dd>
+            <dt>Savings Goal</dt>
+            <dd>Whatever you set. It is never calculated.</dd>
+            <dt>Cumulative Capital</dt>
+            <dd>Carried forward from existing records. The app does not calculate it, so a new month starts at zero.</dd>
+          </dl>
+          <p class="help-note">Rows generated from Salary Details cannot be deleted here &mdash; delete the matching salary detail instead.</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Dashboard</h3>
+          <dl class="help-list">
+            <dt>Total Net Income</dt>
+            <dd>Every Net Income for the selected year added up.</dd>
+            <dt>Actual Savings</dt>
+            <dd>Every Actual Savings for the year added up, including months entered as projections.</dd>
+            <dt>Stock Win Total</dt>
+            <dd>The latest Actual Win Cumulative recorded that year.</dd>
+            <dt>Outstanding Debt</dt>
+            <dd>Every Debt Amount added together, exactly as entered.</dd>
+            <dt>Savings vs Goal</dt>
+            <dd>Actual Savings &minus; Savings Goal, counting only months with at least one daily record, plus any bonus rows. Months not yet lived are left out of both sides &mdash; otherwise their whole net income would look saved while their goal still counted against you. The caption says how many months were counted.</dd>
+            <dt>Daily Record Total</dt>
+            <dd>The sum of the year&rsquo;s daily amounts &mdash; the same figure as the Annual Total in Daily Records.</dd>
+            <dt>Recorded Days</dt>
+            <dd>Days with a non-zero amount.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Stock Revenue</h3>
+          <dl class="help-list">
+            <dt>Monthly Win</dt>
+            <dd>This month&rsquo;s Actual Win Cumulative &minus; the previous recorded month&rsquo;s. The first month with a figure shows zero, as there is nothing to compare against.</dd>
+            <dt>Vs Target</dt>
+            <dd>Actual Win Cumulative &minus; Target Cumulative.</dd>
+            <dt>Result</dt>
+            <dd>A tick above target, a cross below, a dash when the month has no actual figure.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Overtime</h3>
+          <dl class="help-list">
+            <dt>Amount</dt>
+            <dd>(OT Hours + Extra OT) &times; Hourly Rate.</dd>
+            <dt>Monthly OT Summary</dt>
+            <dd>Adds that month&rsquo;s entries and shows them against the matching salary detail, so a payslip can be checked before entering it.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Your data</h3>
+          <p>Everything is stored privately in this browser on this computer. Nothing is uploaded. Clearing browser data deletes it, so export a JSON backup regularly &mdash; and before clearing anything.</p>
+        </section>
+      </div>
+    </section>
+
   </main>
 
   <dialog id="recordDialog">
