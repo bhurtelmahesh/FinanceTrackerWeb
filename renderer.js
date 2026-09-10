@@ -577,7 +577,7 @@ function renderInsights() {
   const goalHint = `${actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'}` +
     (skipped ? ` · ${recordedMonths} of ${monthRows.length} months counted` : '');
   const insights = [
-    ['Salary · Savings vs Goal', yen(actualSavings - plannedSavings), goalHint],
+    ['Salary · Take-home vs Goal', yen(actualSavings - plannedSavings), goalHint],
     ['Stock · Daily Log Total', yen(dailyTotal), 'Sum of the daily stock entries'],
     ['Stock · Days Traded', `${recordedDays}`, 'Days with a non-zero amount']
   ];
