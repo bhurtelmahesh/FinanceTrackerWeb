@@ -534,20 +534,25 @@ function monthHasElapsed(record, year) {
 function renderKpis() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
-  const recorded = salary.filter((item) => monthHasElapsed(item, year));
+  const elapsed = salary.filter((item) => monthHasElapsed(item, year));
   const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
-  const recordedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
-  const projected = monthRows.length - recordedMonths;
+  const elapsedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
+  const projectedMonths = monthRows.length - elapsedMonths;
   const debts = state.personalBalances;
-  const totalSalary = sum(salary, 'salary');
-  const actualSavings = sum(recorded, 'actualSavings');
+  const actualIncome = sum(elapsed, 'salary');
+  const projectedIncome = sum(salary, 'salary');
+  const actualSavings = sum(elapsed, 'actualSavings');
+  const projectedSavings = sum(salary, 'actualSavings');
   const stockLatest = latestStockActualForYear(year);
   const debtTotal = sum(debts, 'amount');
+  // Nothing to project once every month of the year has happened.
+  const projection = (value) => projectedMonths
+    ? `Projected full year ${yen(value)} · ${elapsedMonths} of ${monthRows.length} months so far`
+    : '';
   const kpis = [
-    ['Salary · Net Income', yen(totalSalary), '',
-      projected ? `Includes ${projected} projected month${projected === 1 ? '' : 's'}` : ''],
+    ['Salary · Net Income', yen(actualIncome), '', projection(projectedIncome)],
     ['Salary · Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
-      projected ? `${recordedMonths} of ${monthRows.length} months so far` : ''],
+      projection(projectedSavings)],
     ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
     ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '']
   ];
@@ -739,8 +744,9 @@ function cellClass(collection, key, item, type) {
 function renderTable(containerId, collection, fields, records, options = {}) {
   const canDelete = options.canDelete || (() => true);
   const deleteHint = options.deleteHint || '';
+  const rowClass = options.rowClass || (() => '');
   const rows = records.map((item) => `
-    <tr>
+    <tr class="${rowClass(item)}">
       ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
       <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${canDelete(item)
         ? `<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`
@@ -766,6 +772,7 @@ function renderSalary() {
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
   const records = sortRecordsByMonth(filterRecords(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords));
   renderTable('salaryTable', 'salary', schemas.salary, records, {
+    rowClass: (item) => monthHasElapsed(item, item.year) ? '' : 'row-projected',
     canDelete: (item) => !item.derivedFromDetail,
     deleteHint: 'This row is generated from Salary Details. Delete the matching salary detail instead.'
   });

@@ -348,6 +348,27 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; }
   color: var(--red);
   font-weight: 800;
 }
+/* Months that have not happened yet: the figures are your projections. */
+.row-projected td {
+  color: var(--muted);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(96, 113, 123, .05) 0,
+    rgba(96, 113, 123, .05) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.row-projected td:first-child::after {
+  content: " · projected";
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+}
+
 .empty-cell {
   text-align: center;
   color: var(--muted);
