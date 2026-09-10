@@ -1093,3 +1093,61 @@ canvas {
     font-size: 10px;
   }
 }
+
+/* Help */
+.help-doc {
+  display: grid;
+  gap: 16px;
+  max-width: 860px;
+}
+
+.help-panel h3 {
+  margin: 0 0 10px;
+  color: #175c7a;
+}
+
+.help-panel p {
+  margin: 0 0 10px;
+  line-height: 1.55;
+}
+
+.help-panel p:last-child { margin-bottom: 0; }
+
+.help-list {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+  gap: 8px 18px;
+  margin: 0;
+}
+
+.help-list dt {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.help-list dd {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.help-note {
+  padding: 10px 12px;
+  border-left: 3px solid var(--blue);
+  background: #f2f8fb;
+  color: var(--muted);
+  border-radius: 0 6px 6px 0;
+}
+
+.help-warn {
+  padding: 10px 12px;
+  border-left: 3px solid var(--red);
+  background: #fff5f5;
+  color: #7d3535;
+  border-radius: 0 6px 6px 0;
+}
+
+@media (max-width: 640px) {
+  .help-list { grid-template-columns: 1fr; gap: 2px 0; }
+  .help-list dd { margin-bottom: 10px; }
+}

@@ -42,7 +42,8 @@ const titles = {
   stocks: 'Stock Revenue',
   daily: 'Daily Records',
   balances: 'Debt Records',
-  data: 'Backup & Import'
+  data: 'Backup & Import',
+  help: 'Help'
 };
 
 const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'personalBalances'];
@@ -538,16 +539,33 @@ function renderKpis() {
   ).join('');
 }
 
+// A month counts once it has been lived. Weekend and holiday markers are recorded
+// ahead of time with a zero amount, so only a non-zero amount proves the month
+// actually happened. Manual rows (bonus payments) are typed by hand and always count.
+function monthIsRecorded(record, year) {
+  if (!record.derivedFromDetail) return true;
+  const month = normalizeMonth(record.month);
+  return (state.daily || []).some((item) =>
+    Number(item.year) === Number(year) &&
+    normalizeMonth(item.month) === month &&
+    Number(item.amount) !== 0
+  );
+}
+
 function renderInsights() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   const daily = state.daily.filter((item) => Number(item.year) === year);
-  const actualSavings = sum(salary, 'actualSavings');
-  const plannedSavings = sum(salary, 'plannedSavings');
+  const recorded = salary.filter((item) => monthIsRecorded(item, year));
+  const actualSavings = sum(recorded, 'actualSavings');
+  const plannedSavings = sum(recorded, 'plannedSavings');
+  const skipped = salary.length - recorded.length;
   const dailyTotal = sum(daily, 'amount');
   const recordedDays = daily.filter((item) => Number(item.amount) !== 0).length;
+  const goalHint = `${actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'}` +
+    (skipped ? ` · ${recorded.length} of ${salary.length} months counted` : '');
   const insights = [
-    ['Savings vs Goal', yen(actualSavings - plannedSavings), actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'],
+    ['Savings vs Goal', yen(actualSavings - plannedSavings), goalHint],
     ['Daily Record Total', yen(dailyTotal), 'Sum of daily record amounts'],
     ['Recorded Days', `${recordedDays}`, 'Days with a non-zero amount']
   ];
@@ -1021,7 +1039,9 @@ const viewRenderers = {
     renderBalances();
     renderUnpaidBills();
   },
-  data: renderData
+  data: renderData,
+  // Static documentation; nothing to rebuild.
+  help: () => {}
 };
 
 const scrollableRegions = ['.daily-grid-wrap', '.stock-grid-wrap', '.table-wrap'];
