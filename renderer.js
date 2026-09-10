@@ -4,7 +4,7 @@ let dialogContext = null;
 
 const schemas = {
   salary: [
-    ['year', 'Year', 'number'], ['month', 'Month'], ['salary', 'Net Income', 'number'],
+    ['year', 'Year', 'number'], ['month', 'Month'], ['salary', 'Gross Income', 'number'],
     ['plannedSavings', 'Savings Goal', 'number'], ['actualSavings', 'Actual Savings', 'number'],
     ['cumulativeCapital', 'Cumulative Capital', 'number']
   ],
@@ -470,24 +470,19 @@ function derivedSalaryRecords() {
     const year = Number(detail.year || currentYear());
     const month = normalizeMonth(detail.month);
     const previous = existing.get(`${year}-${month}`) || {};
-    const calculatedOt = overtimeAmountFor(year, month);
-    const overtimePay = calculatedOt > 0 ? calculatedOt : Number(detail.overtimePay || 0);
-    const grossTotal = Number(detail.basic || 0) + Number(detail.allowance || 0) + overtimePay + Number(detail.transportation || 0);
-    const totalDeduction = Number(detail.insurance || 0) + Number(detail.pension || 0) +
-      Number(detail.employmentInsurance || 0) + Number(detail.residentTax || 0) + Number(detail.incomeTax || 0);
-    const received = grossTotal - totalDeduction;
-    // Salary savings is what the salary side produced. Stock movements live in
-    // Daily Records and Stock Revenue and must not be netted off pay.
+    const { grossTotal, received } = monthlyPayroll(detail, overtimePayFor(detail, year, month));
+    // Savings is take-home pay. Stock movements live in Daily Records and Stock
+    // Revenue and are never netted off the salary side.
     const actualSavings = received;
     return {
       ...previous,
       id: previous.id || id('salary'),
       year,
       month,
-      salary: received,
+      salary: grossTotal,
       plannedSavings: Number(previous.plannedSavings || 0),
       actualSavings,
-      savingsRate: received ? actualSavings / received : 0,
+      savingsRate: grossTotal ? actualSavings / grossTotal : 0,
       cumulativeCapital: Number(previous.cumulativeCapital || 0),
       note: previous.note || '',
       derivedFromDetail: true
@@ -556,8 +551,8 @@ function renderKpis() {
     ? `Projected full year ${yen(value)} · ${elapsedMonths} of ${monthRows.length} months so far`
     : '';
   const kpis = [
-    ['Salary · Net Income', yen(actualIncome), '', projection(projectedIncome)],
-    ['Salary · Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
+    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome)],
+    ['Salary · Take-home Saved', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
       projection(projectedSavings)],
     ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
     ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '']
@@ -694,8 +689,8 @@ function renderCharts() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   drawBarChart(document.getElementById('salaryChart'), salary.map((item) => item.month), [
-    { label: 'Net Income', color: '#256f8f', values: salary.map((item) => item.salary) },
-    { label: 'Savings', color: '#2e7d32', values: salary.map((item) => item.actualSavings) }
+    { label: 'Gross Income', color: '#256f8f', values: salary.map((item) => item.salary) },
+    { label: 'Take-home', color: '#2e7d32', values: salary.map((item) => item.actualSavings) }
   ]);
   const normalizedStock = normalizeStockYear(year);
   drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
