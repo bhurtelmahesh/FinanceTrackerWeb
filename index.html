@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-e322fb6a.js"></script>
+  <script type="module" crossorigin src="./assets/index-ab7b48b0.js"></script>
   <link rel="stylesheet" href="./assets/index-dbcc5573.css">
 </head>
 <body>
@@ -341,6 +341,18 @@
             <dt>Monthly OT Summary</dt>
             <dd>Adds that month&rsquo;s entries and shows them against the matching salary detail, so a payslip can be checked before entering it.</dd>
           </dl>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Backups and workbooks</h3>
+          <dl class="help-list">
+            <dt>Backup (.json)</dt>
+            <dd>Everything: every record, plus the archived salary sheets and bill files. This is the one to keep. Importing a backup replaces all current records.</dd>
+            <dt>Workbook (.xlsx)</dt>
+            <dd>A spreadsheet of the records only, one sheet per menu, with a Summary sheet of the dashboard figures. Archived files are listed but their contents are not included, so a workbook is not a substitute for a backup.</dd>
+          </dl>
+          <p class="help-note"><strong>Starting from a spreadsheet?</strong> Export a workbook first, even with no records in it. That gives you the exact sheet names and column headings the importer expects &mdash; fill those sheets in, then import the file back. Building a spreadsheet from scratch and hoping it matches will not work.</p>
+          <p>Importing a workbook replaces the current records too, so export a backup before you try it. Rows come back in as new entries, so a workbook is best for setting records up or reworking them in bulk rather than for merging into what is already there.</p>
         </section>
 
         <section class="panel help-panel">
