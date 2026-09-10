@@ -523,19 +523,25 @@ function latestStockActualForYear(year) {
 function renderKpis() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
+  const recorded = salary.filter((item) => monthIsRecorded(item, year));
+  const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
+  const recordedMonths = monthRows.filter((item) => monthIsRecorded(item, year)).length;
+  const projected = monthRows.length - recordedMonths;
   const debts = state.personalBalances;
   const totalSalary = sum(salary, 'salary');
-  const actualSavings = sum(salary, 'actualSavings');
+  const actualSavings = sum(recorded, 'actualSavings');
   const stockLatest = latestStockActualForYear(year);
   const debtTotal = sum(debts, 'amount');
   const kpis = [
-    ['Total Net Income', yen(totalSalary), ''],
-    ['Actual Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative'],
-    ['Stock Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative'],
-    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '']
+    ['Total Net Income', yen(totalSalary), '',
+      projected ? `Includes ${projected} projected month${projected === 1 ? '' : 's'}` : ''],
+    ['Actual Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
+      projected ? `${recordedMonths} of ${monthRows.length} months recorded` : ''],
+    ['Stock Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
+    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '']
   ];
-  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls]) =>
-    `<div class="kpi ${cls}"><span>${label}</span><strong>${value}</strong></div>`
+  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint]) =>
+    `<div class="kpi ${cls}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`
   ).join('');
 }
 
@@ -557,13 +563,15 @@ function renderInsights() {
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   const daily = state.daily.filter((item) => Number(item.year) === year);
   const recorded = salary.filter((item) => monthIsRecorded(item, year));
+  const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
+  const recordedMonths = monthRows.filter((item) => monthIsRecorded(item, year)).length;
   const actualSavings = sum(recorded, 'actualSavings');
   const plannedSavings = sum(recorded, 'plannedSavings');
-  const skipped = salary.length - recorded.length;
+  const skipped = monthRows.length - recordedMonths;
   const dailyTotal = sum(daily, 'amount');
   const recordedDays = daily.filter((item) => Number(item.amount) !== 0).length;
   const goalHint = `${actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'}` +
-    (skipped ? ` · ${recorded.length} of ${salary.length} months counted` : '');
+    (skipped ? ` · ${recordedMonths} of ${monthRows.length} months counted` : '');
   const insights = [
     ['Savings vs Goal', yen(actualSavings - plannedSavings), goalHint],
     ['Daily Record Total', yen(dailyTotal), 'Sum of daily record amounts'],

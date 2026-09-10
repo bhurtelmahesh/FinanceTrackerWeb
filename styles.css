@@ -214,6 +214,7 @@ nav button.active {
   box-shadow: var(--shadow);
 }
 .kpi span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
+.kpi small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 600; }
 .kpi strong { display: block; font-size: clamp(22px, 2.2vw, 30px); margin-top: 5px; }
 .kpi.positive strong { color: var(--green); }
 .kpi.negative strong { color: var(--red); }
