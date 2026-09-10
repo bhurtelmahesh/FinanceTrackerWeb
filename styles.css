@@ -755,7 +755,7 @@ canvas {
   border: 1px solid #cfd8dc;
   border-radius: 4px;
   background: #fbfcfd;
-  text-align: right;
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
@@ -872,9 +872,10 @@ canvas {
   width: 140px;
 }
 
-.daily-day-cell {
+.daily-grid td.daily-day-cell {
   width: 76px;
   height: 48px;
+  padding: 0;
   background: #ffffff;
   border: 1px solid #d5dde1;
   transition: background .12s ease, box-shadow .12s ease;
@@ -911,14 +912,21 @@ canvas {
   text-align: center;
 }
 
-.daily-day-cell.weekend .daily-cell-input {
-  height: 26px;
+.daily-day-cell.labelled .daily-cell-input {
+  height: calc(100% - 13px);
   font-size: 11px;
 }
 
+.daily-day-cell.labelled .weekend-label {
+  height: 13px;
+}
+
+
 .daily-cell-input {
-  height: 32px;
-  padding: 4px 7px;
+  display: block;
+  height: 100%;
+  padding: 2px;
+  border-radius: 0;
   font-size: 12px;
   font-weight: 800;
   border-color: transparent;
@@ -935,6 +943,15 @@ canvas {
   border-color: #b9cdd6;
 }
 
+.daily-status {
+  color: var(--muted);
+  background: #f2f5f7;
+  border-color: #dde5e9;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
 .daily-plus { color: var(--red); background: #fff4f4; border-color: #f3d0d0; }
 .daily-minus { color: var(--green); background: #f0fbf4; border-color: #ccebd5; }
 .daily-zero { color: var(--muted); background: transparent; }
@@ -1036,9 +1053,12 @@ canvas {
   .daily-grid td {
     padding: 4px;
   }
+  .daily-grid td.daily-day-cell {
+    padding: 0;
+  }
   .daily-cell-input {
-    height: 30px;
-    padding: 3px 4px;
+    height: 100%;
+    padding: 2px;
     font-size: 11px;
   }
   .weekend-label {

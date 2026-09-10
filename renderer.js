@@ -160,6 +160,23 @@ function yearsFrom(records) {
   return [...new Set((records || []).map((item) => Number(item.year)).filter(Boolean))].sort((a, b) => a - b);
 }
 
+// How far past the current year the pickers reach, so a blank year can be opened
+// and typed into. Raise this if you want to plan further ahead.
+const futureYearSpan = 5;
+
+// Years offered in a picker: every year that already has records, plus a
+// contiguous run up to `futureYearSpan` years out. Recorded years more than 30
+// years back are still listed but do not stretch the run, so one bad year value
+// cannot blow the list up to thousands of options.
+function selectableYears(records) {
+  const now = new Date().getFullYear();
+  const recorded = yearsFrom(records);
+  const first = Math.min(now, ...recorded.filter((year) => year >= now - 30));
+  const span = [];
+  for (let year = first; year <= now + futureYearSpan; year += 1) span.push(year);
+  return [...new Set([...recorded, ...span])].sort((a, b) => a - b);
+}
+
 function fillSelect(idName, values, current, allLabel) {
   const select = document.getElementById(idName);
   select.innerHTML = '';
@@ -341,11 +358,26 @@ function normalizeOvertimeRecord(record) {
   };
 }
 
+function isAmountEntry(raw) {
+  return raw !== '' && Number.isFinite(Number(raw));
+}
+
+// The status is a marker only when it isn't the default and isn't just repeating
+// the Sat/Sun label the cell already shows.
+function statusMarker(record, weekendLabel) {
+  const status = String(record?.status || '').trim();
+  if (!status) return '';
+  if (weekendLabel && status.toLowerCase() === weekendLabel.toLowerCase()) return '';
+  return status;
+}
+
 function normalizeDailyRecord(record) {
+  const status = String(record.status || '').trim();
+  const redundant = ['realized', 'recorded'].includes(status.toLowerCase());
   return {
     ...record,
     month: normalizeMonth(record.month),
-    status: record.status === 'recorded' ? 'Realized' : record.status
+    status: redundant ? '' : status
   };
 }
 
@@ -644,8 +676,7 @@ function renderCharts() {
 }
 
 function renderDashboard() {
-  const years = yearsFrom(state.salary || []);
-  fillSelect('dashboardYear', years, currentYear());
+  fillSelect('dashboardYear', selectableYears(state.salary || []), currentYear());
   renderKpis();
   renderCharts();
   renderInsights();
@@ -708,7 +739,7 @@ function renderSalary() {
   const salaryRecords = state.salary || [];
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
-  fillSelect('salaryYearFilter', years, selected, 'All years');
+  fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
   const records = sortRecordsByMonth(filterRecords(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords));
   renderTable('salaryTable', 'salary', schemas.salary, records, {
     canDelete: (item) => !item.derivedFromDetail,
@@ -719,16 +750,15 @@ function renderSalary() {
 function renderDetails() {
   const years = yearsFrom(state.monthlyDetails);
   const selected = document.getElementById('detailsYearFilter').value || years[years.length - 1] || '';
-  fillSelect('detailsYearFilter', years, selected, 'All years');
+  fillSelect('detailsYearFilter', selectableYears(state.monthlyDetails), selected, 'All years');
   const records = sortRecordsByMonth(filterRecords(selected ? state.monthlyDetails.filter((item) => String(item.year) === String(selected)) : state.monthlyDetails));
   renderTable('detailsTable', 'monthlyDetails', schemas.monthlyDetails, records);
 }
 
 function renderOvertime() {
-  const years = yearsFrom(state.overtime);
   const year = selectedOtYear();
   const month = normalizeMonth(selectedOtMonth());
-  fillSelect('otYearFilter', years.length ? years : [year], year);
+  fillSelect('otYearFilter', selectableYears(state.overtime), year);
   fillSelectPairs('otMonthFilter', monthOptions, month);
   fillSelectPairs('otMonth', monthOptions, document.getElementById('otMonth')?.value || month);
   document.getElementById('otYear').value = document.getElementById('otYear').value || year;
@@ -742,9 +772,8 @@ function renderOvertime() {
 }
 
 function renderStocks() {
-  const years = yearsFrom(state.stockRevenue);
   const selected = selectedStockYear();
-  fillSelect('stockYearFilter', years.length ? years : [selected], selected);
+  fillSelect('stockYearFilter', selectableYears(state.stockRevenue), selected);
   const records = filterRecords(normalizeStockYear(selected));
   renderStockGrid(records, selected);
 }
@@ -796,12 +825,10 @@ function renderStockGrid(records, year) {
 }
 
 function renderDaily() {
-  const years = yearsFrom(state.daily);
   const year = selectedDailyYear();
-  fillSelect('dailyYearFilter', years.length ? years : [year], year);
-  const months = [...new Set(state.daily.map((item) => normalizeMonth(item.month)))].sort(sortByMonth);
+  fillSelect('dailyYearFilter', selectableYears(state.daily), year);
   const selected = document.getElementById('dailyMonthFilter').value || '';
-  fillSelect('dailyMonthFilter', months, selected, 'All months');
+  fillSelectPairs('dailyMonthFilter', monthOptions, selected, 'All months');
   const recordsForYear = state.daily.filter((item) => Number(item.year) === Number(year));
   const records = filterRecords(selected ? recordsForYear.filter((item) => item.month === selected) : recordsForYear);
   renderDailyGrid(records, selected, year);
@@ -822,23 +849,30 @@ function renderDailyGrid(records, selectedMonth, year) {
         .sort((a, b) => Number(a.year || 0) - Number(b.year || 0));
       const amount = sum(dayRecords, 'amount');
       monthTotal += amount;
-      const cls = amount > 0 ? 'daily-plus' : amount < 0 ? 'daily-minus' : 'daily-zero';
       if (!stateForDay.valid) {
         return `<td class="daily-day-cell invalid-day" aria-label="${escapeHtml(month)} ${day} is not a valid day"></td>`;
       }
+      const status = amount === 0 ? String(dayRecords[0]?.status || '').trim() : '';
+      // Blank when the status just repeats the Sat/Sun label the cell already shows.
+      const marker = amount === 0 ? statusMarker(dayRecords[0], stateForDay.label) : '';
+      const cellValue = amount !== 0 ? String(amount)
+        : marker || (status ? '' : (dayRecords.length ? '0' : ''));
+      const cls = marker ? 'daily-status' : amount > 0 ? 'daily-plus' : amount < 0 ? 'daily-minus' : 'daily-zero';
+      const showWeekendLabel = stateForDay.weekend && cellValue === '';
       return `
-        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${amount ? 'has-records' : ''}">
-          ${stateForDay.weekend ? `<span class="weekend-label">${escapeHtml(stateForDay.label)}</span>` : ''}
-          <input class="grid-input daily-cell-input ${cls}" type="number" step="any"
-            aria-label="${escapeHtml(month)} ${day} amount"
+        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${showWeekendLabel ? 'labelled' : ''} ${dayRecords.length ? 'has-records' : ''}">
+          ${showWeekendLabel ? `<span class="weekend-label">${escapeHtml(stateForDay.label)}</span>` : ''}
+          <input class="grid-input daily-cell-input ${cls}" type="text"
+            aria-label="${escapeHtml(month)} ${day} amount or status"
             data-daily-year="${year}" data-daily-month="${month}" data-daily-day="${day}"
-            value="${amount ? amount : ''}">
+            value="${escapeHtml(cellValue)}">
         </td>
       `;
     }).join('');
     monthTotals.push(monthTotal);
     const totalClass = monthTotal > 0 ? 'daily-plus' : monthTotal < 0 ? 'daily-minus' : 'daily-zero';
-    return `<tr><th class="daily-month-cell">${escapeHtml(month)}</th>${cells}<td class="daily-total-cell ${totalClass}">${monthTotal ? yen(monthTotal) : '-'}</td></tr>`;
+    const monthHasRecords = records.some((item) => normalizeMonth(item.month) === month);
+    return `<tr><th class="daily-month-cell">${escapeHtml(month)}</th>${cells}<td class="daily-total-cell ${totalClass}">${monthHasRecords ? yen(monthTotal) : '-'}</td></tr>`;
   }).join('');
   const annualTotal = monthTotals.reduce((total, value) => total + value, 0);
   const annualClass = annualTotal > 0 ? 'daily-plus' : annualTotal < 0 ? 'daily-minus' : 'daily-zero';
@@ -991,10 +1025,38 @@ const viewRenderers = {
   data: renderData
 };
 
+const scrollableRegions = ['.daily-grid-wrap', '.stock-grid-wrap', '.table-wrap'];
+
 function render() {
   normalizeState();
   showSetupIfNeeded();
+  const view = document.getElementById(activeView);
+  const saved = scrollableRegions.map((selector) => {
+    const el = view && view.querySelector(selector);
+    return el ? { selector, left: el.scrollLeft, top: el.scrollTop } : null;
+  }).filter(Boolean);
+  const viewTop = view ? view.scrollTop : 0;
   (viewRenderers[activeView] || renderDashboard)();
+  saved.forEach(({ selector, left, top }) => {
+    const el = view && view.querySelector(selector);
+    if (!el) return;
+    el.scrollLeft = left;
+    el.scrollTop = top;
+  });
+  if (view) view.scrollTop = viewTop;
+}
+
+// Rebuilding the grid destroys the element that was about to receive focus, so
+// re-find its replacement by the coordinates in its data attributes.
+function gridCellSelector(input) {
+  const data = input.dataset;
+  if (data.dailyYear) {
+    return `input[data-daily-year="${data.dailyYear}"][data-daily-month="${data.dailyMonth}"][data-daily-day="${data.dailyDay}"]`;
+  }
+  if (data.stockYear) {
+    return `input[data-stock-year="${data.stockYear}"][data-stock-month="${data.stockMonth}"][data-stock-field="${data.stockField}"]`;
+  }
+  return '';
 }
 
 function switchView(view) {
@@ -1116,10 +1178,13 @@ function addQuickOtEntry(event) {
 }
 
 function updateAmountInputClass(input) {
-  const value = Number(input.value || 0);
-  input.classList.toggle('daily-plus', value > 0);
-  input.classList.toggle('daily-minus', value < 0);
-  input.classList.toggle('daily-zero', !value);
+  const raw = String(input.value || '').trim();
+  const numeric = isAmountEntry(raw);
+  const value = numeric ? Number(raw) : 0;
+  input.classList.toggle('daily-status', raw !== '' && !numeric);
+  input.classList.toggle('daily-plus', numeric && value > 0);
+  input.classList.toggle('daily-minus', numeric && value < 0);
+  input.classList.toggle('daily-zero', numeric && value === 0);
 }
 
 function saveDailyCell(input) {
@@ -1130,19 +1195,19 @@ function saveDailyCell(input) {
   const matchesDay = (item) =>
     Number(item.year) === year && normalizeMonth(item.month) === month && Number(item.day) === day;
   const existing = (state.daily || []).filter(matchesDay);
-  const amount = raw === '' ? 0 : Number(raw);
   state.daily = (state.daily || []).filter((item) => !matchesDay(item));
-  if (Number.isFinite(amount) && amount !== 0) {
+  if (raw !== '') {
     const previous = existing[0] || {};
     const notes = existing.map((item) => String(item.note || '').trim()).filter(Boolean);
+    const numeric = isAmountEntry(raw);
     state.daily.push({
       ...previous,
       id: previous.id || id('daily'),
       year,
       month,
       day,
-      amount,
-      status: previous.status || 'Realized',
+      amount: numeric ? Number(raw) : 0,
+      status: numeric ? '' : raw,
       note: notes.join(' / ')
     });
   }
@@ -1269,7 +1334,7 @@ async function buildDemoData() {
     month,
     day,
     amount,
-    status: 'Realized',
+    status: '',
     note: ''
   }));
   const overtime = [
@@ -1811,9 +1876,17 @@ function bindEvents() {
   });
   document.body.addEventListener('focusout', (event) => {
     const dailyInput = event.target.closest('.daily-cell-input');
-    if (dailyInput) saveDailyCell(dailyInput);
     const stockInput = event.target.closest('.stock-cell-input');
+    if (!dailyInput && !stockInput) return;
+    const incoming = event.relatedTarget && event.relatedTarget.closest
+      ? event.relatedTarget.closest('.daily-cell-input, .stock-cell-input')
+      : null;
+    const nextSelector = incoming ? gridCellSelector(incoming) : '';
+    if (dailyInput) saveDailyCell(dailyInput);
     if (stockInput) saveStockCell(stockInput);
+    if (!nextSelector) return;
+    const replacement = document.querySelector(nextSelector);
+    if (replacement) replacement.focus();
   });
   document.body.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && event.target.matches('.daily-cell-input, .stock-cell-input')) {
