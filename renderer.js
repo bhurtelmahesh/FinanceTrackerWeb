@@ -320,13 +320,20 @@ function normalizeStockRecord(record, previousActual = 0, isFirstActual = false)
   };
 }
 
+function stockRecordsFor(year, month) {
+  return (state.stockRevenue || []).filter((item) =>
+    Number(item.year) === Number(year) && normalizeMonth(item.month) === month);
+}
+
+// A record whose month is written exactly as the canonical name wins over one that
+// merely normalises to it, so a stray label cannot shadow the real month.
+function preferredStockRecord(records, month) {
+  return records.find((item) => String(item.month).trim() === month) || records[records.length - 1];
+}
+
 function normalizeStockYear(year) {
-  const byMonth = new Map();
-  (state.stockRevenue || [])
-    .filter((item) => Number(item.year) === Number(year))
-    .forEach((item) => byMonth.set(normalizeMonth(item.month), item));
   const records = monthOptions
-    .map(([month]) => byMonth.get(month))
+    .map(([month]) => preferredStockRecord(stockRecordsFor(year, month), month))
     .filter(Boolean);
   let previousActual = 0;
   let hasPreviousActual = false;
@@ -464,7 +471,8 @@ function estimateMonthlyIncomeTax(detail) {
     Number(detail.pension || 0) +
     Number(detail.employmentInsurance || 0)
   ) * 12;
-  const basicDeduction = 480000;
+  // Post-2025 figures, to match the 650,000 employment-income deduction floor above.
+  const basicDeduction = 580000;
   return Math.round(annualIncomeTaxFromTaxable(salaryIncome - socialDeduction - basicDeduction) / 12);
 }
 
@@ -474,6 +482,20 @@ function overtimeAmountFor(year, month) {
     Number(item.year || year) === Number(year) && normalizeMonth(item.month) === normalizedMonth
   );
   return sum(records, 'amount');
+}
+
+// Each month carries on from the month before it; every new year starts from zero.
+function withCumulativeCapital(ordered) {
+  let year = null;
+  let running = 0;
+  return ordered.map((item) => {
+    if (Number(item.year) !== year) {
+      year = Number(item.year);
+      running = 0;
+    }
+    running += Number(item.actualSavings || 0);
+    return { ...item, cumulativeCapital: running };
+  });
 }
 
 function derivedSalaryRecords() {
@@ -507,7 +529,7 @@ function derivedSalaryRecords() {
   const manualOnly = (state.salary || [])
     .filter((item) => !detailKeys.has(`${Number(item.year)}-${normalizeMonth(item.month)}`))
     .map(({ derivedFromDetail, ...rest }) => rest);
-  return sortRecordsByMonth([...derived, ...manualOnly]);
+  return withCumulativeCapital(sortRecordsByMonth([...derived, ...manualOnly]));
 }
 
 function selectedOtYear() {
@@ -1370,9 +1392,7 @@ function saveStockCell(input) {
   const month = normalizeMonth(input.dataset.stockMonth);
   const field = input.dataset.stockField;
   const raw = String(input.value || '').trim();
-  let record = (state.stockRevenue || []).find((item) =>
-    Number(item.year) === year && normalizeMonth(item.month) === month
-  );
+  let record = preferredStockRecord(stockRecordsFor(year, month), month);
   if (!record) {
     record = {
       id: id('stock'),
