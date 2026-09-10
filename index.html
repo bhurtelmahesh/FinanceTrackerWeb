@@ -37,14 +37,26 @@
     </div>
     <nav id="nav" aria-label="Primary sections">
       <button data-view="dashboard" class="active" aria-current="page">Dashboard</button>
-      <button data-view="salary">Monthly Savings</button>
-      <button data-view="details">Salary Details</button>
-      <button data-view="overtime">Overtime</button>
-      <button data-view="stocks">Stock Revenue</button>
-      <button data-view="daily">Daily Records</button>
-      <button data-view="balances">Debt Records</button>
-      <button data-view="data">Backup & Import</button>
-      <button data-view="help">Help</button>
+
+      <p class="nav-group" id="navGroupSalary">Salary</p>
+      <div class="nav-items" role="group" aria-labelledby="navGroupSalary">
+        <button data-view="salary">Monthly Savings</button>
+        <button data-view="details">Salary Details</button>
+        <button data-view="overtime">Overtime</button>
+      </div>
+
+      <p class="nav-group" id="navGroupStocks">Stocks</p>
+      <div class="nav-items" role="group" aria-labelledby="navGroupStocks">
+        <button data-view="stocks">Stock Revenue</button>
+        <button data-view="daily">Daily Records</button>
+      </div>
+
+      <p class="nav-group" id="navGroupOther">Other</p>
+      <div class="nav-items" role="group" aria-labelledby="navGroupOther">
+        <button data-view="balances">Debt Records</button>
+        <button data-view="data">Backup & Import</button>
+        <button data-view="help">Help</button>
+      </div>
     </nav>
   </aside>
 
@@ -229,6 +241,7 @@
         <section class="panel help-panel">
           <h3>How every number is worked out</h3>
           <p class="muted">Amounts are yen. Green means money gained, red means money lost or owed &mdash; the same rule everywhere in the app.</p>
+          <p><strong>Salary and stock are kept apart.</strong> Salary Details and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
         </section>
 
         <section class="panel help-panel">
@@ -258,7 +271,7 @@
           <h3>Daily Records</h3>
           <dl class="help-list">
             <dt>What a number means</dt>
-            <dd>A daily amount is money out. It is subtracted from that month&rsquo;s net income to give your savings, so enter income as a negative number.</dd>
+            <dd>This is the day-by-day stock log: a gain is positive, a loss negative. It rolls up into the Stock section and is never subtracted from your salary.</dd>
             <dt>A status instead of a number</dt>
             <dd>Type a word instead of an amount &mdash; CLOSED for a holiday, for example &mdash; and the day is stored with a zero amount and that marker.</dd>
             <dt>Zero versus empty</dt>
@@ -276,11 +289,11 @@
             <dt>Net Income</dt>
             <dd>The Net Received from that month&rsquo;s salary detail.</dd>
             <dt>Actual Savings</dt>
-            <dd>Net Income &minus; that month&rsquo;s Daily Records total.</dd>
+            <dd>The salary you took home that month. The app tracks no spending, so this equals Net Income &mdash; stock activity is deliberately excluded.</dd>
             <dt>Savings Goal</dt>
             <dd>Whatever you set. It is never calculated.</dd>
-            <dt>What counts as a lived month</dt>
-            <dd>A month with at least one daily record carrying a non-zero amount. Weekend and holiday markers are stored with a zero amount, so they do not on their own make a month count.</dd>
+            <dt>What counts as a month so far</dt>
+            <dd>Simply whether the month has happened yet, by the calendar. Bonus rows always count.</dd>
             <dt>Cumulative Capital</dt>
             <dd>Carried forward from existing records. The app does not calculate it, so a new month starts at zero.</dd>
           </dl>
@@ -290,19 +303,19 @@
         <section class="panel help-panel">
           <h3>Dashboard</h3>
           <dl class="help-list">
-            <dt>Total Net Income</dt>
+            <dt>Salary &middot; Net Income</dt>
             <dd>Every Net Income for the selected year added up, including any months entered as projections. The caption says how many of those there are.</dd>
-            <dt>Actual Savings</dt>
-            <dd>Actual Savings added up across months that have actually been lived, plus any bonus rows. A month with no spending recorded would otherwise have its whole net income counted as saved. The caption says how many months are included.</dd>
+            <dt>Salary &middot; Savings</dt>
+            <dd>The same figure over months that have already happened, plus any bonus rows, so a month still in the future cannot flatter the total.</dd>
             <dt>Stock Win Total</dt>
             <dd>The latest Actual Win Cumulative recorded that year.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered.</dd>
             <dt>Savings vs Goal</dt>
             <dd>Actual Savings &minus; Savings Goal, over the same months as the Actual Savings figure above. Months not yet lived are left out of both sides &mdash; otherwise their whole net income would look saved while their goal still counted against you.</dd>
-            <dt>Daily Record Total</dt>
-            <dd>The sum of the year&rsquo;s daily amounts &mdash; the same figure as the Annual Total in Daily Records.</dd>
-            <dt>Recorded Days</dt>
+            <dt>Stock &middot; Daily Log Total</dt>
+            <dd>The sum of the year&rsquo;s daily stock entries &mdash; the same figure as the Annual Total in Daily Records.</dd>
+            <dt>Stock &middot; Days Traded</dt>
             <dd>Days with a non-zero amount.</dd>
           </dl>
         </section>

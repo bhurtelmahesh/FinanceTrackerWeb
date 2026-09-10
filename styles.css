@@ -143,7 +143,20 @@ h1, h2, h3, p { margin: 0; }
 h1 { font-size: 19px; }
 .brand p, .eyebrow { color: var(--muted); font-size: 12px; }
 
-nav { display: grid; gap: 8px; cursor: pointer; }
+nav { display: grid; gap: 4px; cursor: pointer; }
+
+.nav-group {
+  margin: 14px 0 2px;
+  padding: 0 13px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: default;
+}
+
+.nav-items { display: grid; gap: 4px; }
 nav button {
   text-align: left;
   border: 1px solid transparent;
@@ -1000,7 +1013,7 @@ canvas {
     min-height: auto;
     padding: 16px;
   }
-  nav {
+  .nav-items {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .dashboard-grid, .kpi-grid, .insights, .data-grid, .ot-layout { grid-template-columns: 1fr; }
@@ -1036,10 +1049,11 @@ canvas {
     flex-direction: column;
     align-items: stretch;
   }
-  nav {
+  .nav-items {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
+  .nav-group { margin: 10px 0 2px; }
   nav button {
     padding: 9px 10px;
     font-size: 13px;

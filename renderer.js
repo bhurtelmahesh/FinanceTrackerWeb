@@ -470,8 +470,9 @@ function derivedSalaryRecords() {
     const totalDeduction = Number(detail.insurance || 0) + Number(detail.pension || 0) +
       Number(detail.employmentInsurance || 0) + Number(detail.residentTax || 0) + Number(detail.incomeTax || 0);
     const received = grossTotal - totalDeduction;
-    const dailyTotal = dailyAmountFor(year, month);
-    const actualSavings = received - dailyTotal;
+    // Salary savings is what the salary side produced. Stock movements live in
+    // Daily Records and Stock Revenue and must not be netted off pay.
+    const actualSavings = received;
     return {
       ...previous,
       id: previous.id || id('salary'),
@@ -520,12 +521,22 @@ function latestStockActualForYear(year) {
   return Number(latest?.actualCumulative || 0);
 }
 
+// Whether a month has happened is a calendar question. Bonus rows are typed by
+// hand, so they always count.
+function monthHasElapsed(record, year) {
+  const monthNumber = monthIndex(record.month);
+  if (!monthNumber) return true;
+  const now = new Date();
+  if (Number(year) !== now.getFullYear()) return Number(year) < now.getFullYear();
+  return monthNumber <= now.getMonth() + 1;
+}
+
 function renderKpis() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
-  const recorded = salary.filter((item) => monthIsRecorded(item, year));
+  const recorded = salary.filter((item) => monthHasElapsed(item, year));
   const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
-  const recordedMonths = monthRows.filter((item) => monthIsRecorded(item, year)).length;
+  const recordedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
   const projected = monthRows.length - recordedMonths;
   const debts = state.personalBalances;
   const totalSalary = sum(salary, 'salary');
@@ -533,11 +544,11 @@ function renderKpis() {
   const stockLatest = latestStockActualForYear(year);
   const debtTotal = sum(debts, 'amount');
   const kpis = [
-    ['Total Net Income', yen(totalSalary), '',
+    ['Salary · Net Income', yen(totalSalary), '',
       projected ? `Includes ${projected} projected month${projected === 1 ? '' : 's'}` : ''],
-    ['Actual Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
-      projected ? `${recordedMonths} of ${monthRows.length} months recorded` : ''],
-    ['Stock Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
+    ['Salary · Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
+      projected ? `${recordedMonths} of ${monthRows.length} months so far` : ''],
+    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
     ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '']
   ];
   document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint]) =>
@@ -545,26 +556,13 @@ function renderKpis() {
   ).join('');
 }
 
-// A month counts once it has been lived. Weekend and holiday markers are recorded
-// ahead of time with a zero amount, so only a non-zero amount proves the month
-// actually happened. Manual rows (bonus payments) are typed by hand and always count.
-function monthIsRecorded(record, year) {
-  if (!record.derivedFromDetail) return true;
-  const month = normalizeMonth(record.month);
-  return (state.daily || []).some((item) =>
-    Number(item.year) === Number(year) &&
-    normalizeMonth(item.month) === month &&
-    Number(item.amount) !== 0
-  );
-}
-
 function renderInsights() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   const daily = state.daily.filter((item) => Number(item.year) === year);
-  const recorded = salary.filter((item) => monthIsRecorded(item, year));
+  const recorded = salary.filter((item) => monthHasElapsed(item, year));
   const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
-  const recordedMonths = monthRows.filter((item) => monthIsRecorded(item, year)).length;
+  const recordedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
   const actualSavings = sum(recorded, 'actualSavings');
   const plannedSavings = sum(recorded, 'plannedSavings');
   const skipped = monthRows.length - recordedMonths;
@@ -573,9 +571,9 @@ function renderInsights() {
   const goalHint = `${actualSavings >= plannedSavings ? 'On or above goal' : 'Below goal'}` +
     (skipped ? ` · ${recordedMonths} of ${monthRows.length} months counted` : '');
   const insights = [
-    ['Savings vs Goal', yen(actualSavings - plannedSavings), goalHint],
-    ['Daily Record Total', yen(dailyTotal), 'Sum of daily record amounts'],
-    ['Recorded Days', `${recordedDays}`, 'Days with a non-zero amount']
+    ['Salary · Savings vs Goal', yen(actualSavings - plannedSavings), goalHint],
+    ['Stock · Daily Log Total', yen(dailyTotal), 'Sum of the daily stock entries'],
+    ['Stock · Days Traded', `${recordedDays}`, 'Days with a non-zero amount']
   ];
   document.getElementById('insights').innerHTML = insights.map(([label, value, hint]) => `
     <div class="insight">
