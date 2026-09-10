@@ -514,12 +514,16 @@ function selectedStockYear() {
   return Number(document.getElementById('stockYearFilter')?.value || years[years.length - 1] || currentYear());
 }
 
-function latestStockActualForYear(year) {
-  const latest = normalizeStockYear(year)
+// The most recent month that has an actual figure — the one the Win Total reflects.
+function latestStockRecordForYear(year) {
+  return normalizeStockYear(year)
     .filter(stockHasActual)
     .sort((a, b) => monthIndex(a.month) - monthIndex(b.month))
     .at(-1);
-  return Number(latest?.actualCumulative || 0);
+}
+
+function latestStockActualForYear(year) {
+  return Number(latestStockRecordForYear(year)?.actualCumulative || 0);
 }
 
 // Whether a month has happened is a calendar question. Bonus rows are typed by
@@ -545,20 +549,28 @@ function renderKpis() {
   const actualSavings = sum(elapsed, 'actualSavings');
   const projectedSavings = sum(salary, 'actualSavings');
   const stockLatest = latestStockActualForYear(year);
+  const stockRecord = latestStockRecordForYear(year);
+  const stockTarget = Number(stockRecord?.targetCumulative || 0);
   const debtTotal = sum(debts, 'amount');
+  const lenders = new Set((debts || [])
+    .map((item) => String(item.group || '').trim().toLowerCase())
+    .filter(Boolean)).size;
   // Just the figure — the Help tab explains what actual and projected mean.
   const projection = (value) => projectedMonths ? `Projected ${yen(value)}` : '';
   // A tone per tile so the rail can be scanned at a glance. The value keeps its
   // own green/red meaning; the tone only says which figure you are looking at.
   const kpis = [
-    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome), 'tone-blue'],
+    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome), 'tone-blue', 'salary'],
     ['Salary · Take-home Saved', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
-      projection(projectedSavings), 'tone-green'],
-    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', '', 'tone-amber'],
-    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '', 'tone-red']
+      projection(projectedSavings), 'tone-green', 'salary'],
+    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative',
+      stockRecord ? `${stockRecord.month} target ${yen(stockTarget)}` : '', 'tone-amber', 'stocks'],
+    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '',
+      debts.length ? `${debts.length} record${debts.length === 1 ? '' : 's'} · ${lenders} lender${lenders === 1 ? '' : 's'}` : '',
+      'tone-red', 'balances']
   ];
-  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint, tone]) =>
-    `<div class="kpi ${cls} ${tone}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`
+  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint, tone, view]) =>
+    `<button type="button" class="kpi ${cls} ${tone}" data-view="${view}" aria-label="${escapeHtml(label)} — open ${escapeHtml(titles[view])}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</button>`
   ).join('');
 }
 
@@ -1830,6 +1842,10 @@ async function previewArchivedFile(kind, storedName, title) {
 }
 
 function bindEvents() {
+  document.getElementById('kpis').addEventListener('click', (event) => {
+    const tile = event.target.closest('button[data-view]');
+    if (tile) switchView(tile.dataset.view);
+  });
   document.getElementById('nav').addEventListener('click', (event) => {
     const button = event.target.closest('button[data-view]');
     if (!button) return;

@@ -238,6 +238,27 @@ nav button.active {
 .kpi.tone-green span { color: var(--green); }
 .kpi.tone-amber span { color: #8a6100; }
 .kpi.tone-red span { color: var(--red); }
+
+button.kpi {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+button.kpi:hover {
+  transform: translateY(-2px);
+  border-color: var(--tone);
+  box-shadow: inset 4px 0 0 0 var(--tone), 0 20px 44px rgba(35, 70, 88, .17);
+}
+
+button.kpi:active { transform: translateY(0); }
+
+button.kpi:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 2px;
+}
 .kpi span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
 .kpi small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; font-weight: 600; }
 .kpi strong { display: block; font-size: clamp(22px, 2.2vw, 30px); margin-top: 5px; }
