@@ -1,5 +1,6 @@
 let state = null;
 let activeView = 'dashboard';
+let activeChart = 'salary';
 let dialogContext = null;
 
 const schemas = {
@@ -628,17 +629,42 @@ function drawBarChart(canvas, labels, series) {
     ctx.stroke();
     ctx.fillText(shortYen(minValue + span * step), leftPad - 8, y + 4);
   });
+  const barGap = 3;
+  // Fill more of each slot than the old formula did, but still cap the width so a
+  // very wide chart draws bars rather than slabs.
+  const barWidth = Math.min(32, Math.max(5, (barGroup - 9 - barGap * (series.length - 1)) / series.length));
+  const clusterWidth = barWidth * series.length + barGap * (series.length - 1);
+  // Round only the end the bar grows towards, so it still sits flat on the axis.
+  const fillBar = (x, y, w, h, roundTop) => {
+    const r = Math.min(4, w / 2, h);
+    ctx.beginPath();
+    if (roundTop) {
+      ctx.moveTo(x, y + h);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h);
+    } else {
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + h - r);
+      ctx.quadraticCurveTo(x, y + h, x + r, y + h);
+      ctx.lineTo(x + w - r, y + h);
+      ctx.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
+      ctx.lineTo(x + w, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+  };
   labels.forEach((label, i) => {
-    const groupStart = leftPad + i * barGroup + 6;
     const groupCenter = leftPad + i * barGroup + barGroup / 2;
-    const barWidth = Math.max(8, (barGroup - 18) / series.length);
     series.forEach((s, j) => {
       const value = Number(s.values[i] || 0);
       const bh = Math.abs(value) / span * chartHeight;
-      const bx = groupStart + j * barWidth;
+      const bx = groupCenter - clusterWidth / 2 + j * (barWidth + barGap);
       const by = value >= 0 ? zeroY - bh : zeroY;
       ctx.fillStyle = s.colors ? s.colors[i] : s.color;
-      ctx.fillRect(bx, by, barWidth - 2, bh);
+      fillBar(bx, by, barWidth, bh, value >= 0);
     });
     ctx.fillStyle = '#60717b';
     ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
@@ -671,22 +697,38 @@ function drawBarChart(canvas, labels, series) {
 
 function renderCharts() {
   const year = currentYear();
+  if (activeChart === 'stock') {
+    const normalizedStock = normalizeStockYear(year);
+    drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
+      { label: 'Target', color: '#f9c74f', values: normalizedStock.map((item) => item.targetCumulative) },
+      {
+        label: 'Actual',
+        color: '#2e7d32',
+        legendColors: ['#2e7d32', '#c33f3f'],
+        values: normalizedStock.map((item) => item.actualCumulative),
+        colors: normalizedStock.map((item) => !stockHasActual(item) ? '#c8d3d8' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
+      }
+    ]);
+    return;
+  }
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   drawBarChart(document.getElementById('salaryChart'), salary.map((item) => item.month), [
     { label: 'Gross Income', color: '#256f8f', values: salary.map((item) => item.salary) },
     { label: 'Take-home', color: '#2e7d32', values: salary.map((item) => item.actualSavings) }
   ]);
-  const normalizedStock = normalizeStockYear(year);
-  drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
-    { label: 'Target', color: '#f9c74f', values: normalizedStock.map((item) => item.targetCumulative) },
-    {
-      label: 'Actual',
-      color: '#2e7d32',
-      legendColors: ['#2e7d32', '#c33f3f'],
-      values: normalizedStock.map((item) => item.actualCumulative),
-      colors: normalizedStock.map((item) => !stockHasActual(item) ? '#c8d3d8' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
-    }
-  ]);
+}
+
+function switchChart(chart) {
+  activeChart = chart;
+  ['salary', 'stock'].forEach((name) => {
+    const selected = name === chart;
+    const tab = document.getElementById(name === 'salary' ? 'chartTabSalary' : 'chartTabStock');
+    const panel = document.getElementById(name === 'salary' ? 'chartPanelSalary' : 'chartPanelStock');
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    panel.hidden = !selected;
+  });
+  renderCharts();
 }
 
 function renderDashboard() {
@@ -1842,6 +1884,16 @@ async function previewArchivedFile(kind, storedName, title) {
 }
 
 function bindEvents() {
+  document.querySelector('.chart-tablist').addEventListener('click', (event) => {
+    const tab = event.target.closest('button[data-chart]');
+    if (tab) switchChart(tab.dataset.chart);
+  });
+  document.querySelector('.chart-tablist').addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    switchChart(activeChart === 'salary' ? 'stock' : 'salary');
+    document.querySelector('.chart-tablist [aria-selected="true"]').focus();
+  });
   document.getElementById('kpis').addEventListener('click', (event) => {
     const tile = event.target.closest('button[data-view]');
     if (tile) switchView(tile.dataset.view);

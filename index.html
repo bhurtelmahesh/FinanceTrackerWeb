@@ -75,21 +75,23 @@
 
     <section id="dashboard" class="view active">
       <div class="kpi-grid" id="kpis"></div>
-      <div class="dashboard-grid">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Gross Income vs Take-home</h3>
-            <select id="dashboardYear" aria-label="Dashboard year"></select>
+      <section class="panel chart-stack">
+        <div class="chart-tabs">
+          <div class="chart-tablist" role="tablist" aria-label="Chart">
+            <button type="button" role="tab" id="chartTabSalary" data-chart="salary"
+              aria-selected="true" aria-controls="chartPanelSalary">Salary</button>
+            <button type="button" role="tab" id="chartTabStock" data-chart="stock"
+              aria-selected="false" aria-controls="chartPanelStock" tabindex="-1">Stock</button>
           </div>
-          <canvas id="salaryChart" width="760" height="380" role="img" aria-label="Net income and savings chart">Net income and savings chart</canvas>
-        </section>
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Stock Win Target</h3>
-          </div>
-          <canvas id="stockChart" width="520" height="380" role="img" aria-label="Stock win target chart">Stock win target chart</canvas>
-        </section>
-      </div>
+          <select id="dashboardYear" aria-label="Dashboard year"></select>
+        </div>
+        <div class="chart-panel" id="chartPanelSalary" role="tabpanel" aria-labelledby="chartTabSalary">
+          <canvas id="salaryChart" width="760" height="380" role="img" aria-label="Gross income and take-home chart">Gross income and take-home chart</canvas>
+        </div>
+        <div class="chart-panel" id="chartPanelStock" role="tabpanel" aria-labelledby="chartTabStock" hidden>
+          <canvas id="stockChart" width="760" height="380" role="img" aria-label="Stock win target chart">Stock win target chart</canvas>
+        </div>
+      </section>
     </section>
 
     <section id="salary" class="view">

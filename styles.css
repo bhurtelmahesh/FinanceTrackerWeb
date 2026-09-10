@@ -239,6 +239,57 @@ nav button.active {
 .kpi.tone-amber span { color: #8a6100; }
 .kpi.tone-red span { color: var(--red); }
 
+
+/* The tiles are tall; a tone wash and a faint category glyph stop them reading as
+   empty boxes. Both are decorative — the figure and its caption carry the meaning. */
+.kpi {
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kpi::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  bottom: -12px;
+  width: 88px;
+  height: 88px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: .13;
+  pointer-events: none;
+}
+
+.kpi.tone-blue {
+  background: linear-gradient(135deg, rgba(37, 111, 143, .09), rgba(37, 111, 143, 0) 58%), var(--panel);
+}
+
+.kpi.tone-blue::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23256f8f%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M4%2020V13M9.5%2020V9.5M15%2020V15M20.5%2020V5%27%2F%3E%3C%2Fsvg%3E"); }
+
+.kpi.tone-green {
+  background: linear-gradient(135deg, rgba(46, 125, 50, .09), rgba(46, 125, 50, 0) 58%), var(--panel);
+}
+
+.kpi.tone-green::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%232e7d32%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M12%204v10%27%2F%3E%3Cpath%20d%3D%27M8%2010.5l4%204%204-4%27%2F%3E%3Cpath%20d%3D%27M4%2019h16%27%2F%3E%3C%2Fsvg%3E"); }
+
+.kpi.tone-amber {
+  background: linear-gradient(135deg, rgba(138, 97, 0, .09), rgba(138, 97, 0, 0) 58%), var(--panel);
+}
+
+.kpi.tone-amber::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%238a6100%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E"); }
+
+.kpi.tone-red {
+  background: linear-gradient(135deg, rgba(195, 63, 63, .09), rgba(195, 63, 63, 0) 58%), var(--panel);
+}
+
+.kpi.tone-red::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23c33f3f%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M6%203.5h12v17l-3-1.8-3%201.8-3-1.8-3%201.8z%27%2F%3E%3Cpath%20d%3D%27M9.5%209h5M9.5%2013h5%27%2F%3E%3C%2Fsvg%3E"); }
+
 button.kpi {
   width: 100%;
   text-align: left;
@@ -486,11 +537,65 @@ canvas {
   overflow: hidden;
 }
 
-#dashboard .dashboard-grid {
+#dashboard .chart-stack {
   grid-column: 1;
   grid-row: 1;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
+  padding-top: 0;
 }
+
+.chart-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  margin: 0 -18px 14px;
+  padding: 0 18px;
+}
+
+.chart-tablist {
+  display: flex;
+  gap: 4px;
+}
+
+.chart-tablist button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 13px 18px;
+}
+
+.chart-tablist button:hover {
+  color: var(--ink);
+  background: #f4f8fa;
+}
+
+.chart-tablist button[aria-selected="true"] {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+  background: transparent;
+}
+
+.chart-tablist button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+.chart-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-panel[hidden] { display: none; }
 
 #dashboard .kpi-grid {
   grid-column: 2;
@@ -515,7 +620,11 @@ canvas {
 #dashboard .kpi small { font-size: 10px; line-height: 1.35; }
 
 #dashboard canvas {
-  height: clamp(190px, 26vh, 300px);
+  width: 100%;
+  max-width: 1040px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: 100%;
 }
 
 .data-grid {
