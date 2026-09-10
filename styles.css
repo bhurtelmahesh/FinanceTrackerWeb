@@ -143,7 +143,7 @@ h1, h2, h3, p { margin: 0; }
 h1 { font-size: 19px; }
 .brand p, .eyebrow { color: var(--muted); font-size: 12px; }
 
-nav { display: grid; gap: 8px; }
+nav { display: grid; gap: 8px; cursor: pointer; }
 nav button {
   text-align: left;
   border: 1px solid transparent;
@@ -872,8 +872,11 @@ canvas {
    days. An inset shadow is drawn by the sticky cell itself, so it is always visible
    and cannot be bleached by the +/- tints that set border-color. */
 .daily-grid th.daily-total-head,
-.daily-grid td.daily-total-cell,
 .daily-grid tfoot td.daily-annual-total {
+  border-left: 0;
+}
+
+.daily-grid td.daily-total-cell {
   border-left: 0;
   box-shadow: inset 3px 0 0 0 var(--ink);
 }
