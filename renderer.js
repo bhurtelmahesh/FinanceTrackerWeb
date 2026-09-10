@@ -332,6 +332,13 @@ function normalizeStockYear(year) {
   return normalized;
 }
 
+const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// A phone cannot show 31 day columns, so it gets one month as a vertical list.
+function narrowScreen() {
+  return window.matchMedia('(max-width: 640px)').matches;
+}
+
 function dayState(year, month, day) {
   const monthNumber = monthIndex(month);
   const date = new Date(Number(year), monthNumber - 1, Number(day));
@@ -881,17 +888,71 @@ function renderStockGrid(records, year) {
   `;
 }
 
+function defaultDailyMonth(year) {
+  const withRecords = (state.daily || [])
+    .filter((item) => Number(item.year) === Number(year) && Number(item.amount) !== 0)
+    .map((item) => monthIndex(item.month))
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  const index = withRecords.length ? withRecords[withRecords.length - 1] : new Date().getMonth() + 1;
+  return monthOptions[Math.min(index, 12) - 1][0];
+}
+
 function renderDaily() {
   const year = selectedDailyYear();
   fillSelect('dailyYearFilter', selectableYears(state.daily), year);
-  const selected = document.getElementById('dailyMonthFilter').value || '';
+  let selected = document.getElementById('dailyMonthFilter').value || '';
+  // The list shows one month at a time, so "All months" needs resolving.
+  if (narrowScreen() && !selected) selected = defaultDailyMonth(year);
   fillSelectPairs('dailyMonthFilter', monthOptions, selected, 'All months');
   const recordsForYear = state.daily.filter((item) => Number(item.year) === Number(year));
   const records = filterRecords(selected ? recordsForYear.filter((item) => item.month === selected) : recordsForYear);
   renderDailyGrid(records, selected, year);
 }
 
+function renderDailyList(records, month, year) {
+  const days = Array.from({ length: 31 }, (_, index) => index + 1);
+  let monthTotal = 0;
+  const rows = days.map((day) => {
+    const stateForDay = dayState(year, month, day);
+    if (!stateForDay.valid) return '';
+    const dayRecords = records.filter((item) => normalizeMonth(item.month) === month && Number(item.day) === day);
+    const amount = sum(dayRecords, 'amount');
+    monthTotal += amount;
+    const status = amount === 0 ? String(dayRecords[0]?.status || '').trim() : '';
+    const marker = amount === 0 ? statusMarker(dayRecords[0], stateForDay.label) : '';
+    const cellValue = amount !== 0 ? String(amount) : marker || (status ? '' : (dayRecords.length ? '0' : ''));
+    const cls = marker ? 'daily-status' : amount > 0 ? 'daily-plus' : amount < 0 ? 'daily-minus' : 'daily-zero';
+    const weekday = weekdayNames[new Date(Number(year), monthIndex(month) - 1, day).getDay()];
+    return `
+      <tr class="${stateForDay.weekend ? 'weekend-row' : ''}">
+        <th scope="row"><b>${day}</b><span>${weekday}</span></th>
+        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${dayRecords.length ? 'has-records' : ''}">
+          <input class="grid-input daily-cell-input ${cls}" type="text"
+            aria-label="${escapeHtml(month)} ${day} amount or status"
+            placeholder="${escapeHtml(stateForDay.label)}"
+            data-daily-year="${year}" data-daily-month="${month}" data-daily-day="${day}"
+            value="${escapeHtml(cellValue)}">
+        </td>
+      </tr>`;
+  }).join('');
+  const totalClass = monthTotal > 0 ? 'daily-plus' : monthTotal < 0 ? 'daily-minus' : 'daily-zero';
+  document.getElementById('dailyTable').innerHTML = `
+    <div class="daily-list-wrap">
+      <table class="daily-list">
+        <caption>${escapeHtml(month)} ${year}</caption>
+        <colgroup><col class="daily-list-day"><col></colgroup>
+        <thead><tr><th>Day</th><th>Amount or status</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><th scope="row">Month total</th><td class="${totalClass}">${records.length ? yen(monthTotal) : '-'}</td></tr></tfoot>
+      </table>
+    </div>`;
+}
+
 function renderDailyGrid(records, selectedMonth, year) {
+  if (narrowScreen()) {
+    return renderDailyList(records, selectedMonth || defaultDailyMonth(year), year);
+  }
   const months = selectedMonth
     ? [selectedMonth]
     : monthOptions.map(([month]) => month);
@@ -928,7 +989,8 @@ function renderDailyGrid(records, selectedMonth, year) {
     monthTotals.push(monthTotal);
     const totalClass = monthTotal > 0 ? 'daily-plus' : monthTotal < 0 ? 'daily-minus' : 'daily-zero';
     const monthHasRecords = records.some((item) => normalizeMonth(item.month) === month);
-    return `<tr><th class="daily-month-cell">${escapeHtml(month)}</th>${cells}<td class="daily-total-cell ${totalClass}">${monthHasRecords ? yen(monthTotal) : '-'}</td></tr>`;
+    const monthLabel = monthHasRecords ? yen(monthTotal) : '-';
+    return `<tr><th class="daily-month-cell">${escapeHtml(month)}<span class="inline-total ${totalClass}">${monthLabel}</span></th>${cells}<td class="daily-total-cell ${totalClass}">${monthLabel}</td></tr>`;
   }).join('');
   const annualTotal = monthTotals.reduce((total, value) => total + value, 0);
   const annualClass = annualTotal > 0 ? 'daily-plus' : annualTotal < 0 ? 'daily-minus' : 'daily-zero';
@@ -946,7 +1008,7 @@ function renderDailyGrid(records, selectedMonth, year) {
         <tbody>${monthRows}</tbody>
         <tfoot>
           <tr>
-            <th class="daily-annual-label">Annual Total</th>
+            <th class="daily-annual-label">Annual Total<span class="inline-total ${annualClass}">${annualTotal ? yen(annualTotal) : '-'}</span></th>
             <td colspan="${days.length}"></td>
             <td class="daily-annual-total ${annualClass}">${annualTotal ? yen(annualTotal) : '-'}</td>
           </tr>
@@ -1964,8 +2026,13 @@ function bindEvents() {
   document.getElementById('globalSearch').addEventListener('input', debounce(render, 180));
   // Canvases are sized from their rendered box, so a resized window otherwise
   // leaves a stale, stretched bitmap behind.
+  let wasNarrow = narrowScreen();
   window.addEventListener('resize', debounce(() => {
     if (activeView === 'dashboard') renderCharts();
+    if (narrowScreen() !== wasNarrow) {
+      wasNarrow = narrowScreen();
+      if (activeView === 'daily') render();
+    }
   }, 150));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);

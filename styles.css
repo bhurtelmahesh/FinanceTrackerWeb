@@ -1070,6 +1070,9 @@ canvas {
   width: 140px;
 }
 
+/* Shown only where the Monthly Total column is dropped for want of width. */
+.inline-total { display: none; }
+
 .daily-grid td.daily-day-cell {
   width: 76px;
   height: 48px;
@@ -1234,37 +1237,152 @@ canvas {
     min-width: 1480px;
   }
   .daily-month-col,
+  .daily-grid th.daily-corner-head,
   .daily-month-cell,
   .daily-annual-label {
-    width: 92px;
-    min-width: 92px;
+    width: 78px;
+    min-width: 78px;
+    font-size: 12px;
   }
   .daily-day-col,
   .daily-day-cell {
-    width: 40px;
+    width: 44px;
   }
   .daily-total-col,
   .daily-total-head,
-  .daily-total-cell,
-  .daily-annual-total {
-    width: 112px;
+  .daily-grid td.daily-total-cell,
+  .daily-grid tfoot td.daily-annual-total {
+    display: none;
+  }
+  .inline-total {
+    display: block;
+    margin-top: 1px;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -.02em;
   }
   .daily-grid th,
   .daily-grid td {
-    padding: 4px;
+    padding: 3px;
   }
   .daily-grid td.daily-day-cell {
     padding: 0;
   }
   .daily-cell-input {
     height: 100%;
-    padding: 2px;
-    font-size: 11px;
+    padding: 1px;
+    font-size: 10px;
+    letter-spacing: -.03em;
   }
   .daily-day-cell.weekend .daily-cell-input::placeholder {
-    font-size: 10px;
+    font-size: 9px;
   }
 }
+
+/* Daily records as a vertical list — the phone layout. */
+.daily-list-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.daily-list {
+  width: 100%;
+  /* The global table rule sets min-width: 900px for the wide record tables. */
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.daily-list col.daily-list-day { width: 96px; }
+
+.daily-list caption {
+  caption-side: top;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 900;
+  font-size: 15px;
+  color: #175c7a;
+  background: #eef6f9;
+  border-bottom: 1px solid var(--line);
+}
+
+.daily-list thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 14px;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #f7fbfd;
+  border-bottom: 1px solid var(--line);
+}
+
+.daily-list tbody th {
+  padding: 6px 10px;
+  text-align: center;
+  border-bottom: 1px solid #eef3f5;
+  background: #fbfdff;
+}
+
+.daily-list tbody th b { font-size: 15px; font-weight: 900; }
+
+.daily-list tbody th span {
+  margin-left: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.daily-list tbody td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #eef3f5;
+}
+
+.daily-list .weekend-row th {
+  background: #fff5f5;
+  color: var(--red);
+}
+
+.daily-list .weekend-row th span { color: var(--red); }
+
+.daily-list td.daily-day-cell {
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+}
+
+.daily-list .daily-cell-input {
+  height: 40px;
+  padding: 4px 10px;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 8px;
+  border-color: #dde5e9;
+  background: #fff;
+}
+
+.daily-list .daily-cell-input:focus {
+  border-color: var(--blue);
+  background: #fff;
+}
+
+.daily-list tfoot th,
+.daily-list tfoot td {
+  padding: 12px 14px;
+  background: #eef6f9;
+  font-weight: 900;
+  border-top: 2px solid var(--line);
+}
+
+.daily-list tfoot th { text-align: center; }
+.daily-list tfoot td { text-align: center; font-size: 15px; }
 
 /* Help */
 .help-doc {
