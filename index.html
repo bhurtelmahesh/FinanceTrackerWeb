@@ -11,8 +11,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-fb2e3c9d.js"></script>
-  <link rel="stylesheet" href="./assets/index-80b010cb.css">
+  <script type="module" crossorigin src="./assets/index-0a3aeda9.js"></script>
+  <link rel="stylesheet" href="./assets/index-ed472565.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -281,6 +281,8 @@
             <dd>Net Income &minus; that month&rsquo;s Daily Records total.</dd>
             <dt>Savings Goal</dt>
             <dd>Whatever you set. It is never calculated.</dd>
+            <dt>What counts as a lived month</dt>
+            <dd>A month with at least one daily record carrying a non-zero amount. Weekend and holiday markers are stored with a zero amount, so they do not on their own make a month count.</dd>
             <dt>Cumulative Capital</dt>
             <dd>Carried forward from existing records. The app does not calculate it, so a new month starts at zero.</dd>
           </dl>
@@ -291,15 +293,15 @@
           <h3>Dashboard</h3>
           <dl class="help-list">
             <dt>Total Net Income</dt>
-            <dd>Every Net Income for the selected year added up.</dd>
+            <dd>Every Net Income for the selected year added up, including any months entered as projections. The caption says how many of those there are.</dd>
             <dt>Actual Savings</dt>
-            <dd>Every Actual Savings for the year added up, including months entered as projections.</dd>
+            <dd>Actual Savings added up across months that have actually been lived, plus any bonus rows. A month with no spending recorded would otherwise have its whole net income counted as saved. The caption says how many months are included.</dd>
             <dt>Stock Win Total</dt>
             <dd>The latest Actual Win Cumulative recorded that year.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered.</dd>
             <dt>Savings vs Goal</dt>
-            <dd>Actual Savings &minus; Savings Goal, counting only months with at least one daily record, plus any bonus rows. Months not yet lived are left out of both sides &mdash; otherwise their whole net income would look saved while their goal still counted against you. The caption says how many months were counted.</dd>
+            <dd>Actual Savings &minus; Savings Goal, over the same months as the Actual Savings figure above. Months not yet lived are left out of both sides &mdash; otherwise their whole net income would look saved while their goal still counted against you.</dd>
             <dt>Daily Record Total</dt>
             <dd>The sum of the year&rsquo;s daily amounts &mdash; the same figure as the Annual Total in Daily Records.</dd>
             <dt>Recorded Days</dt>
