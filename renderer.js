@@ -1625,6 +1625,33 @@ function rehydrateArchives(data) {
   return data;
 }
 
+const backupVersion = 1;
+
+// Move archived file bytes out of the records and into _archives.
+function withDetachedArchives(data) {
+  const next = { ...data };
+  const archives = {};
+  ['salarySheets', 'unpaidBills'].forEach((collection) => {
+    const records = next[collection] || [];
+    archives[collection] = records
+      .filter((item) => typeof item.dataUrl === 'string' && item.dataUrl.includes(','))
+      .map((item) => ({
+        storedName: item.storedName,
+        contentBase64: item.dataUrl.slice(item.dataUrl.indexOf(',') + 1)
+      }));
+    next[collection] = records.map(({ dataUrl, ...rest }) => rest);
+  });
+  next._archives = archives;
+  return next;
+}
+
+function checkBackupVersion(data) {
+  const version = Number(data?.meta?.version || 0);
+  if (version > backupVersion) {
+    throw new Error(`That backup was written by a newer version of the app (format ${version}). Update before importing it.`);
+  }
+}
+
 function looksLikeBackup(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
   const known = [...collections, 'salarySheets', 'unpaidBills'];
@@ -1840,8 +1867,9 @@ window.financeApi = {
     if (!file) return null;
     const imported = JSON.parse(await readFileAsText(file));
     if (!looksLikeBackup(imported)) {
-      throw new Error(`"${file.name}" is not a Finance Tracker backup, so nothing was imported.`);
+      throw new Error(`"${file.name}" is not a Finance Records backup, so nothing was imported.`);
     }
+    checkBackupVersion(imported);
     const data = normalizeLoadedData(imported);
     data.meta.sourceFile = file.name;
     data.meta.importedAt = new Date().toISOString();
@@ -1851,8 +1879,9 @@ window.financeApi = {
   async exportBackup(data) {
     const next = normalizeLoadedData(data);
     next.meta.updatedAt = new Date().toISOString();
+    next.meta.version = backupVersion;
     const filename = `FinanceRecords-Backup-${new Date().toISOString().slice(0, 10)}.json`;
-    downloadText(filename, JSON.stringify(next, null, 2));
+    downloadText(filename, JSON.stringify(withDetachedArchives(next), null, 2));
     return filename;
   },
 
