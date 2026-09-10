@@ -3,7 +3,7 @@
   --muted: #5b6d76;
   --line: #d7e4ea;
   --blue: #256f8f;
-  --teal: #3fa88c;
+  --teal: #2a7a67;
   --green: #2e7d32;
   --red: #c33f3f;
   --yellow: #fff2c6;
@@ -201,7 +201,8 @@ nav button.active {
 }
 
 #saveState { color: var(--muted); font-size: 13px; }
-#saveNow { background: #2f80ed; color: #fff; border-color: #2f80ed; }
+/* White on the old blue was 3.87:1; this clears AA at 4.89:1. */
+#saveNow { background: #3a6fc9; color: #fff; border-color: #3a6fc9; }
 
 .view {
   display: none;
@@ -590,9 +591,6 @@ canvas {
 .chart-panel {
   flex: 1;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .chart-panel[hidden] { display: none; }
@@ -620,11 +618,10 @@ canvas {
 #dashboard .kpi small { font-size: 10px; line-height: 1.35; }
 
 #dashboard canvas {
+  /* Fill the panel. A fixed ratio left a third of the panel empty on a tall
+     window; the bar-width cap is what keeps a wide chart looking right. */
   width: 100%;
-  max-width: 1040px;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  max-height: 100%;
+  height: 100%;
 }
 
 .data-grid {
