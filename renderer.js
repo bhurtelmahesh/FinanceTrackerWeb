@@ -382,24 +382,30 @@ function normalizeDailyRecord(record) {
   };
 }
 
+// The single payroll calculation for a month. Both the Overtime summary and the
+// salary views read from this, so the Total on the OT page is the same Total the
+// rest of the app uses.
+function monthlyPayroll(detail, overtimePay) {
+  const grossTotal = Number(detail.basic || 0) + Number(detail.allowance || 0) +
+    overtimePay + Number(detail.transportation || 0);
+  const enteredTax = Number(detail.incomeTax || 0);
+  const incomeTax = enteredTax > 0 ? enteredTax : estimateMonthlyIncomeTax({ ...detail, overtimePay });
+  const totalDeduction = Number(detail.insurance || 0) + Number(detail.pension || 0) +
+    Number(detail.employmentInsurance || 0) + Number(detail.residentTax || 0) + incomeTax;
+  return { overtimePay, grossTotal, incomeTax, totalDeduction, received: grossTotal - totalDeduction };
+}
+
+// Logged overtime is the source of truth when it exists.
+function overtimePayFor(detail, year, month) {
+  const logged = overtimeAmountFor(year, month);
+  return logged > 0 ? logged : Number(detail.overtimePay || 0);
+}
+
 function normalizeMonthlyDetail(record) {
   const year = Number(record.year || 0);
   const month = normalizeMonth(record.month);
-  // Logged overtime is the source of truth when it exists.
-  const loggedOvertime = overtimeAmountFor(year, month);
-  const overtimePay = loggedOvertime > 0 ? loggedOvertime : Number(record.overtimePay || 0);
-  const grossTotal = Number(record.basic || 0) + Number(record.allowance || 0) +
-    overtimePay + Number(record.transportation || 0);
-  const totalDeduction = Number(record.insurance || 0) + Number(record.pension || 0) +
-    Number(record.employmentInsurance || 0) + Number(record.residentTax || 0) + Number(record.incomeTax || 0);
-  return {
-    ...record,
-    month,
-    overtimePay,
-    grossTotal,
-    totalDeduction,
-    received: grossTotal - totalDeduction
-  };
+  const payroll = monthlyPayroll(record, overtimePayFor(record, year, month));
+  return { ...record, month, ...payroll };
 }
 
 function employmentIncomeDeduction(annualSalary) {
@@ -950,10 +956,8 @@ function renderOtSummary(year, month, records) {
   const pension = Number(detail.pension || 0);
   const employmentInsurance = Number(detail.employmentInsurance || 0);
   const residentTax = Number(detail.residentTax || 0);
-  const incomeTax = estimateMonthlyIncomeTax({ ...detail, overtimePay: otAmount });
-  const grossTotal = basic + allowance + otAmount + transportation;
-  const deductionTotal = insurance + pension + employmentInsurance + residentTax + incomeTax;
-  const received = grossTotal - deductionTotal;
+  const { grossTotal, incomeTax, totalDeduction: deductionTotal, received } =
+    monthlyPayroll(detail, otAmount);
   document.getElementById('otSummaryTitle').textContent = `${month} ${year} OT Summary`;
   document.getElementById('otSummary').innerHTML = `
     <div class="ot-sheet">
@@ -1140,13 +1144,7 @@ function saveDialogRecord() {
     values.month = normalizeMonth(values.month);
     const calculatedOtPay = overtimeAmountFor(values.year, values.month);
     if (calculatedOtPay > 0) values.overtimePay = calculatedOtPay;
-    const enteredIncomeTax = Number(values.incomeTax || 0);
-    values.incomeTax = enteredIncomeTax > 0 ? enteredIncomeTax : estimateMonthlyIncomeTax(values);
-    values.totalDeduction = Number(values.insurance || 0) + Number(values.pension || 0) +
-      Number(values.employmentInsurance || 0) + Number(values.residentTax || 0) + Number(values.incomeTax || 0);
-    values.grossTotal = Number(values.basic || 0) + Number(values.allowance || 0) +
-      Number(values.overtimePay || 0) + Number(values.transportation || 0);
-    values.received = values.grossTotal - values.totalDeduction;
+    Object.assign(values, monthlyPayroll(values, Number(values.overtimePay || 0)));
   }
   if (recordId) {
     state[collection] = state[collection].map((item) => item.id === recordId ? values : item);
