@@ -858,12 +858,11 @@ function renderDailyGrid(records, selectedMonth, year) {
       const cellValue = amount !== 0 ? String(amount)
         : marker || (status ? '' : (dayRecords.length ? '0' : ''));
       const cls = marker ? 'daily-status' : amount > 0 ? 'daily-plus' : amount < 0 ? 'daily-minus' : 'daily-zero';
-      const showWeekendLabel = stateForDay.weekend && cellValue === '';
       return `
-        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${showWeekendLabel ? 'labelled' : ''} ${dayRecords.length ? 'has-records' : ''}">
-          ${showWeekendLabel ? `<span class="weekend-label">${escapeHtml(stateForDay.label)}</span>` : ''}
+        <td class="daily-day-cell ${stateForDay.weekend ? 'weekend' : ''} ${dayRecords.length ? 'has-records' : ''}">
           <input class="grid-input daily-cell-input ${cls}" type="text"
             aria-label="${escapeHtml(month)} ${day} amount or status"
+            placeholder="${escapeHtml(stateForDay.label)}"
             data-daily-year="${year}" data-daily-month="${month}" data-daily-day="${day}"
             value="${escapeHtml(cellValue)}">
         </td>
@@ -885,7 +884,7 @@ function renderDailyGrid(records, selectedMonth, year) {
           <col class="daily-total-col">
         </colgroup>
         <thead>
-          <tr><th>Month / Day</th>${days.map((day) => `<th>${day}</th>`).join('')}<th class="daily-total-head">Monthly Total</th></tr>
+          <tr><th class="daily-corner-head">Month / Day</th>${days.map((day) => `<th>${day}</th>`).join('')}<th class="daily-total-head">Monthly Total</th></tr>
         </thead>
         <tbody>${monthRows}</tbody>
         <tfoot>

@@ -839,19 +839,41 @@ canvas {
 .daily-annual-total {
   position: sticky;
   right: 0;
-  z-index: 1;
+  z-index: 3;
   width: 140px;
-  border-left: 2px solid #c9d9df;
+  border-left: 3px solid var(--ink);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
 
-.daily-total-head {
-  z-index: 3;
+.daily-grid thead th.daily-total-head {
+  z-index: 5;
+  background: #eef6f9;
 }
 
-.daily-total-cell {
-  background: #f7fbfd;
+/* The corner header pins in both directions; it was only sticky vertically, so it
+   scrolled away with the day columns. */
+.daily-grid thead th.daily-corner-head {
+  left: 0;
+  z-index: 6;
+  width: 120px;
+  min-width: 120px;
+  background: #eef6f9;
+}
+
+.daily-grid td.daily-total-cell {
+  background: #ffffff;
+}
+
+.daily-grid td.daily-total-cell.daily-plus { background: #f0fbf4; }
+.daily-grid td.daily-total-cell.daily-minus { background: #fff4f4; }
+.daily-grid td.daily-total-cell.daily-zero { background: #ffffff; }
+
+/* The +/- tints also set border-color, which was bleaching the divider. */
+.daily-grid th.daily-total-head,
+.daily-grid td.daily-total-cell,
+.daily-grid tfoot td.daily-annual-total {
+  border-left: 3px solid var(--ink);
 }
 
 .daily-annual-label {
@@ -866,7 +888,7 @@ canvas {
   white-space: nowrap;
 }
 
-.daily-annual-total {
+.daily-grid tfoot td.daily-annual-total {
   background: #e5f1f6;
   font-size: 13px;
   width: 140px;
@@ -903,22 +925,17 @@ canvas {
   );
 }
 
-.weekend-label {
-  display: block;
-  color: var(--red);
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
+.daily-day-cell.weekend .daily-cell-input:placeholder-shown {
+  background: var(--red);
+  border-color: var(--red);
 }
 
-.daily-day-cell.labelled .daily-cell-input {
-  height: calc(100% - 13px);
+.daily-day-cell.weekend .daily-cell-input::placeholder {
+  color: #ffffff;
+  opacity: 1;
   font-size: 11px;
-}
-
-.daily-day-cell.labelled .weekend-label {
-  height: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
 }
 
 
@@ -952,8 +969,8 @@ canvas {
   letter-spacing: .02em;
   text-transform: uppercase;
 }
-.daily-plus { color: var(--red); background: #fff4f4; border-color: #f3d0d0; }
-.daily-minus { color: var(--green); background: #f0fbf4; border-color: #ccebd5; }
+.daily-plus { color: var(--green); background: #f0fbf4; border-color: #ccebd5; }
+.daily-minus { color: var(--red); background: #fff4f4; border-color: #f3d0d0; }
 .daily-zero { color: var(--muted); background: transparent; }
 
 @media (max-width: 980px) {
@@ -1061,7 +1078,7 @@ canvas {
     padding: 2px;
     font-size: 11px;
   }
-  .weekend-label {
+  .daily-day-cell.weekend .daily-cell-input::placeholder {
     font-size: 10px;
   }
 }
