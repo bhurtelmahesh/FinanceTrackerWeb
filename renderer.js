@@ -48,6 +48,24 @@ const titles = {
 };
 
 const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'personalBalances'];
+
+// The workbook mirrors the app: one sheet per menu, columns headed the way the
+// tables head them, so a row in Excel reads like the row on screen.
+const archiveFields = [
+  ['originalName', 'File'], ['title', 'Title'], ['savedAt', 'Saved'],
+  ['size', 'Size (bytes)'], ['type', 'Type'], ['storedName', 'Stored As']
+];
+
+const workbookSheets = [
+  ['Monthly Savings', 'salary', () => schemas.salary],
+  ['Salary Details', 'monthlyDetails', () => schemas.monthlyDetails],
+  ['Overtime', 'overtime', () => schemas.overtime],
+  ['Stock Revenue', 'stockRevenue', () => schemas.stockRevenue],
+  ['Daily Records', 'daily', () => schemas.daily],
+  ['Debt Records', 'personalBalances', () => schemas.personalBalances],
+  ['Salary Sheet Archive', 'salarySheets', () => archiveFields],
+  ['Unpaid Bills Archive', 'unpaidBills', () => archiveFields]
+];
 const computedFields = {
   monthlyDetails: ['grossTotal', 'totalDeduction', 'received'],
   overtime: ['amount'],
@@ -1239,15 +1257,35 @@ function deleteRecord(collection, recordId) {
   save();
 }
 
-async function exportRecords() {
+async function exportBackupData() {
+  const output = await window.financeApi.exportBackup(state);
+  if (output) setSaveState(`Backup exported: ${output}`);
+}
+
+async function exportWorkbook() {
   const output = await window.financeApi.exportExcel(state);
   if (output) setSaveState(`Exported: ${output}`);
 }
 
-async function importExcelWithConfirmation() {
-  if (hasRecords() && !confirm('Importing a backup will replace the current browser records. Continue?')) return;
+async function importWorkbookWithConfirmation() {
+  if (hasRecords() && !confirm('Importing a workbook will replace the current records. Continue?')) return;
   try {
     const imported = await window.financeApi.importExcel();
+    if (!imported) return;
+    state = imported;
+    render();
+    setSaveState('Workbook imported');
+  } catch (error) {
+    console.error(error);
+    setSaveState('Import failed');
+    alert(error?.message || 'That workbook could not be read.');
+  }
+}
+
+async function importExcelWithConfirmation() {
+  if (hasRecords() && !confirm('Importing a backup will replace the current records. Continue?')) return;
+  try {
+    const imported = await window.financeApi.importBackup();
     if (imported) {
       state = imported;
       state.salarySheets = state.salarySheets || [];
@@ -1726,6 +1764,17 @@ function chooseFiles({ accept = '', multiple = false } = {}) {
   });
 }
 
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function downloadText(filename, text, type = 'application/json') {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -1786,7 +1835,7 @@ window.financeApi = {
     data.meta.startedAt = new Date().toISOString();
     return saveStoredData(data);
   },
-  async importExcel() {
+  async importBackup() {
     const [file] = await chooseFiles({ accept: '.json,application/json' });
     if (!file) return null;
     const imported = JSON.parse(await readFileAsText(file));
@@ -1799,12 +1848,88 @@ window.financeApi = {
     data.meta.startedAt = data.meta.startedAt || data.meta.importedAt;
     return saveStoredData(data);
   },
-  async exportExcel(data) {
+  async exportBackup(data) {
     const next = normalizeLoadedData(data);
     next.meta.updatedAt = new Date().toISOString();
-    const filename = `FinanceTracker-${new Date().toISOString().slice(0, 10)}.json`;
+    const filename = `FinanceRecords-Backup-${new Date().toISOString().slice(0, 10)}.json`;
     downloadText(filename, JSON.stringify(next, null, 2));
     return filename;
+  },
+
+  async exportExcel(data) {
+    const XLSX = await import('xlsx');
+    const next = normalizeLoadedData(data);
+    const workbook = XLSX.utils.book_new();
+    const addSheet = (name, rows, widths) => {
+      const sheet = XLSX.utils.json_to_sheet(rows);
+      if (widths) sheet['!cols'] = widths;
+      if (rows.length) sheet['!freeze'] = { xSplit: 0, ySplit: 1 };
+      XLSX.utils.book_append_sheet(workbook, sheet, name);
+    };
+
+    // A Summary sheet first, so the workbook opens on the same figures as the app.
+    const years = yearsFrom(next.salary);
+    addSheet('Summary', years.map((year) => {
+      const rows = (next.salary || []).filter((item) => Number(item.year) === year);
+      const elapsed = rows.filter((item) => monthHasElapsed(item, year));
+      const stock = (next.stockRevenue || [])
+        .filter((item) => Number(item.year) === year && Number(item.actualCumulative || 0) !== 0)
+        .sort((a, b) => monthIndex(a.month) - monthIndex(b.month)).at(-1);
+      return {
+        'Year': year,
+        'Gross Income (so far)': sum(elapsed, 'salary'),
+        'Gross Income (full year)': sum(rows, 'salary'),
+        'Take-home Saved (so far)': sum(elapsed, 'actualSavings'),
+        'Savings Goal (so far)': sum(elapsed, 'plannedSavings'),
+        'Stock Win Total': Number(stock?.actualCumulative || 0),
+        'Daily Stock Entries': (next.daily || []).filter((item) => Number(item.year) === year && Number(item.amount) !== 0).length
+      };
+    }), [{ wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 16 }, { wch: 18 }]);
+
+    workbookSheets.forEach(([sheetName, collection, fieldsFor]) => {
+      const fields = fieldsFor();
+      const rows = (next[collection] || []).map((record) =>
+        Object.fromEntries(fields.map(([key, label]) => [label, record[key] ?? '']))
+      );
+      addSheet(sheetName, rows, fields.map(([, label]) => ({ wch: Math.max(12, label.length + 3) })));
+    });
+    const filename = `FinanceRecords-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    downloadBlob(filename, new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }));
+    return filename;
+  },
+
+  async importExcel() {
+    const [file] = await chooseFiles({ accept: '.xlsx,.xls' });
+    if (!file) return null;
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.read(await file.arrayBuffer(), { cellDates: true });
+    const imported = {
+      meta: { version: 1, sourceFile: file.name, importedAt: new Date().toISOString() }
+    };
+    // Read back the sheets this app writes, mapping the column headings to fields.
+    workbookSheets.forEach(([sheetName, collection, fieldsFor]) => {
+      const ws = workbook.Sheets[sheetName];
+      if (!ws) { imported[collection] = []; return; }
+      const fields = fieldsFor();
+      imported[collection] = XLSX.utils.sheet_to_json(ws).map((row) => {
+        const record = {};
+        fields.forEach(([key, label, type]) => {
+          const value = row[label];
+          if (value === undefined || value === '') return;
+          record[key] = type === 'number' ? Number(value) : value;
+        });
+        return record;
+      });
+    });
+    if (!looksLikeBackup(imported) || !collections.some((key) => imported[key].length)) {
+      throw new Error(`"${file.name}" has no Finance Records sheets in it, so nothing was imported.`);
+    }
+    const data = normalizeLoadedData(imported);
+    data.meta.startedAt = data.meta.startedAt || data.meta.importedAt;
+    return saveStoredData(data);
   },
   async addSalarySheetsFromFiles(files) {
     return Promise.all((files || []).map(async (file) => ({
@@ -2035,16 +2160,20 @@ function bindEvents() {
     }
   }, 150));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
-  document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);
+  document.getElementById('dataImportExcel').addEventListener('click', importWorkbookWithConfirmation);
   document.getElementById('sidebarImportBackup').addEventListener('click', importExcelWithConfirmation);
-  document.getElementById('sidebarExportBackup').addEventListener('click', exportRecords);
+  document.getElementById('sidebarExportBackup').addEventListener('click', exportBackupData);
+  document.getElementById('sidebarImportExcel').addEventListener('click', importWorkbookWithConfirmation);
+  document.getElementById('sidebarExportExcel').addEventListener('click', exportWorkbook);
+  document.getElementById('dataImportBackup').addEventListener('click', importExcelWithConfirmation);
+  document.getElementById('dataExportBackup').addEventListener('click', exportBackupData);
   document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);
   document.getElementById('startBlank').addEventListener('click', async () => {
     state = await window.financeApi.startBlank();
     render();
     setSaveState('Started');
   });
-  document.getElementById('dataExportExcel').addEventListener('click', exportRecords);
+  document.getElementById('dataExportExcel').addEventListener('click', exportWorkbook);
   document.getElementById('loadDemoData').addEventListener('click', loadDemoData);
   document.getElementById('clearAllData').addEventListener('click', clearAllData);
   document.getElementById('chooseSalarySheets').addEventListener('click', chooseSalarySheets);

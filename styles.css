@@ -185,6 +185,13 @@ nav { display: grid; gap: 4px; cursor: pointer; }
 
 #sidebarImportBackup:hover,
 #sidebarExportBackup:hover { filter: brightness(.94); }
+
+#sidebarImportExcel,
+#sidebarExportExcel {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+}
 nav button {
   text-align: left;
   border: 1px solid transparent;
