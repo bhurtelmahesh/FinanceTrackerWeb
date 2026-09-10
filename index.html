@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-afb8e7b1.js"></script>
+  <script type="module" crossorigin src="./assets/index-ee9edf4a.js"></script>
   <link rel="stylesheet" href="./assets/index-4e1981ee.css">
 </head>
 <body>
@@ -80,7 +80,7 @@
       <div class="dashboard-grid">
         <section class="panel">
           <div class="panel-head">
-            <h3>Net Income vs Savings</h3>
+            <h3>Gross Income vs Take-home</h3>
             <select id="dashboardYear" aria-label="Dashboard year"></select>
           </div>
           <canvas id="salaryChart" width="760" height="380" role="img" aria-label="Net income and savings chart">Net income and savings chart</canvas>
@@ -288,10 +288,10 @@
         <section class="panel help-panel">
           <h3>Monthly Savings</h3>
           <dl class="help-list">
-            <dt>Net Income</dt>
-            <dd>The Net Received from that month&rsquo;s salary detail.</dd>
+            <dt>Gross Income</dt>
+            <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
             <dt>Actual Savings</dt>
-            <dd>The salary you took home that month. The app tracks no spending, so this equals Net Income &mdash; stock activity is deliberately excluded.</dd>
+            <dd>What actually reached you: Gross Income &minus; Total Deduction. Stock activity is never netted off it.</dd>
             <dt>Savings Goal</dt>
             <dd>Whatever you set. It is never calculated.</dd>
             <dt>What counts as a month so far</dt>
@@ -305,16 +305,17 @@
         <section class="panel help-panel">
           <h3>Dashboard</h3>
           <dl class="help-list">
-            <dt>Salary &middot; Net Income</dt>
-            <dd>Take-home pay for the months that have already happened, plus any bonus rows. The caption gives the projected full-year figure &mdash; the same total with your future months included &mdash; and how many months have gone by.</dd>
-            <dt>Salary &middot; Savings</dt>
-            <dd>The same split: what you have actually saved so far, with the projected full year in the caption.</dd>
+            <dt>Salary &middot; Gross Income</dt>
+            <dd>Gross pay for the months that have already happened, plus any bonus rows. The caption gives the projected full-year figure &mdash; the same total with your future months included &mdash; and how many months have gone by.</dd>
+            <dt>Salary &middot; Take-home Saved</dt>
+            <dd>The same split for what reached you after deductions, with the projected full year in the caption.</dd>
             <dt>Stock Win Total</dt>
             <dd>The latest Actual Win Cumulative recorded that year.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered.</dd>
-            <dt>Savings vs Goal</dt>
-            <dd>Actual Savings &minus; Savings Goal, over the same months as the Actual Savings figure above. Months not yet lived are left out of both sides &mdash; otherwise their whole net income would look saved while their goal still counted against you.</dd>
+            <dt>Salary &middot; Take-home vs Goal</dt>
+            <dd>Take-home &minus; Savings Goal, over the same months as the figure above. Months not yet lived are left out of both sides.</dd>
+            <dd class="help-warn">This app records no spending, so &ldquo;saved&rdquo; is your whole take-home pay. That will almost always clear a monthly savings goal, which makes this comparison of limited use until spending is tracked somewhere.</dd>
             <dt>Stock &middot; Daily Log Total</dt>
             <dd>The sum of the year&rsquo;s daily stock entries &mdash; the same figure as the Annual Total in Daily Records.</dd>
             <dt>Stock &middot; Days Traded</dt>
