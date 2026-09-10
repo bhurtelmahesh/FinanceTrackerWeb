@@ -1239,6 +1239,11 @@ function deleteRecord(collection, recordId) {
   save();
 }
 
+async function exportRecords() {
+  const output = await window.financeApi.exportExcel(state);
+  if (output) setSaveState(`Exported: ${output}`);
+}
+
 async function importExcelWithConfirmation() {
   if (hasRecords() && !confirm('Importing a backup will replace the current browser records. Continue?')) return;
   try {
@@ -2031,16 +2036,15 @@ function bindEvents() {
   }, 150));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);
+  document.getElementById('sidebarImportBackup').addEventListener('click', importExcelWithConfirmation);
+  document.getElementById('sidebarExportBackup').addEventListener('click', exportRecords);
   document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);
   document.getElementById('startBlank').addEventListener('click', async () => {
     state = await window.financeApi.startBlank();
     render();
     setSaveState('Started');
   });
-  document.getElementById('dataExportExcel').addEventListener('click', async () => {
-    const output = await window.financeApi.exportExcel(state);
-    if (output) setSaveState(`Exported: ${output}`);
-  });
+  document.getElementById('dataExportExcel').addEventListener('click', exportRecords);
   document.getElementById('loadDemoData').addEventListener('click', loadDemoData);
   document.getElementById('clearAllData').addEventListener('click', clearAllData);
   document.getElementById('chooseSalarySheets').addEventListener('click', chooseSalarySheets);

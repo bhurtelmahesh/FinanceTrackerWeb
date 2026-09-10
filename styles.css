@@ -157,6 +157,34 @@ nav { display: grid; gap: 4px; cursor: pointer; }
 }
 
 .nav-items { display: grid; gap: 4px; }
+
+/* Backup actions sit at the foot of the sidebar, as in the desktop app. */
+.sidebar-actions {
+  margin-top: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar-actions button {
+  width: 100%;
+  padding: 11px 14px;
+  font-weight: 700;
+}
+
+#sidebarImportBackup {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+#sidebarExportBackup {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+#sidebarImportBackup:hover,
+#sidebarExportBackup:hover { filter: brightness(.94); }
 nav button {
   text-align: left;
   border: 1px solid transparent;
