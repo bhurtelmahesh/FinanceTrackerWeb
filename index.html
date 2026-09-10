@@ -11,8 +11,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-caa3160e.js"></script>
-  <link rel="stylesheet" href="./assets/index-e2a0b828.css">
+  <script type="module" crossorigin src="./assets/index-e322fb6a.js"></script>
+  <link rel="stylesheet" href="./assets/index-dbcc5573.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -63,6 +63,8 @@
     <div class="sidebar-actions">
       <button id="sidebarImportBackup" type="button">Import Backup</button>
       <button id="sidebarExportBackup" type="button">Export Backup</button>
+      <button id="sidebarImportExcel" type="button">Import Workbook</button>
+      <button id="sidebarExportExcel" type="button">Export Excel</button>
     </div>
   </aside>
 
@@ -217,12 +219,14 @@
         <section class="panel">
           <h3>Backup Tools</h3>
           <div class="backup-actions">
-            <button id="dataImportExcel">Import Backup</button>
-            <button id="dataExportExcel">Export JSON Backup</button>
+            <button id="dataImportBackup">Import Backup</button>
+            <button id="dataExportBackup">Export Backup</button>
+            <button id="dataImportExcel">Import Workbook</button>
+            <button id="dataExportExcel">Export Excel</button>
             <button id="loadDemoData" type="button">Load Demo Data</button>
             <button id="clearAllData" type="button" class="danger-button">Clear All Data</button>
           </div>
-          <p class="muted">Importing replaces current browser records. Exporting creates a JSON backup file.</p>
+          <p class="muted">A backup is a JSON file holding everything, archived files included. A workbook is an .xlsx spreadsheet of the records only.</p>
           <p class="muted clear-warning">Before clearing all data, export a backup and keep it somewhere safe.</p>
         </section>
         <section class="panel salary-sheets-panel">
