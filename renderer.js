@@ -247,10 +247,6 @@ function normalizeMonth(month) {
   return idx ? monthOptions[idx - 1][0] : String(month || '');
 }
 
-function sortByMonth(a, b) {
-  return monthIndex(a) - monthIndex(b);
-}
-
 function isBonusMonth(month) {
   return /bonus|賞与|ボーナス/i.test(String(month || ''));
 }
@@ -460,13 +456,6 @@ function overtimeAmountFor(year, month) {
     Number(item.year || year) === Number(year) && normalizeMonth(item.month) === normalizedMonth
   );
   return sum(records, 'amount');
-}
-
-function dailyAmountFor(year, month) {
-  const normalizedMonth = normalizeMonth(month);
-  return sum((state.daily || []).map(normalizeDailyRecord).filter((item) =>
-    Number(item.year || year) === Number(year) && normalizeMonth(item.month) === normalizedMonth
-  ), 'amount');
 }
 
 function derivedSalaryRecords() {
@@ -1078,8 +1067,13 @@ function renderData() {
   renderSalarySheets();
 }
 
+function fileCount(list) {
+  return `${list.length} ${list.length === 1 ? 'file' : 'files'}`;
+}
+
 function renderSalarySheets() {
   const sheets = state.salarySheets || [];
+  document.getElementById('salarySheetCount').textContent = fileCount(sheets);
   document.getElementById('salarySheetList').innerHTML = sheets.length ? sheets
     .slice()
     .sort((a, b) => String(b.savedAt || '').localeCompare(String(a.savedAt || '')))
@@ -1100,6 +1094,7 @@ function renderSalarySheets() {
 
 function renderUnpaidBills() {
   const bills = state.unpaidBills || [];
+  document.getElementById('unpaidBillCount').textContent = fileCount(bills);
   document.getElementById('unpaidBillList').innerHTML = bills.length ? bills
     .slice()
     .sort((a, b) => String(b.savedAt || '').localeCompare(String(a.savedAt || '')))

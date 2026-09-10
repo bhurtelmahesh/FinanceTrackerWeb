@@ -1384,6 +1384,17 @@ canvas {
 .daily-list tfoot th { text-align: center; }
 .daily-list tfoot td { text-align: center; font-size: 15px; }
 
+.archive-count {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef6f9;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
 /* Help */
 .help-doc {
   display: grid;
