@@ -841,7 +841,6 @@ canvas {
   right: 0;
   z-index: 3;
   width: 140px;
-  border-left: 3px solid var(--ink);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
@@ -869,11 +868,14 @@ canvas {
 .daily-grid td.daily-total-cell.daily-minus { background: #fff4f4; }
 .daily-grid td.daily-total-cell.daily-zero { background: #ffffff; }
 
-/* The +/- tints also set border-color, which was bleaching the divider. */
+/* border-collapse hands the divider to the table grid, so it scrolled away with the
+   days. An inset shadow is drawn by the sticky cell itself, so it is always visible
+   and cannot be bleached by the +/- tints that set border-color. */
 .daily-grid th.daily-total-head,
 .daily-grid td.daily-total-cell,
 .daily-grid tfoot td.daily-annual-total {
-  border-left: 3px solid var(--ink);
+  border-left: 0;
+  box-shadow: inset 3px 0 0 0 var(--ink);
 }
 
 .daily-annual-label {
@@ -928,6 +930,12 @@ canvas {
 .daily-day-cell.weekend .daily-cell-input:placeholder-shown {
   background: var(--red);
   border-color: var(--red);
+}
+
+.daily-day-cell.weekend:hover .daily-cell-input:placeholder-shown,
+.daily-day-cell.weekend .daily-cell-input:placeholder-shown:focus {
+  background: #a83232;
+  border-color: #a83232;
 }
 
 .daily-day-cell.weekend .daily-cell-input::placeholder {
