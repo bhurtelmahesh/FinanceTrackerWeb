@@ -546,19 +546,19 @@ function renderKpis() {
   const projectedSavings = sum(salary, 'actualSavings');
   const stockLatest = latestStockActualForYear(year);
   const debtTotal = sum(debts, 'amount');
-  // Nothing to project once every month of the year has happened.
-  const projection = (value) => projectedMonths
-    ? `Projected full year ${yen(value)} · ${elapsedMonths} of ${monthRows.length} months so far`
-    : '';
+  // Just the figure — the Help tab explains what actual and projected mean.
+  const projection = (value) => projectedMonths ? `Projected ${yen(value)}` : '';
+  // A tone per tile so the rail can be scanned at a glance. The value keeps its
+  // own green/red meaning; the tone only says which figure you are looking at.
   const kpis = [
-    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome)],
+    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome), 'tone-blue'],
     ['Salary · Take-home Saved', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
-      projection(projectedSavings)],
-    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', ''],
-    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '']
+      projection(projectedSavings), 'tone-green'],
+    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative', '', 'tone-amber'],
+    ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '', '', 'tone-red']
   ];
-  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint]) =>
-    `<div class="kpi ${cls}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`
+  document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint, tone]) =>
+    `<div class="kpi ${cls} ${tone}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</div>`
   ).join('');
 }
 
@@ -1894,6 +1894,11 @@ function bindEvents() {
   document.getElementById('editOtSalaryDetail').addEventListener('click', editCurrentOtSalaryDetail);
   document.getElementById('saveNow').addEventListener('click', save);
   document.getElementById('globalSearch').addEventListener('input', debounce(render, 180));
+  // Canvases are sized from their rendered box, so a resized window otherwise
+  // leaves a stale, stretched bitmap behind.
+  window.addEventListener('resize', debounce(() => {
+    if (activeView === 'dashboard') renderCharts();
+  }, 150));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);
