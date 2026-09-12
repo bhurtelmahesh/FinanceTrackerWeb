@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Finance Records</title>
+  <desc id="description">Salary, savings, stocks, and debt in one private dashboard.</desc>
+  <defs>
+    <linearGradient id="background" x1="80" y1="40" x2="1120" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8F6FB"/>
+      <stop offset="0.52" stop-color="#F7FCFD"/>
+      <stop offset="1" stop-color="#DDF3ED"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2085AD"/>
+      <stop offset="1" stop-color="#126582"/>
+    </linearGradient>
+    <linearGradient id="chart" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#2085AD"/>
+      <stop offset="1" stop-color="#35A36A"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#17485B" flood-opacity="0.13"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1080" cy="45" r="205" fill="#BFE7EF" opacity="0.48"/>
+  <circle cx="1120" cy="620" r="240" fill="#C9EBDD" opacity="0.62"/>
+  <path d="M0 540C210 455 330 590 530 522C710 461 860 433 1200 500V630H0Z" fill="#CDECF3" opacity="0.45"/>
+
+  <g transform="translate(76 82)">
+    <rect width="80" height="80" rx="22" fill="url(#brand)"/>
+    <text x="40" y="57" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700">¥</text>
+    <text x="0" y="174" fill="#143848" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800" letter-spacing="-2">Finance Records</text>
+    <text x="2" y="226" fill="#356070" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="500">Salary, savings, stocks, and debt</text>
+    <text x="2" y="261" fill="#356070" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="500">in one private dashboard.</text>
+
+    <g transform="translate(0 333)">
+      <rect width="332" height="60" rx="30" fill="#FFFFFF" opacity="0.88"/>
+      <circle cx="34" cy="30" r="15" fill="#DDF3ED"/>
+      <path d="M27 30L32 35L42 24" fill="none" stroke="#24865A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="61" y="38" fill="#245266" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">Your data stays in your browser</text>
+    </g>
+  </g>
+
+  <g transform="translate(690 72)" filter="url(#shadow)">
+    <rect width="430" height="486" rx="30" fill="#FFFFFF" fill-opacity="0.94" stroke="#C9DEE6" stroke-width="2"/>
+    <rect x="30" y="30" width="194" height="18" rx="9" fill="#D9E8EE"/>
+    <circle cx="370" cy="39" r="10" fill="#35A36A"/>
+    <circle cx="398" cy="39" r="10" fill="#2085AD"/>
+
+    <g transform="translate(30 83)">
+      <rect width="174" height="112" rx="20" fill="#ECF7FB" stroke="#B9DCE8"/>
+      <rect x="20" y="22" width="78" height="11" rx="5" fill="#77AFC4"/>
+      <rect x="20" y="48" width="111" height="18" rx="9" fill="#1E708F"/>
+      <rect x="20" y="82" width="42" height="8" rx="4" fill="#B7D8E4"/>
+      <rect x="69" y="72" width="10" height="18" rx="5" fill="#C5DFE8"/>
+      <rect x="85" y="62" width="10" height="28" rx="5" fill="#A9CFDD"/>
+      <rect x="101" y="51" width="10" height="39" rx="5" fill="#78B1C6"/>
+
+      <rect x="196" width="174" height="112" rx="20" fill="#EFF9F4" stroke="#BDE3D0"/>
+      <rect x="216" y="22" width="75" height="11" rx="5" fill="#79B697"/>
+      <rect x="216" y="48" width="111" height="18" rx="9" fill="#29895B"/>
+      <path d="M307 83L322 68L334 77L350 56" fill="none" stroke="#35A36A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <g transform="translate(30 223)">
+      <rect width="370" height="216" rx="22" fill="#F8FBFC" stroke="#D2E3E9"/>
+      <rect x="20" y="20" width="116" height="12" rx="6" fill="#B8CDD5"/>
+      <path d="M24 164H346M24 121H346M24 78H346" stroke="#DCE9ED" stroke-width="2"/>
+      <path d="M31 163L81 146L130 152L180 106L229 119L279 70L337 48" fill="none" stroke="url(#chart)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="180" cy="106" r="7" fill="#FFFFFF" stroke="#2A9467" stroke-width="5"/>
+      <circle cx="279" cy="70" r="7" fill="#FFFFFF" stroke="#2583A6" stroke-width="5"/>
+      <rect x="28" y="181" width="54" height="8" rx="4" fill="#C6D9E0"/>
+      <rect x="111" y="181" width="54" height="8" rx="4" fill="#C6D9E0"/>
+      <rect x="194" y="181" width="54" height="8" rx="4" fill="#C6D9E0"/>
+      <rect x="277" y="181" width="54" height="8" rx="4" fill="#C6D9E0"/>
+    </g>
+  </g>
+</svg>
