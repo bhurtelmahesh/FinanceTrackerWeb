@@ -1,7 +1,14 @@
+import { searchRecords as findSearchRecords } from './search.mjs';
+
 let state = null;
 let activeView = 'dashboard';
 let activeChart = 'salary';
 let dialogContext = null;
+let visibleSearchResults = [];
+let searchHighlightTimer = null;
+let saveVersion = 0;
+let persistedSaveVersion = 0;
+let activeSaveCount = 0;
 
 const schemas = {
   salary: [
@@ -48,6 +55,15 @@ const titles = {
 };
 
 const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'personalBalances'];
+
+const searchSections = [
+  { collection: 'salary', view: 'salary', label: 'Monthly Savings', keywords: ['salary', 'income', 'savings'] },
+  { collection: 'monthlyDetails', view: 'details', label: 'Salary Details', keywords: ['salary', 'payroll', 'income'] },
+  { collection: 'overtime', view: 'overtime', label: 'Overtime', keywords: ['overtime', 'ot'] },
+  { collection: 'stockRevenue', view: 'stocks', label: 'Stock Revenue', keywords: ['stock', 'stocks', 'revenue', 'win'] },
+  { collection: 'daily', view: 'daily', label: 'Daily Records', keywords: ['daily', 'stock', 'trading'] },
+  { collection: 'personalBalances', view: 'balances', label: 'Debt Records', keywords: ['debt', 'balance', 'lender'] }
+];
 
 // The workbook mirrors the app: one sheet per menu, columns headed the way the
 // tables head them, so a row in Excel reads like the row on screen.
@@ -131,26 +147,224 @@ function setSaveState(text) {
   document.getElementById('saveState').textContent = text;
 }
 
+function updateSaveButton() {
+  const saveButton = document.getElementById('saveNow');
+  if (!saveButton) return;
+  const hasUnsavedChanges = saveVersion > persistedSaveVersion;
+  saveButton.hidden = !hasUnsavedChanges;
+  saveButton.disabled = activeSaveCount > 0;
+}
+
 function hasRecords() {
   return collections.some((collection) => (state[collection] || []).length > 0);
 }
 
 function searchText() {
-  return (document.getElementById('globalSearch')?.value || '').trim().toLowerCase();
+  return (document.getElementById('globalSearch')?.value || '').trim();
 }
 
-const internalFields = new Set(['id', 'derivedFromDetail', 'savingsRate', 'dataUrl', 'storedName']);
-
-function matchesSearch(record) {
-  const q = searchText();
-  if (!q) return true;
-  return Object.entries(record || {})
-    .filter(([key]) => !internalFields.has(key))
-    .some(([, value]) => String(value ?? '').toLowerCase().includes(q));
+function compareSearchRecords(a, b) {
+  const yearDifference = Number(b.year || 0) - Number(a.year || 0);
+  if (yearDifference) return yearDifference;
+  const monthDifference = monthIndex(b.month) - monthIndex(a.month);
+  if (monthDifference) return monthDifference;
+  const dayDifference = Number(b.day || 0) - Number(a.day || 0);
+  if (dayDifference) return dayDifference;
+  return String(b.dateOrLabel || '').localeCompare(String(a.dateOrLabel || ''));
 }
 
-function filterRecords(records) {
-  return (records || []).filter(matchesSearch);
+function recordsForGlobalSearch(section) {
+  if (section.collection === 'stockRevenue') {
+    return yearsFrom(state.stockRevenue)
+      .flatMap((year) => normalizeStockYear(year))
+      .sort(compareSearchRecords);
+  }
+  return (state[section.collection] || []).slice().sort(compareSearchRecords);
+}
+
+function preparedSearchSections() {
+  return searchSections.map((section) => ({
+    ...section,
+    fields: schemas[section.collection],
+    records: recordsForGlobalSearch(section)
+  }));
+}
+
+function searchResultTitle(section, record) {
+  if (section.collection === 'personalBalances') {
+    return [record.group, record.dateOrLabel].filter(Boolean).join(' · ') || 'Debt record';
+  }
+  const period = [normalizeMonth(record.month) || record.month, record.day, record.year]
+    .filter((value) => value !== undefined && value !== null && value !== '')
+    .join(' · ');
+  return period || section.label;
+}
+
+function truncateSearchValue(value, maxLength = 90) {
+  const text = String(value ?? '').trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
+function matchedFieldSummary(result) {
+  const locationFields = new Set(['year', 'month', 'day']);
+  const fields = result.matchingFields.filter(({ key, value }) =>
+    !locationFields.has(key) && value !== undefined && value !== null && String(value).trim() !== ''
+  );
+  if (!fields.length) return '';
+  return fields.slice(0, 2).map(({ key, label, value }) =>
+    `${label}: ${truncateSearchValue(formatValue(key, value))}`
+  ).join(' · ');
+}
+
+function defaultSearchResultSummary(section, record) {
+  if (section.collection === 'salary') {
+    return `Gross ${yen(record.salary)} · Saved ${yen(record.actualSavings)}`;
+  }
+  if (section.collection === 'monthlyDetails') {
+    return `Gross ${yen(record.grossTotal)} · Net ${yen(record.received)}`;
+  }
+  if (section.collection === 'overtime') {
+    const hours = Number(record.hours || 0) + Number(record.miscHours || 0);
+    return `${Math.round(hours * 100) / 100} hours · ${yen(record.amount)}`;
+  }
+  if (section.collection === 'stockRevenue') {
+    return `Actual ${yen(record.actualCumulative)} · Vs target ${yen(record.surplus)}`;
+  }
+  if (section.collection === 'daily') {
+    const detail = record.note || record.status;
+    return `${yen(record.amount)}${detail ? ` · ${truncateSearchValue(detail)}` : ''}`;
+  }
+  return `${yen(record.amount)}${record.note ? ` · ${truncateSearchValue(record.note)}` : ''}`;
+}
+
+function closeGlobalSearch() {
+  const results = document.getElementById('globalSearchResults');
+  results.hidden = true;
+  document.getElementById('globalSearch').setAttribute('aria-expanded', 'false');
+}
+
+function renderGlobalSearch() {
+  const query = searchText();
+  const content = document.getElementById('globalSearchResultsContent');
+  const status = document.getElementById('globalSearchStatus');
+  if (!query) {
+    visibleSearchResults = [];
+    content.innerHTML = '';
+    status.textContent = '';
+    closeGlobalSearch();
+    return;
+  }
+
+  normalizeState();
+  const { matches, total } = findSearchRecords(preparedSearchSections(), query);
+  visibleSearchResults = matches;
+  const resultWord = total === 1 ? 'result' : 'results';
+  status.textContent = total ? `${total} ${resultWord} for ${query}` : `No results for ${query}`;
+
+  if (!total) {
+    content.innerHTML = `
+      <div class="search-results-head"><strong>Search results</strong><span>0 results</span></div>
+      <p class="search-empty">No records match “${escapeHtml(query)}”.</p>`;
+  } else {
+    const groups = new Map();
+    matches.forEach((result, index) => {
+      const entries = groups.get(result.section.collection) || [];
+      entries.push({ result, index });
+      groups.set(result.section.collection, entries);
+    });
+    const shownText = total > matches.length ? `Showing ${matches.length} of ${total}` : `${total} ${resultWord}`;
+    content.innerHTML = `
+      <div class="search-results-head"><strong>Search results</strong><span>${shownText}</span></div>
+      ${[...groups.values()].map((entries) => {
+        const { section } = entries[0].result;
+        return `
+          <section class="search-result-group" aria-labelledby="searchGroup-${section.collection}">
+            <h3 id="searchGroup-${section.collection}">${escapeHtml(section.label)} <span>${entries.length}</span></h3>
+            <ul>${entries.map(({ result, index }) => {
+              const title = searchResultTitle(result.section, result.record);
+              const summary = matchedFieldSummary(result) || defaultSearchResultSummary(result.section, result.record);
+              return `<li><button type="button" class="search-result-item" data-search-result="${index}">
+                <strong>${escapeHtml(title)}</strong>
+                <span>${escapeHtml(summary)}</span>
+              </button></li>`;
+            }).join('')}</ul>
+          </section>`;
+      }).join('')}`;
+  }
+
+  document.getElementById('globalSearchResults').hidden = false;
+  document.getElementById('globalSearch').setAttribute('aria-expanded', 'true');
+}
+
+function setSearchDestinationFilters(section, record) {
+  const year = String(Number(record.year || 0));
+  const month = normalizeMonth(record.month);
+  const dailyMonth = narrowScreen() ? month : '';
+  const filterValues = {
+    salary: [['salaryYearFilter', year]],
+    monthlyDetails: [['detailsYearFilter', year]],
+    overtime: [['otYearFilter', year], ['otMonthFilter', month]],
+    stockRevenue: [['stockYearFilter', year]],
+    daily: [['dailyYearFilter', year], ['dailyMonthFilter', dailyMonth]],
+    personalBalances: []
+  }[section.collection] || [];
+  filterValues.forEach(([idName, value]) => {
+    if (value !== undefined && value !== null && document.getElementById(idName)) {
+      document.getElementById(idName).value = value;
+    }
+  });
+}
+
+function searchTargetFor(result) {
+  const { section, record } = result;
+  const view = document.getElementById(section.view);
+  if (!view) return null;
+  if (section.collection === 'daily') {
+    return [...view.querySelectorAll('.daily-cell-input')].find((input) =>
+      Number(input.dataset.dailyYear) === Number(record.year) &&
+      input.dataset.dailyMonth === normalizeMonth(record.month) &&
+      Number(input.dataset.dailyDay) === Number(record.day)
+    )?.closest('.daily-day-cell') || null;
+  }
+  if (section.collection === 'stockRevenue') {
+    return [...view.querySelectorAll('[data-stock-row-year]')].find((row) =>
+      Number(row.dataset.stockRowYear) === Number(record.year) &&
+      row.dataset.stockRowMonth === normalizeMonth(record.month)
+    ) || null;
+  }
+  return [...view.querySelectorAll('tr[data-record-id]')].find((row) =>
+    row.dataset.recordId === String(record.id)
+  ) || null;
+}
+
+function revealSearchTarget(result) {
+  document.querySelectorAll('.search-target').forEach((element) => element.classList.remove('search-target'));
+  const target = searchTargetFor(result);
+  if (!target) {
+    document.getElementById('globalSearchStatus').textContent = `Opened ${result.section.label}`;
+    return;
+  }
+  clearTimeout(searchHighlightTimer);
+  target.classList.add('search-target');
+  target.tabIndex = -1;
+  target.scrollIntoView({ block: 'center', inline: 'center' });
+  target.focus({ preventScroll: true });
+  document.getElementById('globalSearchStatus').textContent =
+    `Opened ${result.section.label}: ${searchResultTitle(result.section, result.record)}`;
+  searchHighlightTimer = setTimeout(() => {
+    target.classList.remove('search-target');
+    target.removeAttribute('tabindex');
+  }, 2600);
+}
+
+function openGlobalSearchResult(index) {
+  const result = visibleSearchResults[index];
+  if (!result) return;
+  closeGlobalSearch();
+  switchView(result.section.view);
+  setSearchDestinationFilters(result.section, result.record);
+  render();
+  requestAnimationFrame(() => revealSearchTarget(result));
 }
 
 function showSetupIfNeeded() {
@@ -161,9 +375,13 @@ function showSetupIfNeeded() {
 let saveErrorNotified = false;
 
 async function save() {
+  const version = ++saveVersion;
+  activeSaveCount += 1;
+  updateSaveButton();
   setSaveState('Saving...');
   try {
     await window.financeApi.save(state);
+    persistedSaveVersion = Math.max(persistedSaveVersion, version);
     setSaveState('Saved');
     setTimeout(() => setSaveState('Ready'), 1200);
   } catch (error) {
@@ -173,6 +391,9 @@ async function save() {
       saveErrorNotified = true;
       alert(error?.message || 'Saving failed. Export a JSON backup so you do not lose records.');
     }
+  } finally {
+    activeSaveCount -= 1;
+    updateSaveButton();
   }
 }
 
@@ -736,13 +957,13 @@ function renderCharts() {
   if (activeChart === 'stock') {
     const normalizedStock = normalizeStockYear(year);
     drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
-      { label: 'Target', color: '#f9c74f', values: normalizedStock.map((item) => item.targetCumulative) },
+      { label: 'Target', color: '#256f8f', values: normalizedStock.map((item) => item.targetCumulative) },
       {
-        label: 'Actual',
+        label: 'Actual · above / below target',
         color: '#2e7d32',
         legendColors: ['#2e7d32', '#c33f3f'],
         values: normalizedStock.map((item) => item.actualCumulative),
-        colors: normalizedStock.map((item) => !stockHasActual(item) ? '#c8d3d8' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
+        colors: normalizedStock.map((item) => !stockHasActual(item) ? '#7894a0' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
       }
     ]);
     return;
@@ -750,7 +971,13 @@ function renderCharts() {
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
   drawBarChart(document.getElementById('salaryChart'), salary.map((item) => item.month), [
     { label: 'Gross Income', color: '#256f8f', values: salary.map((item) => item.salary) },
-    { label: 'Take-home', color: '#2e7d32', values: salary.map((item) => item.actualSavings) }
+    {
+      label: 'Take-home · positive / negative',
+      color: '#2e7d32',
+      legendColors: ['#2e7d32', '#c33f3f'],
+      values: salary.map((item) => item.actualSavings),
+      colors: salary.map((item) => Number(item.actualSavings || 0) > 0 ? '#2e7d32' : Number(item.actualSavings || 0) < 0 ? '#c33f3f' : '#7894a0')
+    }
   ]);
 }
 
@@ -808,7 +1035,7 @@ function renderTable(containerId, collection, fields, records, options = {}) {
   const deleteHint = options.deleteHint || '';
   const rowClass = options.rowClass || (() => '');
   const rows = records.map((item) => `
-    <tr class="${rowClass(item)}">
+    <tr class="${rowClass(item)}" data-record-id="${escapeHtml(item.id)}" data-record-collection="${escapeHtml(collection)}">
       ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
       <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${canDelete(item)
         ? `<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`
@@ -832,7 +1059,7 @@ function renderSalary() {
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
-  const records = sortRecordsByMonth(filterRecords(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords));
+  const records = sortRecordsByMonth(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords);
   renderTable('salaryTable', 'salary', schemas.salary, records, {
     rowClass: (item) => monthHasElapsed(item, item.year) ? '' : 'row-projected',
     canDelete: (item) => !item.derivedFromDetail,
@@ -844,7 +1071,7 @@ function renderDetails() {
   const years = yearsFrom(state.monthlyDetails);
   const selected = document.getElementById('detailsYearFilter').value || years[years.length - 1] || '';
   fillSelect('detailsYearFilter', selectableYears(state.monthlyDetails), selected, 'All years');
-  const records = sortRecordsByMonth(filterRecords(selected ? state.monthlyDetails.filter((item) => String(item.year) === String(selected)) : state.monthlyDetails));
+  const records = sortRecordsByMonth(selected ? state.monthlyDetails.filter((item) => String(item.year) === String(selected)) : state.monthlyDetails);
   renderTable('detailsTable', 'monthlyDetails', schemas.monthlyDetails, records);
 }
 
@@ -861,13 +1088,13 @@ function renderOvertime() {
     .filter((item) => Number(item.year) === Number(year) && normalizeMonth(item.month) === month)
     .sort((a, b) => Number(a.day || 0) - Number(b.day || 0));
   renderOtSummary(year, month, recordsForMonth);
-  renderTable('overtimeTable', 'overtime', schemas.overtime, filterRecords(recordsForMonth));
+  renderTable('overtimeTable', 'overtime', schemas.overtime, recordsForMonth);
 }
 
 function renderStocks() {
   const selected = selectedStockYear();
   fillSelect('stockYearFilter', selectableYears(state.stockRevenue), selected);
-  const records = filterRecords(normalizeStockYear(selected));
+  const records = normalizeStockYear(selected);
   renderStockGrid(records, selected);
 }
 
@@ -886,7 +1113,7 @@ function renderStockGrid(records, year) {
     const verdict = stockVerdict(item);
     const verdictClass = verdict === '✓' ? 'stock-pass' : verdict === 'X' ? 'stock-fail' : 'stock-flat';
     return `
-      <tr>
+      <tr data-stock-row-year="${year}" data-stock-row-month="${escapeHtml(month)}"${item.id ? ` data-record-id="${escapeHtml(item.id)}"` : ''}>
         <th class="stock-month-cell">${escapeHtml(month)}</th>
         ${fields.map(([key]) => `
           <td>
@@ -935,7 +1162,7 @@ function renderDaily() {
   if (narrowScreen() && !selected) selected = defaultDailyMonth(year);
   fillSelectPairs('dailyMonthFilter', monthOptions, selected, 'All months');
   const recordsForYear = state.daily.filter((item) => Number(item.year) === Number(year));
-  const records = filterRecords(selected ? recordsForYear.filter((item) => item.month === selected) : recordsForYear);
+  const records = selected ? recordsForYear.filter((item) => item.month === selected) : recordsForYear;
   renderDailyGrid(records, selected, year);
 }
 
@@ -1048,7 +1275,7 @@ function renderDailyGrid(records, selectedMonth, year) {
 }
 
 function renderBalances() {
-  renderTable('balanceTable', 'personalBalances', schemas.personalBalances, filterRecords(state.personalBalances));
+  renderTable('balanceTable', 'personalBalances', schemas.personalBalances, state.personalBalances);
 }
 
 function renderOtSummary(year, month, records) {
@@ -2145,6 +2372,11 @@ function bindEvents() {
     }
   });
   document.body.addEventListener('click', (event) => {
+    const searchResult = event.target.closest('[data-search-result]');
+    if (searchResult) {
+      openGlobalSearchResult(Number(searchResult.dataset.searchResult));
+      return;
+    }
     const previewSheet = event.target.closest('[data-preview-salary-sheet]');
     if (previewSheet) previewArchivedFile('salary', previewSheet.dataset.previewSalarySheet, previewSheet.dataset.previewTitle);
     const openSheet = event.target.closest('[data-open-salary-sheet]');
@@ -2197,7 +2429,44 @@ function bindEvents() {
   document.getElementById('otQuickForm').addEventListener('submit', addQuickOtEntry);
   document.getElementById('editOtSalaryDetail').addEventListener('click', editCurrentOtSalaryDetail);
   document.getElementById('saveNow').addEventListener('click', save);
-  document.getElementById('globalSearch').addEventListener('input', debounce(render, 180));
+  const searchInput = document.getElementById('globalSearch');
+  const searchResults = document.getElementById('globalSearchResults');
+  const debouncedSearch = debounce(renderGlobalSearch, 180);
+  document.getElementById('globalSearchForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    renderGlobalSearch();
+  });
+  searchInput.addEventListener('input', debouncedSearch);
+  searchInput.addEventListener('focus', () => {
+    if (searchText()) renderGlobalSearch();
+  });
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      renderGlobalSearch();
+      return;
+    }
+    if (event.key === 'Escape') {
+      closeGlobalSearch();
+      return;
+    }
+    if (event.key === 'ArrowDown' && !searchResults.hidden) {
+      const firstResult = searchResults.querySelector('.search-result-item');
+      if (firstResult) {
+        event.preventDefault();
+        firstResult.focus();
+      }
+    }
+  });
+  searchResults.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    closeGlobalSearch();
+    searchInput.focus();
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.search-shell')) closeGlobalSearch();
+  });
   // Canvases are sized from their rendered box, so a resized window otherwise
   // leaves a stale, stretched bitmap behind.
   let wasNarrow = narrowScreen();
@@ -2277,6 +2546,7 @@ async function init() {
   state.salarySheets = state.salarySheets || [];
   state.unpaidBills = state.unpaidBills || [];
   bindEvents();
+  updateSaveButton();
   switchView('dashboard');
   if (document.getElementById('saveState').textContent === 'Loading...') {
     setSaveState('Ready');

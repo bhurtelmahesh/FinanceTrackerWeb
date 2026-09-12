@@ -73,7 +73,18 @@
         <h2 id="viewTitle">Dashboard</h2>
       </div>
       <div class="top-actions">
-        <input id="globalSearch" type="search" placeholder="Search records" aria-label="Search records">
+        <div class="search-shell">
+          <form id="globalSearchForm" class="global-search-form" role="search">
+            <label class="sr-only" for="globalSearch">Search all financial records</label>
+            <input id="globalSearch" type="search" placeholder="Search all records" autocomplete="off"
+              aria-controls="globalSearchResults" aria-expanded="false" aria-haspopup="true">
+            <button id="globalSearchButton" type="submit">Search</button>
+          </form>
+          <p id="globalSearchStatus" class="sr-only" role="status" aria-live="polite"></p>
+          <section id="globalSearchResults" class="search-results" aria-label="Search results" hidden>
+            <div id="globalSearchResultsContent"></div>
+          </section>
+        </div>
         <span id="saveState" role="status" aria-live="polite">Loading...</span>
         <button id="saveNow">Save</button>
       </div>
