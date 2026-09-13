@@ -110,7 +110,14 @@
     </header>
 
     <section id="dashboard" class="view active">
-      <div class="kpi-grid" id="kpis"></div>
+      <aside class="dashboard-insights" aria-label="Dashboard insights">
+        <div class="kpi-grid" id="kpis"></div>
+        <section class="dashboard-summary" aria-labelledby="dashboardSummaryTitle">
+          <p class="eyebrow">At a glance</p>
+          <h3 id="dashboardSummaryTitle">Salary summary</h3>
+          <ul id="dashboardSummary" aria-live="polite"></ul>
+        </section>
+      </aside>
       <section class="panel chart-stack">
         <div class="chart-tabs">
           <div class="chart-tablist" role="tablist" aria-label="Chart">

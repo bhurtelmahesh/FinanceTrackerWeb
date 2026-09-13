@@ -735,10 +735,21 @@ canvas {
 
 #dashboard.view.active {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, 232px);
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 236px);
   grid-template-rows: minmax(0, 1fr);
   gap: 18px;
   overflow: hidden;
+}
+
+#dashboard .dashboard-insights {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
 }
 
 #dashboard .chart-stack {
@@ -905,13 +916,11 @@ canvas {
 }
 
 #dashboard .kpi-grid {
-  grid-column: 2;
-  grid-row: 1;
   grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: minmax(0, 1fr);
-  gap: 18px;
+  grid-auto-rows: auto;
+  gap: 8px;
   margin-bottom: 0;
-  align-content: stretch;
+  align-content: start;
   min-height: 0;
 }
 
@@ -919,12 +928,83 @@ canvas {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 12px 15px;
-  min-height: 0;
+  min-height: 74px;
+  padding: 9px 13px;
+  border-radius: 13px;
 }
 #dashboard .kpi span { font-size: 11px; }
-#dashboard .kpi strong { font-size: clamp(18px, 1.5vw, 23px); margin-top: 3px; }
+#dashboard .kpi strong { font-size: clamp(17px, 1.35vw, 21px); margin-top: 2px; }
 #dashboard .kpi small { font-size: 10px; line-height: 1.35; }
+#dashboard .kpi::after {
+  right: 0;
+  bottom: -7px;
+  width: 58px;
+  height: 58px;
+  opacity: .18;
+}
+
+.dashboard-summary {
+  padding: 14px 15px 15px;
+  border: 1px solid #b9d8e4;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #eef8fb, #f7fbfa);
+  box-shadow: var(--shadow);
+}
+
+.dashboard-summary[data-focus="salary"] {
+  border-color: #a9cedc;
+  background: linear-gradient(145deg, #eaf6fa, #f7fbfa);
+}
+
+.dashboard-summary[data-focus="stock"] {
+  border-color: #acd5ba;
+  background: linear-gradient(145deg, #edf8f1, #f8fbfa);
+}
+
+.dashboard-summary .eyebrow {
+  margin: 0 0 3px;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dashboard-summary h3 {
+  margin: 0;
+  color: #24546a;
+  font-size: 15px;
+}
+
+.dashboard-summary ul {
+  display: grid;
+  gap: 9px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dashboard-summary li {
+  position: relative;
+  padding-left: 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.dashboard-summary li::before {
+  content: "";
+  position: absolute;
+  top: .52em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+.dashboard-summary[data-focus="salary"] li::before { background: var(--blue); }
+.dashboard-summary[data-focus="stock"] li::before { background: var(--green); }
 
 #dashboard canvas {
   /* Fill the panel. A fixed ratio left a third of the panel empty on a tall
@@ -1502,6 +1582,8 @@ canvas {
     overflow: visible;
   }
   #dashboard.view.active { display: block; overflow: visible; }
+  #dashboard .dashboard-insights { display: block; margin-bottom: 18px; }
+  #dashboard .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
   canvas {
     height: 340px;
   }
@@ -1516,6 +1598,7 @@ canvas {
 }
 
 @media (max-width: 640px) {
+  #dashboard .kpi-grid { grid-template-columns: minmax(0, 1fr); }
   .top-actions,
   .backup-actions,
   .toolbar {
