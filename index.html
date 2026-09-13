@@ -30,8 +30,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-1985e47c.js"></script>
-  <link rel="stylesheet" href="./assets/index-a450fcad.css">
+  <script type="module" crossorigin src="./assets/index-c05897d7.js"></script>
+  <link rel="stylesheet" href="./assets/index-d234ac41.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -97,7 +97,7 @@
         <div class="search-shell">
           <form id="globalSearchForm" class="global-search-form" role="search">
             <label class="sr-only" for="globalSearch">Search all financial records</label>
-            <input id="globalSearch" type="search" placeholder="Search all records" autocomplete="off"
+            <input id="globalSearch" type="search" placeholder="Search records and help" autocomplete="off"
               aria-controls="globalSearchResults" aria-expanded="false" aria-haspopup="true">
             <button id="globalSearchButton" type="submit">Search</button>
           </form>
@@ -112,7 +112,14 @@
     </header>
 
     <section id="dashboard" class="view active">
-      <div class="kpi-grid" id="kpis"></div>
+      <aside class="dashboard-insights" aria-label="Dashboard insights">
+        <div class="kpi-grid" id="kpis"></div>
+        <section class="dashboard-summary" aria-labelledby="dashboardSummaryTitle">
+          <p class="eyebrow">At a glance</p>
+          <h3 id="dashboardSummaryTitle">Salary summary</h3>
+          <ul id="dashboardSummary" aria-live="polite"></ul>
+        </section>
+      </aside>
       <section class="panel chart-stack">
         <div class="chart-tabs">
           <div class="chart-tablist" role="tablist" aria-label="Chart">
@@ -121,7 +128,18 @@
             <button type="button" role="tab" id="chartTabStock" data-chart="stock"
               aria-selected="false" aria-controls="chartPanelStock" tabindex="-1">Stock</button>
           </div>
-          <select id="dashboardYear" aria-label="Dashboard year"></select>
+          <div class="chart-tools">
+            <div class="chart-zoom" role="group" aria-label="Chart zoom">
+              <button type="button" id="chartZoomReset" title="Show the whole year again" hidden>Reset</button>
+              <button type="button" id="chartZoomOut" aria-label="Zoom out" title="Zoom out &mdash; or scroll on the chart">
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17M6 8.5h5"/></svg>
+              </button>
+              <button type="button" id="chartZoomIn" aria-label="Zoom in" title="Zoom in &mdash; or scroll on the chart">
+                <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17M6 8.5h5M8.5 6v5"/></svg>
+              </button>
+            </div>
+            <select id="dashboardYear" aria-label="Dashboard year"></select>
+          </div>
         </div>
         <div class="chart-panel" id="chartPanelSalary" role="tabpanel" aria-labelledby="chartTabSalary">
           <canvas id="salaryChart" width="760" height="380" role="img" aria-label="Gross income and take-home chart">Gross income and take-home chart</canvas>
@@ -276,7 +294,7 @@
       <div class="help-doc">
         <section class="panel help-panel">
           <h3>How every number is worked out</h3>
-          <p class="muted">Amounts are yen. Green means money gained, red means money lost or owed &mdash; the same rule everywhere in the app.</p>
+          <p class="muted">Amounts are yen. Green means money gained or on track, red means money lost, owed or falling short &mdash; the same rule everywhere in the app. On the dashboard charts, falling short means take-home under half of gross pay, or a stock total below its target.</p>
           <p><strong>Salary and stock are kept apart.</strong> Salary Details and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
         </section>
 
@@ -329,7 +347,7 @@
             <dt>Savings Goal</dt>
             <dd>Whatever you set. It is never calculated.</dd>
             <dt>What counts as a month so far</dt>
-            <dd>Simply whether the month has happened yet, by the calendar. Bonus rows always count.</dd>
+            <dd>Simply whether the month has happened yet, by the calendar. A bonus counts from the month it is paid: the year&rsquo;s first bonus from June, a later one from December.</dd>
             <dt>Cumulative Capital</dt>
             <dd>A running total of Actual Savings through the year: each month carries on from the one before it, and every new year starts again from zero.</dd>
           </dl>
@@ -341,13 +359,21 @@
           <p class="muted">Each figure is a button: click it to open the section it comes from.</p>
           <dl class="help-list">
             <dt>Salary &middot; Gross Income</dt>
-            <dd>Gross pay for the months that have already happened, plus any bonus rows. The caption gives the projected full-year figure &mdash; the same total with your future months included &mdash; and how many months have gone by.</dd>
+            <dd>Gross pay for the months that have already happened, including any bonus already paid. While any months are still to come, the caption gives the projected full-year figure &mdash; the same total with those months included.</dd>
             <dt>Salary &middot; Take-home Saved</dt>
             <dd>The same split for what reached you after deductions, with the projected full year in the caption.</dd>
             <dt>Stock &middot; Win Total</dt>
             <dd>The latest Actual Win Cumulative recorded that year. The caption gives that same month&rsquo;s Target Cumulative, so you can see the figure against the goal it was measured on.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered. The caption counts the records and the distinct lenders behind that total.</dd>
+            <dt>Salary chart</dt>
+            <dd>Gross income in blue and take-home in green, month by month. Take-home turns red, marked &#9660;, wherever it falls below half of gross pay. Each bonus has its own shaded column, placed where it was paid.</dd>
+            <dt>Stock chart</dt>
+            <dd>Actual Win Cumulative against Target Cumulative in gold. Actual is green, marked &#9650;, on or above target and red, marked &#9660;, below it, with the gap between the two lines shaded to match. The latest figure is labelled at the end of the line.</dd>
+            <dt>Months still to come</dt>
+            <dd>Dashed on both charts, with hollow markers. On the Salary chart they are the projected months that the headline totals leave out.</dd>
+            <dt>Hover and zoom</dt>
+            <dd>Hover or tap a month for its figures. Scroll or pinch on a chart to zoom in on a few months &mdash; on a narrow window hold Ctrl or &#8984; while scrolling &mdash; drag sideways to move along the year, and double-click or press Reset to see the whole year again. Zoomed in, the axis fits the months in view.</dd>
           </dl>
         </section>
 
@@ -359,7 +385,7 @@
             <dt>Vs Target</dt>
             <dd>Actual Win Cumulative &minus; Target Cumulative.</dd>
             <dt>Result</dt>
-            <dd>A tick above target, a cross below, a dash when the month has no actual figure.</dd>
+            <dd>A tick above target, a cross below, a dash when the month has no actual figure or lands exactly on target.</dd>
           </dl>
         </section>
 
@@ -393,6 +419,11 @@
     </section>
 
   </main>
+
+  <button type="button" id="backToMenu" class="back-to-menu" aria-label="Back to menu" hidden>
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 12.5 10 7.5l5 5"/></svg>
+    Menu
+  </button>
 
   <dialog id="recordDialog">
     <form method="dialog" id="recordForm">
