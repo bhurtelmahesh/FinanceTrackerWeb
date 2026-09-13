@@ -2683,15 +2683,21 @@ function chooseFiles({ accept = '', multiple = false } = {}) {
     input.type = 'file';
     input.accept = accept;
     input.multiple = multiple;
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    input.style.opacity = '0';
+    document.body.appendChild(input);
+
     let settled = false;
     const finish = (files) => {
       if (settled) return;
       settled = true;
+      input.remove();
       resolve(files);
     };
-    input.addEventListener('change', () => finish([...input.files]));
-    input.addEventListener('cancel', () => finish([]));
-    window.addEventListener('focus', () => setTimeout(() => finish([]), 500), { once: true });
+
+    input.addEventListener('change', () => finish(Array.from(input.files || [])), { once: true });
+    input.addEventListener('cancel', () => finish([]), { once: true });
     input.click();
   });
 }
