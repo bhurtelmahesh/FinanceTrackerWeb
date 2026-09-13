@@ -34,14 +34,10 @@ Live site: https://bhurtelmahesh.github.io/FinanceTrackerWeb/
 - Production build passed.
 - JavaScript syntax check passed.
 - Live audit confirmed metadata, manifest, accessibility hooks, import/save failure handling, table value escaping, mobile grid styling, and CSP presence.
-- Screenshots below were taken after first-run UI and demo dashboard content loaded.
+- The screenshot below was taken after the first-run UI loaded.
 
 ## Screenshots
 
 ### First-Run Screen
 
 ![FinanceTracker first-run screen loaded](./assets/financetracker-first-run-loaded.png)
-
-### Loaded Demo Dashboard
-
-![FinanceTracker dashboard loaded](./assets/financetracker-dashboard-loaded.png)
