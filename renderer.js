@@ -784,10 +784,16 @@ function latestStockActualForYear(year) {
   return Number(latestStockRecordForYear(year)?.actualCumulative || 0);
 }
 
-// Whether a month has happened is a calendar question. Bonus rows are typed by
-// hand, so they always count.
-function monthHasElapsed(record, year) {
-  const monthNumber = monthIndex(record.month);
+// Whether a month has happened is a calendar question. A bonus counts from the
+// month it is paid in: June for the year's first, December for any later one — the
+// order sortRecordsByMonth files them in. `records` is the list the row came from,
+// which says which of the year's bonuses it is.
+function monthHasElapsed(record, year, records) {
+  let monthNumber = monthIndex(record.month);
+  if (isBonusMonth(record.month)) {
+    const bonuses = records.filter((item) => Number(item.year) === Number(year) && isBonusMonth(item.month));
+    monthNumber = bonuses.indexOf(record) > 0 ? 12 : 6;
+  }
   if (!monthNumber) return true;
   const now = new Date();
   if (Number(year) !== now.getFullYear()) return Number(year) < now.getFullYear();
@@ -797,9 +803,9 @@ function monthHasElapsed(record, year) {
 function renderKpis() {
   const year = currentYear();
   const salary = (state.salary || []).filter((item) => Number(item.year) === year);
-  const elapsed = salary.filter((item) => monthHasElapsed(item, year));
+  const elapsed = salary.filter((item) => monthHasElapsed(item, year, salary));
   const monthRows = salary.filter((item) => monthIndex(item.month) > 0);
-  const elapsedMonths = monthRows.filter((item) => monthHasElapsed(item, year)).length;
+  const elapsedMonths = monthRows.filter((item) => monthHasElapsed(item, year, salary)).length;
   const projectedMonths = monthRows.length - elapsedMonths;
   const debts = state.personalBalances;
   const actualIncome = sum(elapsed, 'salary');
@@ -1061,7 +1067,7 @@ function renderSalary() {
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
   const records = sortRecordsByMonth(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords);
   renderTable('salaryTable', 'salary', schemas.salary, records, {
-    rowClass: (item) => monthHasElapsed(item, item.year) ? '' : 'row-projected',
+    rowClass: (item) => monthHasElapsed(item, item.year, records) ? '' : 'row-projected',
     canDelete: (item) => !item.derivedFromDetail,
     deleteHint: 'This row is generated from Salary Details. Delete the matching salary detail instead.'
   });
@@ -2147,7 +2153,7 @@ window.financeApi = {
     const years = yearsFrom(next.salary);
     addSheet('Summary', years.map((year) => {
       const rows = (next.salary || []).filter((item) => Number(item.year) === year);
-      const elapsed = rows.filter((item) => monthHasElapsed(item, year));
+      const elapsed = rows.filter((item) => monthHasElapsed(item, year, rows));
       const stock = (next.stockRevenue || [])
         .filter((item) => Number(item.year) === year && Number(item.actualCumulative || 0) !== 0)
         .sort((a, b) => monthIndex(a.month) - monthIndex(b.month)).at(-1);
