@@ -2326,26 +2326,10 @@ function editCurrentOtSalaryDetail() {
   });
 }
 
+// Demo data is invented here in code, never loaded from a file, so no real record
+// can find its way into it. (A seed file built from real records used to be
+// published alongside the app.)
 async function buildDemoData() {
-  try {
-    const response = await fetch('./public-seed.json');
-    if (response.ok) {
-      const seed = normalizeLoadedData(await response.json());
-      seed.meta = {
-        ...seed.meta,
-        sourceFile: 'Sample finance records',
-        startedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        dataPath: 'Browser private storage'
-      };
-      seed.personalBalances = [];
-      seed.salarySheets = [];
-      seed.unpaidBills = [];
-      return seed;
-    }
-  } catch (error) {
-    // Fall back to generated sample data when the static seed file is unavailable.
-  }
   const year = 2026;
   const monthlyDetails = monthOptions.map(([month], index) => {
     const basic = 240000 + (index % 3) * 5000;
