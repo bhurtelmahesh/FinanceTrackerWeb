@@ -177,7 +177,7 @@ nav { display: grid; gap: 4px; cursor: pointer; }
   cursor: default;
 }
 
-.nav-items { display: grid; gap: 4px; }
+.nav-items { display: grid; gap: 6px; }
 
 /* Backup actions sit at the foot of the sidebar, as in the desktop app. */
 .sidebar-actions {
@@ -213,13 +213,18 @@ nav { display: grid; gap: 4px; cursor: pointer; }
   border-color: var(--line);
   color: var(--ink);
 }
+/* Every item looks like a button at rest — a light tile — so it is plain which
+   labels open a page without hovering over them first. */
 nav button {
   text-align: left;
-  border: 1px solid transparent;
-  background: transparent;
-  padding: 12px 13px;
+  border: 1px solid #c9dde5;
+  background: rgba(255, 255, 255, .6);
+  box-shadow: 0 1px 2px rgba(35, 70, 88, .06);
+  padding: 11px 13px;
   border-radius: 10px;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
+
 nav button.active {
   background: linear-gradient(90deg, #cfe8f2, #def1ed);
   border-color: #9fc9d7;
@@ -227,9 +232,16 @@ nav button.active {
   font-weight: 700;
 }
 
+/* A light brand-blue fill: plainly different from the white tiles at rest and
+   from the bold, gradient-filled current page. */
 nav button:not(.active):hover {
-  background: rgba(255, 255, 255, .62);
-  border-color: #b7d2db;
+  background: #d9edf5;
+  border-color: #86bdd1;
+  color: #175c7a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav button { transition: none; }
 }
 
 .app {
@@ -779,12 +791,118 @@ canvas {
   outline-offset: -2px;
 }
 
+.chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-zoom {
+  display: flex;
+  gap: 4px;
+}
+
+.chart-zoom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
+  border-color: #c9dde5;
+  border-radius: 8px;
+  background: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Magnifier icons, so the zoom buttons don't read as add/remove record. */
+.chart-zoom svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.chart-zoom button[hidden] { display: none; }
+
+.chart-zoom button:disabled {
+  opacity: .45;
+  cursor: default;
+  border-color: #c9dde5;
+}
+
+/* A phone pinches and drags to zoom, so only Reset earns a button there, and the
+   header tightens up so Reset and the year still fit beside the tabs. */
+@media (max-width: 640px) {
+  #chartZoomIn,
+  #chartZoomOut { display: none; }
+  .chart-tabs { gap: 8px; }
+  .chart-tablist button { padding: 12px 11px; }
+  .chart-tools { gap: 6px; }
+  .chart-zoom button { padding: 0 8px; }
+}
+
 .chart-panel {
+  position: relative;
   flex: 1;
   min-height: 0;
 }
 
 .chart-panel[hidden] { display: none; }
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 5px;
+  min-width: 150px;
+  padding: 9px 12px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(35, 70, 88, .14);
+  color: var(--muted);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.chart-tooltip[hidden] { display: none; }
+
+.chart-tooltip strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.chart-tooltip-row {
+  display: grid;
+  grid-template-columns: 14px auto 1fr;
+  align-items: center;
+  gap: 7px;
+}
+
+.chart-tooltip-row i {
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.chart-tooltip-row i.dashed {
+  background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px);
+}
+
+.chart-tooltip-row b {
+  color: var(--ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip small {
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+}
 
 #dashboard .kpi-grid {
   grid-column: 2;
@@ -810,10 +928,15 @@ canvas {
 
 #dashboard canvas {
   /* Fill the panel. A fixed ratio left a third of the panel empty on a tall
-     window; the bar-width cap is what keeps a wide chart looking right. */
+     window. Vertical swipes still scroll the page; sideways drags and pinches
+     are the chart's, for panning and zooming. */
   width: 100%;
   height: 100%;
+  touch-action: pan-y;
 }
+
+#dashboard canvas.is-zoomed { cursor: grab; }
+#dashboard canvas.is-panning { cursor: grabbing; }
 
 .data-grid {
   display: grid;
@@ -1593,11 +1716,11 @@ canvas {
   vertical-align: middle;
 }
 
-/* Help */
+/* Help. It spans the page like every other section, so a wide screen gets long
+   lines rather than a strip of empty space beside them. */
 .help-doc {
   display: grid;
   gap: 16px;
-  max-width: 860px;
 }
 
 .help-panel h3 {
@@ -1649,4 +1772,44 @@ canvas {
 @media (max-width: 640px) {
   .help-list { grid-template-columns: 1fr; gap: 2px 0; }
   .help-list dd { margin-bottom: 10px; }
+}
+
+/* On the stacked layout the menu scrolls away above the content; this floating
+   button brings it back. It shows only while the menu is out of view. */
+.back-to-menu {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 17px 11px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(23, 92, 122, .32);
+}
+
+.back-to-menu:hover { background: #1d5d78; }
+
+.back-to-menu svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.back-to-menu[hidden] { display: none; }
+
+@media (min-width: 981px) {
+  .back-to-menu { display: none; }
+}
+
+/* Room under the last row so the button never sits on top of it. */
+@media (max-width: 980px) {
+  .view { padding-bottom: 84px; }
 }

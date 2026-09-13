@@ -838,7 +838,67 @@ function renderKpis() {
   ).join('');
 }
 
-function drawBarChart(canvas, labels, series) {
+// Both dashboard charts share one frame — a wrapping legend, a round-number
+// y-axis and one slot per month — and draw their figures over it as lines.
+const chartInk = {
+  text: '#22313a',
+  muted: '#5b6d76',
+  grid: '#e8eff2',
+  baseline: '#b8c8cf',
+  hover: '#edf4f7',
+  bonus: '#fbf5e4',
+  upcoming: '#8a9aa2',
+  gross: '#256f8f',
+  target: '#c98500',
+  good: '#2e7d32',
+  below: '#c33f3f',
+  goodWash: 'rgba(46, 125, 50, .16)',
+  belowWash: 'rgba(195, 63, 63, .16)'
+};
+const chartFont = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+// Take-home under this share of gross income is drawn red.
+const takeHomeFloor = 0.5;
+
+function chartYen(value) {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '−' : '';
+  const compact = (n) => String(Number(n.toFixed(2)));
+  if (abs >= 1e6) return `${sign}¥${compact(abs / 1e6)}M`;
+  if (abs >= 1e3) return `${sign}¥${compact(abs / 1e3)}k`;
+  return `${sign}¥${Math.round(abs)}`;
+}
+
+// Steps of 1, 2, 2.5 or 5 × a power of ten, so ticks read ¥100k / ¥200k rather
+// than equal eighths of the maximum (¥44k, ¥131k). The 4% pad keeps the tallest
+// mark off the top line. Of the steps nearest the wanted tick count, the one that
+// wastes the least room above the data wins. Without `includeZero` (a zoomed-in
+// chart) the axis fits the figures instead, never crossing zero when they all sit
+// on one side of it.
+function niceScale(values, targetTicks, includeZero = true) {
+  if (!values.length) return null;
+  let hi = Math.max(...values);
+  let lo = Math.min(...values);
+  if (includeZero) {
+    hi = Math.max(0, hi) * 1.04;
+    lo = Math.min(0, lo) * 1.04;
+  } else {
+    const pad = (hi - lo) * 0.08 || Math.abs(hi) * 0.1 || 1;
+    hi = hi <= 0 ? Math.min(0, hi + pad) : hi + pad;
+    lo = lo >= 0 ? Math.max(0, lo - pad) : lo - pad;
+  }
+  if (hi === lo) return null;
+  const magnitude = 10 ** Math.floor(Math.log10((hi - lo) / targetTicks));
+  const scales = [1, 2, 2.5, 5, 10].map((factor) => {
+    const step = factor * magnitude;
+    const min = Math.floor(lo / step) * step;
+    const max = Math.ceil(hi / step) * step;
+    return { min, max, step, miss: Math.abs((max - min) / step - targetTicks) };
+  });
+  return scales.reduce((best, scale) =>
+    scale.miss < best.miss || (scale.miss === best.miss && scale.max - scale.min < best.max - best.min) ? scale : best);
+}
+
+function prepareCanvas(canvas) {
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -851,140 +911,623 @@ function drawBarChart(canvas, labels, series) {
     canvas.height = pixelHeight;
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
-  const leftPad = 58;
-  const rightPad = 30;
-  const bottomPad = labels.length > 10 ? 78 : 68;
-  const topPad = 42;
-  const allValues = series.flatMap((s) => s.values.map((v) => Number(v || 0)));
-  const maxValue = Math.max(0, ...allValues);
-  const minValue = Math.min(0, ...allValues);
-  const span = Math.max(1, maxValue - minValue);
-  const chartBottom = h - bottomPad;
-  const chartRight = w - rightPad;
-  const chartHeight = chartBottom - topPad;
-  const zeroY = chartBottom - ((0 - minValue) / span) * chartHeight;
-  const barGroup = (chartRight - leftPad) / Math.max(labels.length, 1);
-  const shortYen = (value) => {
-    const n = Number(value || 0);
-    const abs = Math.abs(n);
-    if (abs >= 1000000) return `¥${Math.round(n / 100000) / 10}M`;
-    if (abs >= 1000) return `¥${Math.round(n / 1000)}k`;
-    return `¥${Math.round(n)}`;
+  return { ctx, w, h };
+}
+
+// A monthly checkpoint: a dot, or a triangle pointing up (ahead) or down (behind)
+// — a shape as well as a colour, because this red and green look alike to
+// red-green colour-blind readers. Months still to come are hollow. A 2px white
+// ring keeps markers clear of the lines they sit on.
+function drawMarker(ctx, x, y, { color, shape = 'dot', hollow = false, r = 4 }) {
+  const path = () => {
+    ctx.beginPath();
+    if (shape === 'dot') {
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    } else {
+      const s = r + 1.5;
+      const tip = shape === 'up' ? -1 : 1;
+      ctx.moveTo(x - s, y - tip * s * 0.7);
+      ctx.lineTo(x + s, y - tip * s * 0.7);
+      ctx.lineTo(x, y + tip * s);
+      ctx.closePath();
+    }
   };
-  ctx.strokeStyle = '#d8e2e7';
-  ctx.beginPath();
-  ctx.moveTo(leftPad, zeroY);
-  ctx.lineTo(chartRight, zeroY);
+  ctx.setLineDash([]);
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#ffffff';
+  path();
   ctx.stroke();
-  ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillStyle = '#60717b';
-  const tickCount = 8;
-  Array.from({ length: tickCount + 1 }, (_, index) => index / tickCount).forEach((step) => {
-    const y = chartBottom - chartHeight * step;
-    ctx.strokeStyle = Math.abs(y - zeroY) < 0.5 ? '#c2d0d6' : '#edf2f4';
-    ctx.beginPath();
-    ctx.moveTo(leftPad, y);
-    ctx.lineTo(chartRight, y);
+  ctx.fillStyle = hollow ? '#ffffff' : color;
+  path();
+  ctx.fill();
+  if (hollow) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color;
+    path();
     ctx.stroke();
-    ctx.fillText(shortYen(minValue + span * step), leftPad - 8, y + 4);
-  });
-  const barGap = 3;
-  // Fill more of each slot than the old formula did, but still cap the width so a
-  // very wide chart draws bars rather than slabs.
-  const barWidth = Math.min(32, Math.max(5, (barGroup - 9 - barGap * (series.length - 1)) / series.length));
-  const clusterWidth = barWidth * series.length + barGap * (series.length - 1);
-  // Round only the end the bar grows towards, so it still sits flat on the axis.
-  const fillBar = (x, y, w, h, roundTop) => {
-    const r = Math.min(4, w / 2, h);
+  }
+}
+
+// Joins consecutive points; a null breaks the line. Each piece takes the colour
+// for the side of its reference line it is on — split exactly where it crosses —
+// and is dashed where it runs into a month that has not come yet.
+function strokeSeries(ctx, frame, points, colorFor) {
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const piece = (a, b, excess, dashed) => {
+    ctx.strokeStyle = colorFor(excess);
+    ctx.setLineDash(dashed ? [6, 5] : []);
     ctx.beginPath();
-    if (roundTop) {
-      ctx.moveTo(x, y + h);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h);
-    } else {
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + h - r);
-      ctx.quadraticCurveTo(x, y + h, x + r, y + h);
-      ctx.lineTo(x + w - r, y + h);
-      ctx.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
-      ctx.lineTo(x + w, y);
-    }
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(a.x, frame.yAt(a.value));
+    ctx.lineTo(b.x, frame.yAt(b.value));
+    ctx.stroke();
   };
-  labels.forEach((label, i) => {
-    const groupCenter = leftPad + i * barGroup + barGroup / 2;
-    series.forEach((s, j) => {
-      const value = Number(s.values[i] || 0);
-      const bh = Math.abs(value) / span * chartHeight;
-      const bx = groupCenter - clusterWidth / 2 + j * (barWidth + barGap);
-      const by = value >= 0 ? zeroY - bh : zeroY;
-      ctx.fillStyle = s.colors ? s.colors[i] : s.color;
-      fillBar(bx, by, barWidth, bh, value >= 0);
-    });
-    ctx.fillStyle = '#60717b';
-    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    const labelText = String(label).slice(0, 6);
-    if (barGroup < 28) {
-      ctx.save();
-      ctx.translate(groupCenter, chartBottom + 46);
-      ctx.rotate(-Math.PI / 4);
-      ctx.textAlign = 'right';
-      ctx.fillText(labelText, 0, 0);
-      ctx.restore();
-    } else {
-      ctx.textAlign = 'center';
-      ctx.fillText(labelText, groupCenter, chartBottom + 34);
+  points.forEach((b, k) => {
+    const a = points[k - 1];
+    if (!a || !b) return;
+    if ((a.excess >= 0) === (b.excess >= 0)) {
+      piece(a, b, a.excess, b.upcoming);
+      return;
     }
+    const f = a.excess / (a.excess - b.excess);
+    const cross = { x: a.x + f * (b.x - a.x), value: a.value + f * (b.value - a.value) };
+    piece(a, cross, a.excess, b.upcoming);
+    piece(cross, b, b.excess, b.upcoming);
   });
-  series.forEach((s, i) => {
-    const legendX = leftPad + i * 110;
-    const legendColors = s.legendColors || [s.color];
-    legendColors.forEach((color, colorIndex) => {
-      ctx.fillStyle = color;
-      ctx.fillRect(legendX + colorIndex * 14, 10, 12, 12);
-    });
-    ctx.fillStyle = '#263238';
-    ctx.textAlign = 'left';
-    ctx.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(s.label, legendX + legendColors.length * 14 + 6, 20);
+  ctx.setLineDash([]);
+}
+
+function drawLegendKey(ctx, item, x, y) {
+  ctx.strokeStyle = item.color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.setLineDash(item.dash || []);
+  ctx.beginPath();
+  ctx.moveTo(x + 1, y);
+  ctx.lineTo(x + 15, y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  if (item.marker) drawMarker(ctx, x + 8, y, { color: item.color, shape: item.marker, r: 3.5 });
+}
+
+// The fewest months a chart can be zoomed in to.
+const minZoomSlots = 3;
+
+function clampZoomWidth(width, count) {
+  return Math.min(count, Math.max(Math.min(minZoomSlots, count), width));
+}
+
+// The months in view, as a window [start, end) over the month slots; a null
+// view is the whole year.
+function clampView(view, count) {
+  if (!view) return { start: 0, end: count, full: true };
+  const width = clampZoomWidth(view.end - view.start, count);
+  const start = Math.min(Math.max(0, view.start), count - width);
+  return { start, end: start + width, full: width >= count };
+}
+
+// chart: { labels, valuesAt(i) (the figures month i plots), legend, bonus?,
+// emptyText, drawMarks(ctx, frame, hoverIndex), tooltip(i) }. Draws the frame
+// for the months in view and records the geometry on the canvas so the hover and
+// zoom layers can map a pointer back to a month.
+function drawMonthChart(canvas, chart, hoverIndex = -1) {
+  const { ctx, w, h } = prepareCanvas(canvas);
+  const { labels } = chart;
+  const count = Math.max(labels.length, 1);
+  const view = clampView(canvas.chartView, count);
+  ctx.font = chartFont;
+  ctx.textBaseline = 'middle';
+
+  // The whole year sits on a zero baseline. Zoomed in, the axis fits the months
+  // in view — plus the one just past each edge, so a line leaving the plot is not
+  // cut off — the way a trading chart does. A year with nothing to plot keeps just
+  // the zero line and says so.
+  const allValues = labels.flatMap((_, i) => chart.valuesAt(i));
+  const hasData = allValues.some((value) => value !== 0);
+  const first = Math.max(0, Math.floor(view.start - 0.5));
+  const last = Math.min(labels.length - 1, Math.ceil(view.end - 0.5));
+  const viewValues = view.full ? allValues : labels.slice(first, last + 1).flatMap((_, k) => chart.valuesAt(first + k));
+  const scale = niceScale(viewValues.length ? viewValues : allValues, h < 340 ? 4 : 5, view.full)
+    || { min: 0, max: 1, step: 1 };
+  const ticks = hasData
+    ? Array.from({ length: Math.round((scale.max - scale.min) / scale.step) + 1 }, (_, k) => scale.min + k * scale.step)
+    : [0];
+  const plotLeft = Math.ceil(Math.max(...ticks.map((value) => ctx.measureText(chartYen(value)).width))) + 14;
+  const plotRight = w - 10;
+
+  // Lay the legend out first: it wraps on a narrow canvas and pushes the plot down.
+  const legendRows = [[]];
+  let legendX = plotLeft;
+  chart.legend.forEach((item) => {
+    const width = 22 + ctx.measureText(item.label).width;
+    if (legendX > plotLeft && legendX + width > plotRight) {
+      legendRows.push([]);
+      legendX = plotLeft;
+    }
+    legendRows[legendRows.length - 1].push({ ...item, x: legendX });
+    legendX += width + 18;
   });
+  const plotTop = 12 + legendRows.length * 20 + 12;
+  const plotBottom = h - 30;
+  const slot = (plotRight - plotLeft) / (view.end - view.start);
+  const frame = {
+    slot,
+    plotTop,
+    plotBottom,
+    plotLeft,
+    plotRight,
+    xAt: (i) => plotLeft + slot * (i + 0.5 - view.start),
+    yAt: (value) => plotBottom - (value - scale.min) / (scale.max - scale.min) * (plotBottom - plotTop)
+  };
+  // Everything drawn for a month is kept inside the plot, so zoomed-in lines run
+  // off its edges instead of over the axis labels.
+  const clipToPlot = (top, bottom) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(plotLeft, top, plotRight - plotLeft, bottom - top);
+    ctx.clip();
+  };
+
+  // Bands sit behind everything: bonus columns always, the hovered month on top.
+  const band = (i, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(frame.xAt(i) - slot / 2 + 2, plotTop - 6, slot - 4, plotBottom - plotTop + 30);
+  };
+  clipToPlot(0, h);
+  labels.forEach((label, i) => { if (chart.bonus?.[i]) band(i, chartInk.bonus); });
+  if (hoverIndex >= 0) band(hoverIndex, chartInk.hover);
+  ctx.restore();
+
+  ctx.lineWidth = 1;
+  ctx.textAlign = 'right';
+  ticks.forEach((value) => {
+    const y = Math.round(frame.yAt(value)) + 0.5;
+    ctx.strokeStyle = Math.abs(value) < scale.step / 1000 ? chartInk.baseline : chartInk.grid;
+    ctx.beginPath();
+    ctx.moveTo(plotLeft, y);
+    ctx.lineTo(plotRight, y);
+    ctx.stroke();
+    ctx.fillStyle = chartInk.muted;
+    ctx.fillText(chartYen(value), plotLeft - 10, y);
+  });
+
+  if (!hasData) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = chartInk.muted;
+    ctx.fillText(chart.emptyText, (plotLeft + plotRight) / 2, (plotTop + plotBottom) / 2);
+  }
+  clipToPlot(plotTop - 14, plotBottom + 14);
+  chart.drawMarks(ctx, frame, hoverIndex);
+  ctx.restore();
+
+  // Month names fit on a desktop; a phone gets initials rather than tilted text.
+  // Only months whose centre is in view are labelled.
+  ctx.font = chartFont;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = chartInk.muted;
+  const shown = labels
+    .map((label, i) => ({ text: String(label).slice(0, 6), x: frame.xAt(i) }))
+    .filter(({ x }) => x >= plotLeft - 0.5 && x <= plotRight + 0.5);
+  const widths = shown.map(({ text }) => ctx.measureText(text).width);
+  const roomy = widths.every((width, k) => k === 0 || (width + widths[k - 1]) / 2 + 6 <= slot);
+  shown.forEach(({ text, x }) => {
+    ctx.fillText(roomy ? text : text.charAt(0).toUpperCase(), x, plotBottom + 15);
+  });
+
+  ctx.textAlign = 'left';
+  legendRows.forEach((row, rowIndex) => row.forEach((item) => {
+    const y = 18 + rowIndex * 20;
+    drawLegendKey(ctx, item, item.x, y);
+    ctx.fillStyle = chartInk.text;
+    ctx.fillText(item.label, item.x + 22, y);
+  }));
+
+  canvas.classList.toggle('is-zoomed', !view.full);
+  canvas.chartModel = {
+    chart,
+    hoverIndex,
+    count,
+    view,
+    slot,
+    plotLeft,
+    plotWidth: plotRight - plotLeft,
+    // Where x falls in slot units, e.g. 2.5 is the middle of the third month.
+    slotPosition: (x) => view.start + (x - plotLeft) / slot,
+    slotAt: (x) => {
+      if (x < plotLeft || x > plotRight) return -1;
+      const i = Math.floor(view.start + (x - plotLeft) / slot);
+      return i >= 0 && i < labels.length ? i : -1;
+    },
+    slotCenter: frame.xAt
+  };
+}
+
+function salaryChart(year) {
+  const source = (state.salary || []).filter((item) => Number(item.year) === year);
+  const rows = source.map((item) => {
+    const gross = Number(item.salary || 0);
+    const takeHome = Number(item.actualSavings || 0);
+    return {
+      label: item.month,
+      gross,
+      takeHome,
+      // How far take-home sits above (or below) its floor share of gross.
+      excess: takeHome - gross * takeHomeFloor,
+      bonus: isBonusMonth(item.month),
+      upcoming: !monthHasElapsed(item, year, source),
+      hasFigures: gross !== 0 || takeHome !== 0
+    };
+  });
+  const figures = rows.filter((row) => row.hasFigures);
+  const floorLabel = `${takeHomeFloor * 100}%`;
+  const legend = [{ label: 'Gross income', color: chartInk.gross, marker: 'dot' }];
+  if (figures.some((row) => row.excess >= 0)) legend.push({ label: 'Take-home', color: chartInk.good, marker: 'dot' });
+  if (figures.some((row) => row.excess < 0)) {
+    legend.push({ label: `Take-home below ${floorLabel} of gross`, color: chartInk.below, marker: 'down' });
+  }
+  if (figures.some((row) => row.upcoming)) legend.push({ label: 'Upcoming', color: chartInk.upcoming, dash: [4, 3] });
+  const status = (excess) => (excess >= 0 ? chartInk.good : chartInk.below);
+  return {
+    labels: rows.map((row) => row.label),
+    valuesAt: (i) => (rows[i].hasFigures ? [rows[i].gross, rows[i].takeHome] : []),
+    bonus: rows.map((row) => row.bonus),
+    legend,
+    emptyText: `No salary figures for ${year} yet`,
+    // The lines run through every column in the order it was paid, bonuses
+    // included, so each dot sits on its line; the shaded column is what marks a
+    // bonus. A month with no figures at all breaks the line rather than dropping
+    // it to zero.
+    drawMarks(ctx, frame, hoverIndex) {
+      const columns = rows.map((row, i) => ({ ...row, x: frame.xAt(i) }));
+      const line = (key) => columns.map((row) => (row.hasFigures
+        ? { x: row.x, value: row[key], excess: key === 'takeHome' ? row.excess : 0, upcoming: row.upcoming }
+        : null));
+      strokeSeries(ctx, frame, line('gross'), () => chartInk.gross);
+      strokeSeries(ctx, frame, line('takeHome'), status);
+      rows.forEach((row, i) => {
+        if (!row.hasFigures) return;
+        const x = frame.xAt(i);
+        const r = i === hoverIndex ? 5 : 4;
+        drawMarker(ctx, x, frame.yAt(row.gross), { color: chartInk.gross, hollow: row.upcoming, r });
+        drawMarker(ctx, x, frame.yAt(row.takeHome), {
+          color: status(row.excess), shape: row.excess < 0 ? 'down' : 'dot', hollow: row.upcoming, r
+        });
+      });
+    },
+    tooltip(i) {
+      const row = rows[i];
+      const share = row.gross > 0 ? Math.round(row.takeHome / row.gross * 100) : null;
+      return {
+        title: `${row.label} ${year}${row.upcoming ? ' · projected' : ''}`,
+        rows: [
+          { value: yen(row.takeHome), label: 'Take-home', color: status(row.excess), dashed: row.upcoming },
+          { value: yen(row.gross), label: 'Gross income', color: chartInk.gross, dashed: row.upcoming }
+        ],
+        note: share === null ? '' : `Take-home is ${share}% of gross${row.excess < 0 ? `, below ${floorLabel}` : ''}`
+      };
+    }
+  };
+}
+
+function stockChart(year) {
+  const source = normalizeStockYear(year);
+  const rows = source.map((item) => {
+    const hasTarget = item.targetCumulative !== 0;
+    return {
+      label: item.month,
+      target: item.targetCumulative,
+      actual: item.actualCumulative,
+      // Without a target there is nothing to fall short of.
+      excess: hasTarget ? item.actualCumulative - item.targetCumulative : 0,
+      hasTarget,
+      hasActual: stockHasActual(item),
+      upcoming: !monthHasElapsed(item, year, source)
+    };
+  });
+  const measured = rows.filter((row) => row.hasActual);
+  const legend = [{ label: 'Target', color: chartInk.target, marker: 'dot' }];
+  if (measured.some((row) => row.excess >= 0)) legend.push({ label: 'On or above target', color: chartInk.good, marker: 'up' });
+  if (measured.some((row) => row.excess < 0)) legend.push({ label: 'Below target', color: chartInk.below, marker: 'down' });
+  if (rows.some((row) => row.upcoming && row.hasTarget)) legend.push({ label: 'Upcoming', color: chartInk.upcoming, dash: [4, 3] });
+  const status = (excess) => (excess >= 0 ? chartInk.good : chartInk.below);
+  return {
+    labels: rows.map((row) => row.label),
+    valuesAt: (i) => [...(rows[i].hasTarget ? [rows[i].target] : []), ...(rows[i].hasActual ? [rows[i].actual] : [])],
+    legend,
+    emptyText: `No stock figures for ${year} yet`,
+    // Running totals read best as lines. Actual is green while it is on or above
+    // the target line and red while below it, and the gap between the two is
+    // shaded to match — each split where the lines cross.
+    drawMarks(ctx, frame, hoverIndex) {
+      const shade = (points, ahead) => {
+        ctx.fillStyle = ahead ? chartInk.goodWash : chartInk.belowWash;
+        ctx.beginPath();
+        points.forEach(([x, value], k) => (k ? ctx.lineTo(x, frame.yAt(value)) : ctx.moveTo(x, frame.yAt(value))));
+        ctx.closePath();
+        ctx.fill();
+      };
+      rows.slice(1).forEach((b, k) => {
+        const a = rows[k];
+        if (!a.hasActual || !b.hasActual || !a.hasTarget || !b.hasTarget) return;
+        const [x0, x1] = [frame.xAt(k), frame.xAt(k + 1)];
+        if (a.excess * b.excess >= 0) {
+          if (a.excess || b.excess) shade([[x0, a.actual], [x1, b.actual], [x1, b.target], [x0, a.target]], a.excess + b.excess > 0);
+          return;
+        }
+        const f = a.excess / (a.excess - b.excess);
+        const cross = [x0 + f * (x1 - x0), a.actual + f * (b.actual - a.actual)];
+        shade([[x0, a.actual], cross, [x0, a.target]], a.excess > 0);
+        shade([cross, [x1, b.actual], [x1, b.target]], b.excess > 0);
+      });
+      const line = (has, key) => rows.map((row, i) => (has(row)
+        ? { x: frame.xAt(i), value: row[key], excess: key === 'actual' ? row.excess : 0, upcoming: row.upcoming }
+        : null));
+      strokeSeries(ctx, frame, line((row) => row.hasTarget, 'target'), () => chartInk.target);
+      strokeSeries(ctx, frame, line((row) => row.hasActual, 'actual'), status);
+      rows.forEach((row, i) => {
+        const x = frame.xAt(i);
+        const r = i === hoverIndex ? 5 : 4;
+        if (row.hasTarget) drawMarker(ctx, x, frame.yAt(row.target), { color: chartInk.target, hollow: row.upcoming, r });
+        if (!row.hasActual) return;
+        drawMarker(ctx, x, frame.yAt(row.actual), {
+          color: status(row.excess), shape: row.excess < 0 ? 'down' : 'up', hollow: row.upcoming, r
+        });
+      });
+      // Name the latest figure at the end of the line — it is the Win Total —
+      // while that month is in view.
+      const last = rows.findLastIndex((row) => row.hasActual);
+      if (last < 0) return;
+      const [x, y] = [frame.xAt(last), frame.yAt(rows[last].actual)];
+      if (x < frame.plotLeft || x > frame.plotRight) return;
+      const text = chartYen(rows[last].actual);
+      ctx.font = `600 ${chartFont}`;
+      const width = ctx.measureText(text).width;
+      const fitsRight = x + 10 + width <= frame.plotRight;
+      ctx.textAlign = fitsRight ? 'left' : 'center';
+      const [labelX, labelY] = fitsRight ? [x + 10, y] : [Math.min(x, frame.plotRight - 2 - width / 2), y - 16];
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(text, labelX, labelY);
+      ctx.fillStyle = chartInk.text;
+      ctx.fillText(text, labelX, labelY);
+    },
+    tooltip(i) {
+      const row = rows[i];
+      const note = !row.hasActual ? 'No actual figure yet'
+        : !row.hasTarget ? ''
+        : row.excess > 0 ? `${yen(row.excess)} above target`
+        : row.excess < 0 ? `${yen(-row.excess)} below target`
+        : 'On target';
+      return {
+        title: `${row.label} ${year}${row.upcoming ? ' · upcoming' : ''}`,
+        rows: [
+          row.hasActual && { value: yen(row.actual), label: 'Actual', color: status(row.excess), dashed: row.upcoming },
+          row.hasTarget && { value: yen(row.target), label: 'Target', color: chartInk.target, dashed: row.upcoming }
+        ].filter(Boolean),
+        note
+      };
+    }
+  };
+}
+
+function activeChartCanvas() {
+  return document.getElementById(activeChart === 'stock' ? 'stockChart' : 'salaryChart');
 }
 
 function renderCharts() {
   const year = currentYear();
-  if (activeChart === 'stock') {
-    const normalizedStock = normalizeStockYear(year);
-    drawBarChart(document.getElementById('stockChart'), normalizedStock.map((item) => item.month), [
-      { label: 'Target', color: '#256f8f', values: normalizedStock.map((item) => item.targetCumulative) },
-      {
-        label: 'Actual · above / below target',
-        color: '#2e7d32',
-        legendColors: ['#2e7d32', '#c33f3f'],
-        values: normalizedStock.map((item) => item.actualCumulative),
-        colors: normalizedStock.map((item) => !stockHasActual(item) ? '#7894a0' : Number(item.surplus || 0) >= 0 ? '#2e7d32' : '#c33f3f')
-      }
-    ]);
-    return;
+  const canvas = activeChartCanvas();
+  // Another year is another set of months: start again from the whole year.
+  if (canvas.chartYear !== year) canvas.chartView = null;
+  canvas.chartYear = year;
+  hideChartTooltip();
+  drawMonthChart(canvas, activeChart === 'stock' ? stockChart(year) : salaryChart(year));
+  updateZoomControls();
+}
+
+function updateZoomControls() {
+  const model = activeChartCanvas().chartModel;
+  const zoomed = Boolean(model && !model.view.full);
+  document.getElementById('chartZoomReset').hidden = !zoomed;
+  document.getElementById('chartZoomOut').disabled = !zoomed;
+  document.getElementById('chartZoomIn').disabled = !model
+    || model.view.end - model.view.start <= clampZoomWidth(0, model.count);
+}
+
+// Shows `width` months from `start` and redraws. A window that reaches both ends
+// is the whole year again.
+function setChartView(canvas, start, width) {
+  const model = canvas.chartModel;
+  if (!model) return;
+  const view = clampView({ start, end: start + width }, model.count);
+  canvas.chartView = view.end - view.start >= model.count - 1e-6 ? null : view;
+  drawMonthChart(canvas, model.chart, -1);
+  chartTooltipFor(canvas).hidden = true;
+  updateZoomControls();
+}
+
+// A factor under 1 zooms in and over 1 zooms out, keeping the month under x (or
+// the middle of the view) where it is.
+function zoomChart(canvas, factor, x) {
+  const model = canvas.chartModel;
+  if (!model) return;
+  const { start, end } = model.view;
+  const width = end - start;
+  const next = clampZoomWidth(width * factor, model.count);
+  const anchor = x === undefined ? start + width / 2 : model.slotPosition(x);
+  setChartView(canvas, anchor - (anchor - start) * (next / width), next);
+}
+
+function resetChartZoom(canvas) {
+  if (!canvas.chartModel) return;
+  setChartView(canvas, 0, canvas.chartModel.count);
+}
+
+// One tooltip per chart panel. Values lead and labels follow; everything goes in
+// through textContent because month labels are typed by the user.
+function chartTooltipFor(canvas) {
+  let tip = canvas.parentElement.querySelector('.chart-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.className = 'chart-tooltip';
+    tip.hidden = true;
+    canvas.parentElement.append(tip);
   }
-  const salary = (state.salary || []).filter((item) => Number(item.year) === year);
-  drawBarChart(document.getElementById('salaryChart'), salary.map((item) => item.month), [
-    { label: 'Gross Income', color: '#256f8f', values: salary.map((item) => item.salary) },
-    {
-      label: 'Take-home · positive / negative',
-      color: '#2e7d32',
-      legendColors: ['#2e7d32', '#c33f3f'],
-      values: salary.map((item) => item.actualSavings),
-      colors: salary.map((item) => Number(item.actualSavings || 0) > 0 ? '#2e7d32' : Number(item.actualSavings || 0) < 0 ? '#c33f3f' : '#7894a0')
+  return tip;
+}
+
+function hideChartTooltip() {
+  document.querySelectorAll('.chart-tooltip').forEach((tip) => { tip.hidden = true; });
+}
+
+// Pinned beside the hovered month, at the pointer's height.
+function showChartTooltip(canvas, index, pointerY) {
+  const model = canvas.chartModel;
+  const tip = chartTooltipFor(canvas);
+  if (tip.hidden || tip.dataset.index !== String(index)) fillChartTooltip(tip, model.chart.tooltip(index));
+  tip.dataset.index = String(index);
+  tip.hidden = false;
+  const x = canvas.offsetLeft + model.slotCenter(index);
+  const panel = canvas.parentElement;
+  const fitsRight = x + 16 + tip.offsetWidth <= panel.clientWidth;
+  const left = fitsRight ? x + 16 : x - 16 - tip.offsetWidth;
+  const top = canvas.offsetTop + pointerY - tip.offsetHeight / 2;
+  tip.style.left = `${Math.max(0, Math.min(left, panel.clientWidth - tip.offsetWidth))}px`;
+  tip.style.top = `${Math.max(0, Math.min(top, panel.clientHeight - tip.offsetHeight))}px`;
+}
+
+function fillChartTooltip(tip, content) {
+  const title = document.createElement('strong');
+  title.textContent = content.title;
+  const lines = content.rows.map((row) => {
+    const line = document.createElement('div');
+    line.className = 'chart-tooltip-row';
+    const key = document.createElement('i');
+    key.className = row.dashed ? 'dashed' : '';
+    key.style.color = row.color;
+    const value = document.createElement('b');
+    value.textContent = row.value;
+    const label = document.createElement('span');
+    label.textContent = row.label;
+    line.append(key, value, label);
+    return line;
+  });
+  tip.replaceChildren(title, ...lines);
+  if (content.note) {
+    const note = document.createElement('small');
+    note.textContent = content.note;
+    tip.append(note);
+  }
+}
+
+// Hover or tap a month for its figures. And, like a trading chart: scroll or
+// pinch to zoom around the pointer, drag sideways to move along the year, and
+// double-click to see the whole year again.
+function bindChartInteraction(canvas) {
+  const pointers = new Map();
+  let drag = null;
+  let pinch = null;
+  const localX = (clientX) => clientX - canvas.getBoundingClientRect().left;
+  const hover = (event) => {
+    const model = canvas.chartModel;
+    if (!model) return;
+    const rect = canvas.getBoundingClientRect();
+    const index = model.slotAt(event.clientX - rect.left);
+    if (index !== model.hoverIndex) drawMonthChart(canvas, model.chart, index);
+    if (index < 0) chartTooltipFor(canvas).hidden = true;
+    else showChartTooltip(canvas, index, event.clientY - rect.top);
+  };
+  const clear = () => {
+    const model = canvas.chartModel;
+    // The canvas on the hidden tab has no size to redraw at; it redraws when shown.
+    if (model?.hoverIndex >= 0 && canvas.getClientRects().length) drawMonthChart(canvas, model.chart, -1);
+    chartTooltipFor(canvas).hidden = true;
+  };
+  const twoFingers = () => {
+    const [a, b] = [...pointers.values()];
+    return { distance: Math.hypot(a.x - b.x, a.y - b.y) || 1, mid: localX((a.x + b.x) / 2) };
+  };
+
+  canvas.addEventListener('pointerdown', (event) => {
+    const model = canvas.chartModel;
+    if (!model || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.size === 2) {
+      const { distance, mid } = twoFingers();
+      pinch = { distance, width: model.view.end - model.view.start, anchor: model.slotPosition(mid) };
+      drag = null;
+      chartTooltipFor(canvas).hidden = true;
+      return;
     }
-  ]);
+    drag = { x: event.clientX, start: model.view.start, slot: model.slot, moved: false };
+    canvas.setPointerCapture(event.pointerId);
+    hover(event);
+  });
+
+  canvas.addEventListener('pointermove', (event) => {
+    const model = canvas.chartModel;
+    if (!model) return;
+    if (pointers.has(event.pointerId)) pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pinch && pointers.size === 2) {
+      const { distance, mid } = twoFingers();
+      const width = clampZoomWidth(pinch.width * pinch.distance / distance, model.count);
+      setChartView(canvas, pinch.anchor - (mid - model.plotLeft) * width / model.plotWidth, width);
+      return;
+    }
+    // Once zoomed in, a press that moves sideways drags the months along.
+    if (drag && pointers.has(event.pointerId) && !model.view.full) {
+      const dx = event.clientX - drag.x;
+      if (drag.moved || Math.abs(dx) > 4) {
+        drag.moved = true;
+        canvas.classList.add('is-panning');
+        setChartView(canvas, drag.start - dx / drag.slot, model.view.end - model.view.start);
+        return;
+      }
+    }
+    hover(event);
+  });
+
+  const release = (event) => {
+    pointers.delete(event.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (!pointers.size) {
+      drag = null;
+      canvas.classList.remove('is-panning');
+    }
+  };
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
+  canvas.addEventListener('dblclick', () => resetChartZoom(canvas));
+
+  canvas.addEventListener('wheel', (event) => {
+    const model = canvas.chartModel;
+    if (!model) return;
+    const unit = event.deltaMode === 1 ? 33 : event.deltaMode === 2 ? 400 : 1;
+    const [dx, dy] = [event.deltaX * unit, event.deltaY * unit];
+    const zoomKey = event.ctrlKey || event.metaKey;
+    if (!zoomKey && Math.abs(dx) > Math.abs(dy)) {
+      if (model.view.full) return;
+      event.preventDefault();
+      setChartView(canvas, model.view.start + dx / model.slot, model.view.end - model.view.start);
+      return;
+    }
+    // Where the page itself scrolls (the stacked layout), a plain wheel keeps
+    // scrolling it; Ctrl/⌘ + scroll or a trackpad pinch zooms there instead.
+    if (!zoomKey && window.matchMedia('(max-width: 980px)').matches) return;
+    event.preventDefault();
+    zoomChart(canvas, Math.exp(dy * (zoomKey ? 0.01 : 0.0015)), localX(event.clientX));
+    hover(event);
+  }, { passive: false });
+
+  // A finger lifting off counts as leaving, so on touch the tooltip stays up
+  // until the next tap somewhere else.
+  canvas.addEventListener('pointerleave', (event) => { if (event.pointerType !== 'touch' && !drag) clear(); });
+  document.addEventListener('pointerdown', (event) => { if (event.target !== canvas) clear(); });
 }
 
 function switchChart(chart) {
@@ -2353,6 +2896,14 @@ async function previewArchivedFile(kind, storedName, title) {
 }
 
 function bindEvents() {
+  ['salaryChart', 'stockChart'].forEach((id) => bindChartInteraction(document.getElementById(id)));
+  document.getElementById('chartZoomIn').addEventListener('click', () => zoomChart(activeChartCanvas(), 1 / 1.5));
+  document.getElementById('chartZoomOut').addEventListener('click', () => zoomChart(activeChartCanvas(), 1.5));
+  document.getElementById('chartZoomReset').addEventListener('click', () => {
+    resetChartZoom(activeChartCanvas());
+    // The button hides once the whole year is back; keep focus in the toolbar.
+    document.getElementById('chartZoomIn').focus();
+  });
   document.querySelector('.chart-tablist').addEventListener('click', (event) => {
     const tab = event.target.closest('button[data-chart]');
     if (tab) switchChart(tab.dataset.chart);
@@ -2366,6 +2917,17 @@ function bindEvents() {
   document.getElementById('kpis').addEventListener('click', (event) => {
     const tile = event.target.closest('button[data-view]');
     if (tile) switchView(tile.dataset.view);
+  });
+  // On the stacked layout the menu scrolls out of sight once a section opens, so
+  // a floating button appears to bring it back — and lands focus on the current
+  // item for keyboard users.
+  const nav = document.getElementById('nav');
+  const backToMenu = document.getElementById('backToMenu');
+  new IntersectionObserver(([entry]) => { backToMenu.hidden = entry.isIntersecting; }).observe(nav);
+  backToMenu.addEventListener('click', () => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelector('.sidebar').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    nav.querySelector('button.active')?.focus({ preventScroll: true });
   });
   document.getElementById('nav').addEventListener('click', (event) => {
     const button = event.target.closest('button[data-view]');
