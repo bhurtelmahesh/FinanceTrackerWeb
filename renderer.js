@@ -1,4 +1,4 @@
-import { searchRecords as findSearchRecords } from './search.mjs';
+import { searchRecords as findSearchRecords, searchSnippet } from './search.mjs';
 
 let state = null;
 let activeView = 'dashboard';
@@ -62,7 +62,15 @@ const searchSections = [
   { collection: 'overtime', view: 'overtime', label: 'Overtime', keywords: ['overtime', 'ot'] },
   { collection: 'stockRevenue', view: 'stocks', label: 'Stock Revenue', keywords: ['stock', 'stocks', 'revenue', 'win'] },
   { collection: 'daily', view: 'daily', label: 'Daily Records', keywords: ['daily', 'stock', 'trading'] },
-  { collection: 'personalBalances', view: 'balances', label: 'Debt Records', keywords: ['debt', 'balance', 'lender'] }
+  { collection: 'personalBalances', view: 'balances', label: 'Debt Records', keywords: ['debt', 'balance', 'lender'] },
+  // Last, so records always list ahead of the explanations.
+  {
+    collection: 'help',
+    view: 'help',
+    label: 'Help',
+    keywords: ['how', 'explain'],
+    fields: [['heading', 'Section'], ['topic', 'Topic'], ['text', 'Help text']]
+  }
 ];
 
 // The workbook mirrors the app: one sheet per menu, columns headed the way the
@@ -173,7 +181,23 @@ function compareSearchRecords(a, b) {
   return String(b.dateOrLabel || '').localeCompare(String(a.dateOrLabel || ''));
 }
 
+// Help is searched straight from the page, so results can never drift from what
+// it says: one entry per term and its definition, one per standalone paragraph.
+function helpSearchRecords() {
+  return [...document.querySelectorAll('#help .help-panel')].flatMap((panel, p) => {
+    const heading = panel.querySelector('h3')?.textContent.trim() || 'Help';
+    const paragraphs = [...panel.querySelectorAll(':scope > p')].map((paragraph, k) => ({
+      id: `help-${p}-p${k}`, heading, topic: heading, text: paragraph.textContent, element: paragraph
+    }));
+    const terms = [...panel.querySelectorAll('.help-list dt')].map((term, k) => ({
+      id: `help-${p}-t${k}`, heading, topic: term.textContent.trim(), text: term.nextElementSibling?.textContent || '', element: term
+    }));
+    return [...paragraphs, ...terms];
+  });
+}
+
 function recordsForGlobalSearch(section) {
+  if (section.collection === 'help') return helpSearchRecords();
   if (section.collection === 'stockRevenue') {
     return yearsFrom(state.stockRevenue)
       .flatMap((year) => normalizeStockYear(year))
@@ -185,12 +209,15 @@ function recordsForGlobalSearch(section) {
 function preparedSearchSections() {
   return searchSections.map((section) => ({
     ...section,
-    fields: schemas[section.collection],
+    fields: section.fields || schemas[section.collection],
     records: recordsForGlobalSearch(section)
   }));
 }
 
 function searchResultTitle(section, record) {
+  if (section.collection === 'help') {
+    return record.topic === record.heading ? record.heading : `${record.heading} · ${record.topic}`;
+  }
   if (section.collection === 'personalBalances') {
     return [record.group, record.dateOrLabel].filter(Boolean).join(' · ') || 'Debt record';
   }
@@ -264,7 +291,7 @@ function renderGlobalSearch() {
   if (!total) {
     content.innerHTML = `
       <div class="search-results-head"><strong>Search results</strong><span>0 results</span></div>
-      <p class="search-empty">No records match “${escapeHtml(query)}”.</p>`;
+      <p class="search-empty">Nothing in your records or Help matches “${escapeHtml(query)}”.</p>`;
   } else {
     const groups = new Map();
     matches.forEach((result, index) => {
@@ -282,7 +309,9 @@ function renderGlobalSearch() {
             <h3 id="searchGroup-${section.collection}">${escapeHtml(section.label)} <span>${entries.length}</span></h3>
             <ul>${entries.map(({ result, index }) => {
               const title = searchResultTitle(result.section, result.record);
-              const summary = matchedFieldSummary(result) || defaultSearchResultSummary(result.section, result.record);
+              const summary = result.section.collection === 'help'
+                ? searchSnippet(result.record.text, query)
+                : matchedFieldSummary(result) || defaultSearchResultSummary(result.section, result.record);
               return `<li><button type="button" class="search-result-item" data-search-result="${index}">
                 <strong>${escapeHtml(title)}</strong>
                 <span>${escapeHtml(summary)}</span>
@@ -319,6 +348,7 @@ function searchTargetFor(result) {
   const { section, record } = result;
   const view = document.getElementById(section.view);
   if (!view) return null;
+  if (section.collection === 'help') return record.element?.isConnected ? record.element : null;
   if (section.collection === 'daily') {
     return [...view.querySelectorAll('.daily-cell-input')].find((input) =>
       Number(input.dataset.dailyYear) === Number(record.year) &&
@@ -345,7 +375,10 @@ function revealSearchTarget(result) {
     return;
   }
   clearTimeout(searchHighlightTimer);
+  // A Help term lights up together with its definition.
+  const partner = target.matches('dt') ? target.nextElementSibling : null;
   target.classList.add('search-target');
+  partner?.classList.add('search-target');
   target.tabIndex = -1;
   target.scrollIntoView({ block: 'center', inline: 'center' });
   target.focus({ preventScroll: true });
@@ -353,6 +386,7 @@ function revealSearchTarget(result) {
     `Opened ${result.section.label}: ${searchResultTitle(result.section, result.record)}`;
   searchHighlightTimer = setTimeout(() => {
     target.classList.remove('search-target');
+    partner?.classList.remove('search-target');
     target.removeAttribute('tabindex');
   }, 2600);
 }

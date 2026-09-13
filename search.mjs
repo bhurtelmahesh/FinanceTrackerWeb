@@ -24,6 +24,21 @@ function tokenMatches(token, text, compactText) {
   return /\d/.test(compactToken) && compactToken !== token && compactText.includes(compactToken);
 }
 
+// A slice of a long passage around the first query term it contains, so a
+// result shows why it matched rather than just the passage's opening words.
+export function searchSnippet(text, rawQuery, maxLength = 90) {
+  const source = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (source.length <= maxLength) return source;
+  const lower = source.toLocaleLowerCase();
+  const hits = normalizeSearchText(rawQuery).split(/\s+/).filter(Boolean)
+    .map((token) => lower.indexOf(token))
+    .filter((index) => index >= 0);
+  const first = hits.length ? Math.min(...hits) : 0;
+  const start = Math.max(0, Math.min(first - Math.floor(maxLength / 3), source.length - maxLength));
+  const end = start + maxLength;
+  return `${start > 0 ? '…' : ''}${source.slice(start, end).trim()}${end < source.length ? '…' : ''}`;
+}
+
 export function searchRecords(sections, rawQuery, maxResults = 60) {
   const query = normalizeSearchText(rawQuery);
   const tokens = query.split(/\s+/).filter(Boolean);
