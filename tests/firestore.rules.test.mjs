@@ -33,6 +33,15 @@ test('a signed-in user can write and read their own valid record', async () => {
   await assertSucceeds(getDoc(reference));
 });
 
+test('legacy salary notes can sync to an account', async () => {
+  const db = testEnvironment.authenticatedContext('alice').firestore();
+  await assertSucceeds(setDoc(doc(db, 'users/alice/salary/legacy'), {
+    id: 'legacy', year: 2025, month: 'Dec', salary: 300000,
+    plannedSavings: 100000, actualSavings: 120000, savingsRate: 0.4,
+    cumulativeCapital: 120000, note: 'Imported from an older backup'
+  }));
+});
+
 test('one user cannot access another user’s records', async () => {
   const bobDb = testEnvironment.authenticatedContext('bob').firestore();
   await assertFails(getDoc(doc(bobDb, 'users/alice/salary/jan')));

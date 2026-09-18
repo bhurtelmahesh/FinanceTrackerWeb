@@ -25,7 +25,7 @@ service cloud.firestore {
       allow read, delete: if owns(userId);
       allow create, update: if owns(userId) && validRecord([
         'id', 'year', 'month', 'salary', 'plannedSavings', 'actualSavings',
-        'cumulativeCapital', 'savingsRate'
+        'cumulativeCapital', 'savingsRate', 'note'
       ]);
     }
 
