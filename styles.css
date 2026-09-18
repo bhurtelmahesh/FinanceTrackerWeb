@@ -130,7 +130,11 @@ select:focus-visible {
 .sidebar {
   position: sticky;
   top: 0;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   background: linear-gradient(180deg, rgba(229, 243, 248, .96), rgba(237, 248, 244, .94));
   backdrop-filter: blur(18px);
   border-right: 1px solid var(--line);
@@ -1599,9 +1603,15 @@ canvas {
   }
   .sidebar {
     position: static;
+    height: auto;
     min-height: auto;
+    overflow: visible;
+    scrollbar-gutter: auto;
     padding: 16px;
   }
+  /* These shortcuts duplicate the complete controls on Backup & Import and
+     otherwise push the primary page content too far down on narrow screens. */
+  .sidebar-actions { display: none; }
   .nav-items {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
