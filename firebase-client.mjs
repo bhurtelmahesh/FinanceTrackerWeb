@@ -17,6 +17,8 @@ import {
   writeBatch
 } from 'firebase/firestore';
 
+import { cloudCollections, forCloud } from './cloud-fields.mjs';
+
 const firebaseConfig = {
   projectId: 'bhurtel-finance-tracker',
   appId: '1:933813388738:web:c1ba834dfa2d4116ba025b',
@@ -26,14 +28,7 @@ const firebaseConfig = {
   messagingSenderId: '933813388738'
 };
 
-export const cloudCollections = [
-  'salary',
-  'monthlyDetails',
-  'overtime',
-  'stockRevenue',
-  'daily',
-  'personalBalances'
-];
+export { cloudCollections };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -48,6 +43,22 @@ function cleanRecord(record) {
   return JSON.parse(JSON.stringify(record));
 }
 
+// Records go up carrying only the fields the rules accept, so an import holding
+// extra or legacy fields cannot make Firestore reject the batch. Whatever is left
+// behind is named once in the console; it stays in this device's copy.
+const droppedFields = new Set();
+
+function cloudRecord(collectionName, source) {
+  const { record, dropped } = forCloud(collectionName, cleanRecord(source));
+  dropped.forEach((name) => {
+    const key = `${collectionName}.${name}`;
+    if (droppedFields.has(key)) return;
+    droppedFields.add(key);
+    console.info(`Cloud sync keeps ${key} on this device only.`);
+  });
+  return record;
+}
+
 function recordKey(collectionName, recordId) {
   return `${collectionName}/${String(recordId)}`;
 }
@@ -60,7 +71,7 @@ function setBaseline(data) {
   baseline = new Map();
   cloudCollections.forEach((collectionName) => {
     (data[collectionName] || []).forEach((record) => {
-      baseline.set(recordKey(collectionName, record.id), JSON.stringify(cleanRecord(record)));
+      baseline.set(recordKey(collectionName, record.id), JSON.stringify(cloudRecord(collectionName, record)));
     });
   });
 }
@@ -107,7 +118,7 @@ async function commitCloudState(uid, data) {
 
   cloudCollections.forEach((collectionName) => {
     (data[collectionName] || []).forEach((source) => {
-      const record = cleanRecord(source);
+      const record = cloudRecord(collectionName, source);
       const key = recordKey(collectionName, record.id);
       const serialized = JSON.stringify(record);
       nextBaseline.set(key, serialized);

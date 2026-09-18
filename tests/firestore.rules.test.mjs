@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
+import { forCloud } from '../cloud-fields.mjs';
+
 let testEnvironment;
 
 before(async () => {
@@ -56,4 +58,18 @@ test('unknown fields are rejected', async () => {
     id: 'bad', group: 'Test', dateOrLabel: '', amount: 1, note: '', isAdmin: true
   }));
   assert.ok(true);
+});
+
+test('a record the app derives locally syncs once trimmed for the cloud', async () => {
+  const db = testEnvironment.authenticatedContext('alice').firestore();
+  // What the app holds: a salary row generated from Salary Details.
+  const local = {
+    id: 'derived', year: 2026, month: 'Feb', salary: 300000,
+    plannedSavings: 100000, actualSavings: 120000, cumulativeCapital: 240000,
+    derivedFromDetail: true
+  };
+  await assertFails(setDoc(doc(db, 'users/alice/salary/derived-raw'), local));
+  const { record, dropped } = forCloud('salary', local);
+  assert.deepEqual(dropped, ['derivedFromDetail']);
+  await assertSucceeds(setDoc(doc(db, 'users/alice/salary/derived'), record));
 });
