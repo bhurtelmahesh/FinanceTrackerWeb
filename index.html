@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; manifest-src 'self'; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self'; img-src 'self' data: blob: https://*.googleusercontent.com; manifest-src 'self'; frame-src data: blob: https://accounts.google.com https://*.firebaseapp.com; object-src 'none'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Track salary, savings, stocks, overtime, and debt in one private browser-based dashboard.">
   <meta name="theme-color" content="#2b83a8">
@@ -30,8 +30,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-145313c4.js"></script>
-  <link rel="stylesheet" href="./assets/index-d234ac41.css">
+  <script type="module" crossorigin src="./assets/index-09a169a1.js"></script>
+  <link rel="stylesheet" href="./assets/index-9a9b7287.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -40,11 +40,12 @@
       <h1>Finance Tracker</h1>
         <p>Track income, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
       <div class="setup-actions">
+        <button id="setupSignIn" type="button" class="google-sign-in">Sign in with Google</button>
         <button id="startBlank">Start Blank</button>
         <button id="setupLoadDemoData" type="button">Load Demo Data</button>
         <button id="setupImportExcel">Import Backup</button>
       </div>
-      <small>Start fresh, load demo data, or restore a JSON backup.</small>
+      <small>Sign in to sync records between devices, or continue privately on this device.</small>
     </section>
   </div>
 
@@ -79,6 +80,16 @@
         <button data-view="help">Help</button>
       </div>
     </nav>
+    <section class="account-card" aria-labelledby="accountTitle">
+      <div>
+        <p class="eyebrow" id="accountTitle">Account &amp; sync</p>
+        <strong id="accountName">Local only</strong>
+        <span id="accountMode">Records stay on this device</span>
+      </div>
+      <button id="accountSignIn" type="button" class="google-sign-in">Sign in with Google</button>
+      <button id="accountSyncNow" type="button" hidden>Sync now</button>
+      <button id="accountSignOut" type="button" hidden>Sign out</button>
+    </section>
     <div class="sidebar-actions">
       <button id="sidebarImportBackup" type="button">Import Backup</button>
       <button id="sidebarExportBackup" type="button">Export Backup</button>
@@ -256,8 +267,9 @@
       <div class="data-grid">
         <section class="panel">
           <h3>Saved Records</h3>
-          <p class="muted">Data is stored privately inside this browser on this computer. Export a backup before clearing browser data.</p>
+          <p class="muted">Records keep a private device copy. When signed in, financial records also sync to your Firebase account; archived files stay on this device.</p>
           <dl class="meta-list">
+            <dt>Account</dt><dd id="accountDataText">Local only</dd>
             <dt>Database</dt><dd id="dataPathText">-</dd>
             <dt>Started</dt><dd id="startedAtText">-</dd>
             <dt>Last Updated</dt><dd id="updatedAtText">-</dd>
@@ -413,7 +425,7 @@
 
         <section class="panel help-panel">
           <h3>Your data</h3>
-          <p>Everything is stored privately in this browser on this computer. Nothing is uploaded. Clearing browser data deletes it, so export a JSON backup regularly &mdash; and before clearing anything.</p>
+          <p>Without an account, everything stays privately in this browser. If you sign in with Google, financial records sync through your private Firebase account path and keep a device cache for offline use. Salary-sheet and bill files remain only on this device. Export a JSON backup regularly in either mode.</p>
         </section>
       </div>
     </section>
