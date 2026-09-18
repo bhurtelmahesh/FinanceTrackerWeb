@@ -7,12 +7,15 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node tests/search.test.mjs"
+    "test": "node --test tests/search.test.mjs",
+    "test:rules": "npx firebase-tools@13.35.1 emulators:exec --only firestore 'node --test tests/firestore.rules.test.mjs' --project demo-finance-records"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "vite": "^4.5.14"
   },
   "dependencies": {
-    "xlsx": "^0.18.5"
+    "firebase": "^12.19.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

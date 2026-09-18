@@ -179,6 +179,41 @@ nav { display: grid; gap: 4px; cursor: pointer; }
 
 .nav-items { display: grid; gap: 6px; }
 
+.account-card {
+  display: grid;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid #b9d8e2;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .78), rgba(222, 242, 241, .82));
+  box-shadow: 0 6px 18px rgba(35, 70, 88, .08);
+}
+
+.account-card div { display: grid; gap: 3px; min-width: 0; }
+.account-card strong,
+.account-card span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-card strong { color: #174f68; font-size: 14px; }
+.account-card span { color: var(--muted); font-size: 11px; }
+.account-card button { width: 100%; padding: 9px 11px; font-size: 12px; font-weight: 750; }
+
+.google-sign-in {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+#accountSyncNow {
+  background: #e2f3ef;
+  border-color: #9bcfc1;
+  color: #176b59;
+}
+
+#accountSignOut {
+  background: rgba(255, 255, 255, .8);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
 /* Backup actions sit at the foot of the sidebar, as in the desktop app. */
 .sidebar-actions {
   margin-top: auto;

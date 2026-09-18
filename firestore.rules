@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validRecord(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields)
+        && request.resource.data.id is string
+        && request.resource.data.id.size() > 0
+        && request.resource.data.id.size() <= 200;
+    }
+
+    match /users/{userId}/app/meta {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId)
+        && request.resource.data.keys().hasOnly([
+          'version', 'startedAt', 'importedAt', 'sourceFile', 'updatedAt'
+        ]);
+    }
+
+    match /users/{userId}/salary/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'salary', 'plannedSavings', 'actualSavings',
+        'cumulativeCapital', 'savingsRate'
+      ]);
+    }
+
+    match /users/{userId}/monthlyDetails/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'basic', 'allowance', 'overtimePay',
+        'transportation', 'grossTotal', 'insurance', 'pension',
+        'employmentInsurance', 'residentTax', 'incomeTax', 'totalDeduction',
+        'received'
+      ]);
+    }
+
+    match /users/{userId}/overtime/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'day', 'hours', 'miscHours', 'rate', 'amount', 'note'
+      ]);
+    }
+
+    match /users/{userId}/stockRevenue/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'targetCumulative', 'actualCumulative',
+        'monthlyRevenue', 'surplus', 'verdict'
+      ]);
+    }
+
+    match /users/{userId}/daily/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'day', 'amount', 'status', 'note'
+      ]);
+    }
+
+    match /users/{userId}/personalBalances/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'group', 'dateOrLabel', 'amount', 'note'
+      ]);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

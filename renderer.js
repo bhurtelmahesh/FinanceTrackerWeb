@@ -1,5 +1,11 @@
 import { searchRecords as findSearchRecords, searchSnippet } from './search.mjs';
 
+let firebaseClientPromise = null;
+function firebaseClient() {
+  firebaseClientPromise ||= import('./firebase-client.mjs');
+  return firebaseClientPromise;
+}
+
 let state = null;
 let activeView = 'dashboard';
 let activeChart = 'salary';
@@ -9,6 +15,10 @@ let searchHighlightTimer = null;
 let saveVersion = 0;
 let persistedSaveVersion = 0;
 let activeSaveCount = 0;
+let accountUser = null;
+let cloudSyncEnabled = false;
+let accountTransitioning = false;
+let currentStorageRecordKey = 'finance-records';
 
 const schemas = {
   salary: [
@@ -406,6 +416,175 @@ function showSetupIfNeeded() {
   overlay.hidden = hasRecords() || Boolean(state.meta?.startedAt);
 }
 
+function dataHasRecords(data) {
+  return collections.some((collection) => (data?.[collection] || []).length > 0);
+}
+
+function dataHasArchives(data) {
+  return ['salarySheets', 'unpaidBills'].some((collection) => (data?.[collection] || []).length > 0);
+}
+
+function accountStorageKey(uid) {
+  return `${dbRecordKey}-user-${uid}`;
+}
+
+function cloudDataPath(user = accountUser) {
+  return `Firebase cloud sync · ${user?.email || user?.displayName || 'signed in'}`;
+}
+
+function updateAccountUI(message = '') {
+  const signedIn = Boolean(accountUser);
+  const accountName = document.getElementById('accountName');
+  const accountMode = document.getElementById('accountMode');
+  const signInButton = document.getElementById('accountSignIn');
+  const setupSignIn = document.getElementById('setupSignIn');
+  const signOutButton = document.getElementById('accountSignOut');
+  const syncButton = document.getElementById('accountSyncNow');
+  if (!accountName) return;
+  accountName.textContent = signedIn ? (accountUser.displayName || accountUser.email || 'Signed in') : 'Local only';
+  accountMode.textContent = message || (signedIn && cloudSyncEnabled ? 'Records sync between devices' : 'Records stay on this device');
+  signInButton.hidden = signedIn;
+  setupSignIn.hidden = signedIn;
+  signOutButton.hidden = !signedIn;
+  syncButton.hidden = !signedIn || !cloudSyncEnabled;
+  const accountDataText = document.getElementById('accountDataText');
+  if (accountDataText) {
+    accountDataText.textContent = signedIn
+      ? `${accountUser.email || accountUser.displayName || 'Signed in'}${cloudSyncEnabled ? ' · syncing' : ''}`
+      : 'Local only';
+  }
+}
+
+function cloudStateWithLocalArchives(cloudData, localData, user) {
+  const next = normalizeLoadedData({
+    ...cloudData,
+    salarySheets: localData.salarySheets || [],
+    unpaidBills: localData.unpaidBills || []
+  });
+  next.meta = {
+    ...next.meta,
+    dataPath: cloudDataPath(user)
+  };
+  return next;
+}
+
+async function persistCloudCopy() {
+  if (!accountUser || !cloudSyncEnabled) return false;
+  if (!navigator.onLine) {
+    state.meta.cloudPending = true;
+    await saveStoredData(state);
+    updateAccountUI('Offline · changes kept on this device');
+    return false;
+  }
+  const { saveCloudState } = await firebaseClient();
+  await saveCloudState(accountUser.uid, state);
+  state.meta.cloudPending = false;
+  state.meta.dataPath = cloudDataPath();
+  await saveStoredData(state);
+  updateAccountUI('Cloud sync is up to date');
+  return true;
+}
+
+async function syncAccountNow() {
+  if (!accountUser || !cloudSyncEnabled || accountTransitioning) return;
+  setSaveState('Syncing...');
+  updateAccountUI('Syncing records...');
+  try {
+    await persistCloudCopy();
+    setSaveState(navigator.onLine ? 'Synced' : 'Saved offline');
+  } catch (error) {
+    console.error(error);
+    state.meta.cloudPending = true;
+    await saveStoredData(state);
+    setSaveState('Sync failed');
+    updateAccountUI('Cloud unavailable · changes kept locally');
+  }
+}
+
+async function activateAccount(user) {
+  if (accountTransitioning) return;
+  accountTransitioning = true;
+  const localBeforeSignIn = state;
+  accountUser = user;
+  cloudSyncEnabled = false;
+  currentStorageRecordKey = accountStorageKey(user.uid);
+  updateAccountUI('Connecting to Firebase...');
+  setSaveState('Connecting...');
+
+  try {
+    const accountCache = await loadStoredData();
+    const { loadCloudState } = await firebaseClient();
+    const cloud = await loadCloudState(user.uid);
+    if (cloud.exists) {
+      state = cloudStateWithLocalArchives(cloud.data, accountCache, user);
+      cloudSyncEnabled = true;
+      await saveStoredData(state);
+      updateAccountUI('Cloud sync is up to date');
+      setSaveState('Synced');
+    } else {
+      const migrationSource = dataHasRecords(localBeforeSignIn) || dataHasArchives(localBeforeSignIn)
+        ? localBeforeSignIn
+        : accountCache;
+      const shouldMigrate = (dataHasRecords(migrationSource) || dataHasArchives(migrationSource)) && confirm(
+        'Move this device\'s records into your account?\n\nFinancial records will sync through Firebase. Archived salary sheets and bill files will remain only on this device. Your existing local copy will not be deleted.'
+      );
+      state = shouldMigrate ? normalizeLoadedData(migrationSource) : browserEmptyData();
+      state.meta.startedAt = state.meta.startedAt || new Date().toISOString();
+      state.meta.dataPath = cloudDataPath(user);
+      cloudSyncEnabled = true;
+      await saveStoredData(state);
+      if (navigator.onLine) await persistCloudCopy();
+      updateAccountUI(navigator.onLine ? 'Cloud sync is up to date' : 'Offline · changes kept on this device');
+      setSaveState(navigator.onLine ? 'Synced' : 'Saved offline');
+    }
+  } catch (error) {
+    console.error(error);
+    const cached = await loadStoredData();
+    state = cached;
+    state.meta.dataPath = `Account cache · ${user.email || user.displayName || 'signed in'}`;
+    cloudSyncEnabled = true;
+    updateAccountUI('Cloud unavailable · using this device’s cache');
+    setSaveState('Offline cache');
+  } finally {
+    accountTransitioning = false;
+    state.salarySheets = state.salarySheets || [];
+    state.unpaidBills = state.unpaidBills || [];
+    render();
+  }
+}
+
+async function activateLocalMode() {
+  if (accountTransitioning) return;
+  accountTransitioning = true;
+  accountUser = null;
+  cloudSyncEnabled = false;
+  const { resetCloudBaseline } = await firebaseClient();
+  resetCloudBaseline();
+  currentStorageRecordKey = dbRecordKey;
+  state = await loadStoredData();
+  state.salarySheets = state.salarySheets || [];
+  state.unpaidBills = state.unpaidBills || [];
+  updateAccountUI();
+  setSaveState('Local mode');
+  accountTransitioning = false;
+  render();
+}
+
+async function beginGoogleSignIn() {
+  setSaveState('Opening sign in...');
+  try {
+    const { signInWithGoogle } = await firebaseClient();
+    await signInWithGoogle();
+  } catch (error) {
+    console.error(error);
+    const cancelled = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(error?.code);
+    setSaveState(cancelled ? 'Sign in cancelled' : 'Sign in failed');
+    if (!cancelled) {
+      alert(error?.message || 'Google sign-in failed.');
+    }
+  }
+}
+
 let saveErrorNotified = false;
 
 async function save() {
@@ -414,16 +593,35 @@ async function save() {
   updateSaveButton();
   setSaveState('Saving...');
   try {
-    await window.financeApi.save(state);
+    state = await window.financeApi.save(state);
+    if (cloudSyncEnabled) {
+      const synced = await persistCloudCopy();
+      setSaveState(synced ? 'Synced' : 'Saved offline');
+    } else {
+      setSaveState('Saved');
+    }
     persistedSaveVersion = Math.max(persistedSaveVersion, version);
-    setSaveState('Saved');
-    setTimeout(() => setSaveState('Ready'), 1200);
+    if (!cloudSyncEnabled) setTimeout(() => setSaveState('Ready'), 1200);
   } catch (error) {
     console.error(error);
-    setSaveState('Save failed');
+    if (cloudSyncEnabled) {
+      state.meta.cloudPending = true;
+      try {
+        await saveStoredData(state);
+        persistedSaveVersion = Math.max(persistedSaveVersion, version);
+      } catch (localError) {
+        console.error(localError);
+      }
+      setSaveState('Saved locally');
+      updateAccountUI('Cloud sync failed · changes kept locally');
+    } else {
+      setSaveState('Save failed');
+    }
     if (!saveErrorNotified) {
       saveErrorNotified = true;
-      alert(error?.message || 'Saving failed. Export a JSON backup so you do not lose records.');
+      alert(cloudSyncEnabled
+        ? 'Your change is saved on this device, but cloud sync failed. Use Sync now when the connection is available.'
+        : (error?.message || 'Saving failed. Export a JSON backup so you do not lose records.'));
     }
   } finally {
     activeSaveCount -= 1;
@@ -1985,6 +2183,9 @@ function renderOtSummary(year, month, records) {
 }
 
 function renderData() {
+  document.getElementById('accountDataText').textContent = accountUser
+    ? `${accountUser.email || accountUser.displayName || 'Signed in'}${cloudSyncEnabled ? ' · syncing' : ''}`
+    : 'Local only';
   document.getElementById('dataPathText').textContent = state.meta?.dataPath || 'Browser private storage';
   document.getElementById('startedAtText').textContent = state.meta?.startedAt ? new Date(state.meta.startedAt).toLocaleString() : '-';
   document.getElementById('updatedAtText').textContent = state.meta?.updatedAt ? new Date(state.meta.updatedAt).toLocaleString() : '-';
@@ -2181,6 +2382,7 @@ async function importWorkbookWithConfirmation() {
     if (!imported) return;
     state = imported;
     render();
+    if (cloudSyncEnabled) await save();
     setSaveState('Workbook imported');
   } catch (error) {
     console.error(error);
@@ -2198,6 +2400,7 @@ async function importExcelWithConfirmation() {
       state.salarySheets = state.salarySheets || [];
       state.unpaidBills = state.unpaidBills || [];
       render();
+      if (cloudSyncEnabled) await save();
       setSaveState('Imported');
     }
   } catch (error) {
@@ -2474,7 +2677,7 @@ const dbRecordKey = 'finance-records';
 
 function normalizeLoadedData(data) {
   const next = rehydrateArchives({ ...browserEmptyData(), ...(data || {}) });
-  next.meta = { ...browserEmptyData().meta, ...(data?.meta || {}), dataPath: 'Browser private storage' };
+  next.meta = { ...browserEmptyData().meta, ...(data?.meta || {}) };
   [...collections, 'salarySheets', 'unpaidBills'].forEach((collection) => {
     const records = Array.isArray(next[collection]) ? next[collection] : [];
     next[collection] = records
@@ -2600,31 +2803,34 @@ async function idbDelete(key) {
   });
 }
 
-async function loadStoredData() {
+async function loadStoredData(recordKey = currentStorageRecordKey) {
   try {
-    const data = await idbGet(dbRecordKey);
+    const data = await idbGet(recordKey);
     if (data) return normalizeLoadedData(data);
-    const legacy = localStorage.getItem(storageKey);
+    const legacy = recordKey === dbRecordKey ? localStorage.getItem(storageKey) : null;
     if (legacy) {
       const migrated = normalizeLoadedData(JSON.parse(legacy));
-      await idbSet(dbRecordKey, migrated);
+      await idbSet(recordKey, migrated);
       localStorage.removeItem(storageKey);
       return migrated;
     }
   } catch (error) {
-    const raw = localStorage.getItem(storageKey);
+    const raw = recordKey === dbRecordKey ? localStorage.getItem(storageKey) : null;
     if (raw) return normalizeLoadedData(JSON.parse(raw));
   }
   return browserEmptyData();
 }
 
-async function saveStoredData(data) {
+async function saveStoredData(data, recordKey = currentStorageRecordKey) {
   const next = normalizeLoadedData(data);
   next.meta.updatedAt = new Date().toISOString();
   try {
-    await idbSet(dbRecordKey, next);
-    localStorage.removeItem(storageKey);
+    await idbSet(recordKey, next);
+    if (recordKey === dbRecordKey) localStorage.removeItem(storageKey);
   } catch (error) {
+    if (recordKey !== dbRecordKey) {
+      throw new Error('Could not save this account on this device. Export a JSON backup now.');
+    }
     try {
       localStorage.setItem(storageKey, JSON.stringify(next));
     } catch (fallbackError) {
@@ -2634,13 +2840,13 @@ async function saveStoredData(data) {
   return next;
 }
 
-async function clearStoredData() {
+async function clearStoredData(recordKey = currentStorageRecordKey) {
   try {
-    await idbDelete(dbRecordKey);
+    await idbDelete(recordKey);
   } catch (error) {
     // localStorage fallback below still clears usable data.
   }
-  localStorage.removeItem(storageKey);
+  if (recordKey === dbRecordKey) localStorage.removeItem(storageKey);
 }
 
 function readFileAsText(file) {
@@ -2920,7 +3126,8 @@ async function clearAllData() {
   state.salarySheets = state.salarySheets || [];
   state.unpaidBills = state.unpaidBills || [];
   render();
-  setSaveState('Cleared');
+  await save();
+  setSaveState(cloudSyncEnabled ? 'Cleared and synced' : 'Cleared');
 }
 
 async function addSalarySheetsFromFiles(files) {
@@ -3096,6 +3303,19 @@ function bindEvents() {
   document.getElementById('otQuickForm').addEventListener('submit', addQuickOtEntry);
   document.getElementById('editOtSalaryDetail').addEventListener('click', editCurrentOtSalaryDetail);
   document.getElementById('saveNow').addEventListener('click', save);
+  document.getElementById('setupSignIn').addEventListener('click', beginGoogleSignIn);
+  document.getElementById('accountSignIn').addEventListener('click', beginGoogleSignIn);
+  document.getElementById('accountSyncNow').addEventListener('click', syncAccountNow);
+  document.getElementById('accountSignOut').addEventListener('click', async () => {
+    setSaveState('Signing out...');
+    try {
+      const { signOutAccount } = await firebaseClient();
+      await signOutAccount();
+    } catch (error) {
+      console.error(error);
+      setSaveState('Sign out failed');
+    }
+  });
   const searchInput = document.getElementById('globalSearch');
   const searchResults = document.getElementById('globalSearchResults');
   const debouncedSearch = debounce(renderGlobalSearch, 180);
@@ -3156,7 +3376,8 @@ function bindEvents() {
   document.getElementById('startBlank').addEventListener('click', async () => {
     state = await window.financeApi.startBlank();
     render();
-    setSaveState('Started');
+    if (cloudSyncEnabled) await save();
+    setSaveState(cloudSyncEnabled ? 'Started and synced' : 'Started');
   });
   document.getElementById('dataExportExcel').addEventListener('click', exportWorkbook);
   document.getElementById('loadDemoData').addEventListener('click', loadDemoData);
@@ -3200,6 +3421,12 @@ function bindEvents() {
     saveDialogRecord();
     document.getElementById('recordDialog').close();
   });
+  window.addEventListener('online', () => {
+    if (cloudSyncEnabled && state.meta?.cloudPending) syncAccountNow();
+  });
+  window.addEventListener('offline', () => {
+    if (cloudSyncEnabled) updateAccountUI('Offline · changes stay on this device');
+  });
 }
 
 async function init() {
@@ -3213,10 +3440,26 @@ async function init() {
   state.salarySheets = state.salarySheets || [];
   state.unpaidBills = state.unpaidBills || [];
   bindEvents();
+  updateAccountUI();
   updateSaveButton();
   switchView('dashboard');
   if (document.getElementById('saveState').textContent === 'Loading...') {
     setSaveState('Ready');
+  }
+  try {
+    const { initializeAccountSession } = await firebaseClient();
+    await initializeAccountSession((user) => {
+      if (user) {
+        activateAccount(user);
+      } else if (accountUser) {
+        activateLocalMode();
+      } else {
+        updateAccountUI();
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    updateAccountUI('Account service unavailable · local mode');
   }
 }
 

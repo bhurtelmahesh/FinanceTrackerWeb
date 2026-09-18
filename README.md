@@ -19,4 +19,12 @@ npm install
 npm run dev
 ```
 
-Data is stored locally in browser-private IndexedDB storage, with a localStorage fallback for older browsers. Export a JSON backup before clearing browser data or switching devices.
+The app works without an account using browser-private IndexedDB storage, with a localStorage fallback for older browsers. Optional Google sign-in syncs structured financial records through a private, per-user Cloud Firestore path. Signed-in records also keep a device cache for offline access. Archived salary sheets and bill files remain device-only and are included in JSON backups, not uploaded to Firebase.
+
+## Account and cloud sync
+
+- Google sign-in is optional; signing out returns to the untouched local profile.
+- The first sign-in offers to copy existing local records to the account and never deletes the local source.
+- Firestore rules default to deny and allow reads/writes only when the authenticated UID owns the path.
+- JSON backup import/export remains available in both local and signed-in modes.
+- Run `npm run test:rules` to verify signed-out, owner, cross-user, and schema rule behavior with the Firestore emulator.
