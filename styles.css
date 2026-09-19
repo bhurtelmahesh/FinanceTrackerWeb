@@ -63,6 +63,10 @@ body {
 
 .setup-overlay[hidden] { display: none; }
 
+/* Keep app-shell navigation out of the way while first-run setup owns the UI. */
+.setup-overlay:not([hidden]) ~ .mobile-menu-backdrop,
+.setup-overlay:not([hidden]) ~ .back-to-menu { display: none; }
+
 .setup-card {
   width: min(520px, 100%);
   background: #fff;
@@ -307,6 +311,15 @@ nav button:not(.active):hover {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.mobile-search-toggle { display: none; }
+
+.mobile-search-toggle svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 .search-shell {
@@ -1592,22 +1605,79 @@ canvas {
 .daily-zero { color: var(--muted); background: transparent; }
 
 @media (max-width: 980px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
   body {
     grid-template-columns: 1fr;
-    height: auto;
-    overflow: auto;
   }
   .app {
-    height: auto;
-    display: block;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    display: flex;
   }
   .sidebar {
-    position: static;
-    height: auto;
-    min-height: auto;
-    overflow: visible;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 12;
+    width: min(86vw, 320px);
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
     scrollbar-gutter: auto;
-    padding: 16px;
+    padding: calc(12px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));
+    gap: 10px;
+    box-shadow: 18px 0 42px rgba(26, 58, 72, .22);
+    transform: translateX(-105%);
+    transition: transform .22s ease;
+  }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sidebar .brand {
+    flex: 0 0 auto;
+    padding-bottom: 9px;
+  }
+  .sidebar nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    gap: 3px;
+    overflow: hidden;
+  }
+  .sidebar .nav-group { margin: 6px 0 0; }
+  .sidebar .nav-items { gap: 4px; }
+  .sidebar nav button { padding: 7px 10px; }
+  .sidebar .account-card {
+    flex: 0 0 auto;
+    gap: 6px;
+    padding: 9px 11px;
+  }
+  .sidebar .account-card button { padding: 7px 9px; }
+  .mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 11;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(19, 42, 53, .38);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .22s ease, visibility .22s ease;
+  }
+  body.mobile-menu-open .mobile-menu-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
   /* These shortcuts duplicate the complete controls on Backup & Import and
      otherwise push the primary page content too far down on narrow screens. */
@@ -1624,9 +1694,11 @@ canvas {
   }
   .view {
     padding: 18px 16px 32px;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
-  #dashboard.view.active { display: block; overflow: visible; }
+  #dashboard.view.active { display: block; overflow-x: hidden; overflow-y: auto; }
   #dashboard .dashboard-insights { display: block; margin-bottom: 18px; }
   #dashboard .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
   canvas {
@@ -1668,7 +1740,7 @@ canvas {
     font-size: 13px;
   }
   .sidebar {
-    padding: 12px 14px;
+    width: min(88vw, 310px);
   }
   .brand h1 { font-size: 18px; }
   .brand {
@@ -1902,8 +1974,7 @@ canvas {
   .help-list dd { margin-bottom: 10px; }
 }
 
-/* On the stacked layout the menu scrolls away above the content; this floating
-   button brings it back. It shows only while the menu is out of view. */
+/* On the app-shell layout this control stays at the drawer's top-left origin. */
 .back-to-menu {
   position: fixed;
   right: 16px;
@@ -1933,6 +2004,8 @@ canvas {
 
 .back-to-menu[hidden] { display: none; }
 
+.mobile-menu-backdrop { display: none; }
+
 @media (min-width: 981px) {
   .back-to-menu { display: none; }
 }
@@ -1940,4 +2013,104 @@ canvas {
 /* Room under the last row so the button never sits on top of it. */
 @media (max-width: 980px) {
   .view { padding-bottom: 84px; }
+  .mobile-menu-backdrop { display: block; }
+  .back-to-menu {
+    z-index: 14;
+  }
+}
+
+/* Final mobile app-shell overrides live together so the drawer, compact header,
+   and chart-first dashboard win over the older stacked responsive rules. */
+@media (max-width: 980px) {
+  .topbar {
+    flex: 0 0 auto;
+    min-height: 58px;
+    height: 58px;
+    padding: calc(8px + env(safe-area-inset-top)) 12px 8px 62px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar > div:first-child { min-width: 0; }
+  .topbar .eyebrow { display: none; }
+  .topbar h2 {
+    overflow: hidden;
+    font-size: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mobile-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    padding: 0;
+    border-color: #9fc0cc;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .82);
+    color: var(--blue);
+  }
+  .topbar .top-actions {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 10px;
+    right: 10px;
+    z-index: 24;
+    display: none;
+    width: auto;
+    padding: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #b9d3dd;
+    border-radius: 13px;
+    background: rgba(248, 252, 253, .98);
+    box-shadow: 0 16px 38px rgba(25, 59, 74, .2);
+  }
+  .topbar.mobile-search-open .top-actions { display: flex; }
+  .topbar .search-shell {
+    flex: 1 1 auto;
+    width: auto;
+  }
+  .topbar #saveState { display: none; }
+
+  .back-to-menu {
+    top: calc(9px + env(safe-area-inset-top));
+    right: auto;
+    bottom: auto;
+    left: 12px;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    border-radius: 12px;
+  }
+  .back-to-menu span { display: none; }
+  .sidebar .brand { padding-left: 48px; }
+  .sidebar .nav-items { grid-template-columns: minmax(0, 1fr); }
+
+  #dashboard.view.active {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #dashboard .chart-stack {
+    order: 1;
+    flex: 0 0 min(52dvh, 420px);
+    width: 100%;
+    min-height: 320px;
+  }
+  #dashboard .dashboard-insights {
+    order: 2;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 980px) and (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .mobile-menu-backdrop { transition: none; }
 }

@@ -47,7 +47,7 @@
     </section>
   </div>
 
-  <aside class="sidebar">
+  <aside id="mobileSidebar" class="sidebar">
     <div class="brand">
       <div class="brand-mark">¥</div>
       <div>
@@ -102,7 +102,11 @@
         <p class="eyebrow">Finance Tracker Web</p>
         <h2 id="viewTitle">Dashboard</h2>
       </div>
-      <div class="top-actions">
+      <button type="button" id="mobileSearchToggle" class="mobile-search-toggle" aria-label="Open search"
+        aria-controls="topActions" aria-expanded="false">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17"/></svg>
+      </button>
+      <div class="top-actions" id="topActions">
         <div class="search-shell">
           <form id="globalSearchForm" class="global-search-form" role="search">
             <label class="sr-only" for="globalSearch">Search all financial records</label>
@@ -430,9 +434,11 @@
 
   </main>
 
-  <button type="button" id="backToMenu" class="back-to-menu" aria-label="Back to menu" hidden>
-    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 12.5 10 7.5l5 5"/></svg>
-    Menu
+  <button type="button" id="mobileMenuBackdrop" class="mobile-menu-backdrop" aria-label="Close menu" tabindex="-1"></button>
+  <button type="button" id="backToMenu" class="back-to-menu" aria-label="Open menu"
+    aria-controls="mobileSidebar" aria-expanded="false" hidden>
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path id="mobileMenuIcon" d="M3 5h14M3 10h14M3 15h14"/></svg>
+    <span id="mobileMenuLabel">Menu</span>
   </button>
 
   <dialog id="recordDialog">

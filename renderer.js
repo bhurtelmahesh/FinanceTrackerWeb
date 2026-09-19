@@ -3224,31 +3224,88 @@ function bindEvents() {
     const tile = event.target.closest('button[data-view]');
     if (tile) switchView(tile.dataset.view);
   });
-  // On the stacked layout the menu scrolls out of sight once a section opens, so
-  // a floating button appears to bring it back — and lands focus on the current
-  // item for keyboard users.
+  // On narrow screens the app stays within the viewport and navigation becomes
+  // a drawer. The floating control remains reachable from every section.
   const nav = document.getElementById('nav');
+  const sidebar = document.getElementById('mobileSidebar');
   const backToMenu = document.getElementById('backToMenu');
-  new IntersectionObserver(([entry]) => { backToMenu.hidden = entry.isIntersecting; }).observe(nav);
+  const menuBackdrop = document.getElementById('mobileMenuBackdrop');
+  const menuLabel = document.getElementById('mobileMenuLabel');
+  const menuIcon = document.getElementById('mobileMenuIcon');
+  const topbar = document.querySelector('.topbar');
+  const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+  const narrowLayout = window.matchMedia('(max-width: 980px)');
+
+  const setMobileSearchOpen = (open) => {
+    const isOpen = narrowLayout.matches && open;
+    topbar.classList.toggle('mobile-search-open', isOpen);
+    mobileSearchToggle.setAttribute('aria-expanded', String(isOpen));
+    mobileSearchToggle.setAttribute('aria-label', isOpen ? 'Close search' : 'Open search');
+    if (isOpen) requestAnimationFrame(() => document.getElementById('globalSearch').focus());
+  };
+
+  const setMobileMenuOpen = (open) => {
+    const isOpen = narrowLayout.matches && open;
+    if (isOpen) setMobileSearchOpen(false);
+    sidebar.classList.toggle('mobile-open', isOpen);
+    document.body.classList.toggle('mobile-menu-open', isOpen);
+    sidebar.setAttribute('aria-hidden', narrowLayout.matches && !isOpen ? 'true' : 'false');
+    backToMenu.setAttribute('aria-expanded', String(isOpen));
+    backToMenu.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+    menuLabel.textContent = isOpen ? 'Close' : 'Menu';
+    menuIcon.setAttribute('d', isOpen ? 'M4 4l12 12M16 4 4 16' : 'M3 5h14M3 10h14M3 15h14');
+    if (isOpen) nav.querySelector('button.active')?.focus({ preventScroll: true });
+  };
+
+  const syncMobileMenuLayout = () => {
+    backToMenu.hidden = !narrowLayout.matches;
+    mobileSearchToggle.hidden = !narrowLayout.matches;
+    if (narrowLayout.matches) {
+      setMobileMenuOpen(false);
+      setMobileSearchOpen(false);
+    } else {
+      sidebar.classList.remove('mobile-open');
+      document.body.classList.remove('mobile-menu-open');
+      sidebar.removeAttribute('aria-hidden');
+    }
+  };
+
   backToMenu.addEventListener('click', () => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.querySelector('.sidebar').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-    nav.querySelector('button.active')?.focus({ preventScroll: true });
+    setMobileMenuOpen(!sidebar.classList.contains('mobile-open'));
   });
+  mobileSearchToggle.addEventListener('click', () => {
+    const willOpen = !topbar.classList.contains('mobile-search-open');
+    if (willOpen) setMobileMenuOpen(false);
+    setMobileSearchOpen(willOpen);
+  });
+  menuBackdrop.addEventListener('click', () => {
+    setMobileMenuOpen(false);
+    backToMenu.focus();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if (sidebar.classList.contains('mobile-open')) {
+      setMobileMenuOpen(false);
+      backToMenu.focus();
+    } else if (topbar.classList.contains('mobile-search-open')) {
+      setMobileSearchOpen(false);
+      mobileSearchToggle.focus();
+    }
+  });
+  narrowLayout.addEventListener('change', syncMobileMenuLayout);
+  syncMobileMenuLayout();
   document.getElementById('nav').addEventListener('click', (event) => {
     const button = event.target.closest('button[data-view]');
     if (!button) return;
     switchView(button.dataset.view);
-    // On the stacked layout the nav sits above the content, so a tap would
-    // otherwise leave you looking at the menu you just used.
-    if (window.matchMedia('(max-width: 980px)').matches) {
-      document.querySelector('.topbar')?.scrollIntoView({ block: 'start' });
-    }
+    setMobileMenuOpen(false);
+    if (narrowLayout.matches) backToMenu.focus();
   });
   document.body.addEventListener('click', (event) => {
     const searchResult = event.target.closest('[data-search-result]');
     if (searchResult) {
       openGlobalSearchResult(Number(searchResult.dataset.searchResult));
+      setMobileSearchOpen(false);
       return;
     }
     const previewSheet = event.target.closest('[data-preview-salary-sheet]');
