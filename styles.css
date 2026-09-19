@@ -238,15 +238,24 @@ nav { display: grid; gap: 4px; cursor: pointer; }
 }
 
 #accountSyncNow {
-  background: #e2f3ef;
-  border-color: #9bcfc1;
-  color: #176b59;
+  background: #176b59;
+  border-color: #176b59;
+  color: #fff;
 }
 
 #accountSignOut {
-  background: rgba(255, 255, 255, .8);
-  border-color: var(--line);
-  color: var(--ink);
+  background: #fff7f7;
+  border-color: #d9a7a7;
+  color: #9f3030;
+}
+
+#accountSyncNow:hover { background: #125747; border-color: #125747; }
+#accountSignOut:hover { background: #fbe9e9; border-color: #c67e7e; color: #842626; }
+
+#accountSyncNow:focus-visible,
+#accountSignOut:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 /* Every item looks like a button at rest — a light tile — so it is plain which
@@ -2343,6 +2352,25 @@ body.mobile-menu-open .back-to-menu {
 
 :root[data-theme="dark"] nav button:not(.active):hover { background: #244652; color: #d9f1f8; }
 :root[data-theme="dark"] .account-card strong { color: #c3e9f5; }
+:root[data-theme="dark"] #accountSyncNow {
+  background: #267b67;
+  border-color: #4ca68e;
+  color: #fff;
+}
+:root[data-theme="dark"] #accountSyncNow:hover {
+  background: #2e8c76;
+  border-color: #68bea7;
+}
+:root[data-theme="dark"] #accountSignOut {
+  background: #3b2529;
+  border-color: #8b4b53;
+  color: #ffb1b1;
+}
+:root[data-theme="dark"] #accountSignOut:hover {
+  background: #48282c;
+  border-color: #a45a64;
+  color: #ffd0d0;
+}
 :root[data-theme="dark"] .search-results-head { background: #1c3944; }
 :root[data-theme="dark"] .search-result-group { border-color: var(--line); }
 :root[data-theme="dark"] .search-result-item:hover { background: #203d48; }
