@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; manifest-src 'self'; frame-src data: blob:; object-src 'none'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self'; img-src 'self' data: blob: https://*.googleusercontent.com; manifest-src 'self'; frame-src data: blob: https://accounts.google.com https://*.firebaseapp.com; object-src 'none'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com; base-uri 'none'; form-action 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Track salary, savings, stocks, overtime, and debt in one private browser-based dashboard.">
   <meta name="theme-color" content="#2b83a8">
@@ -30,25 +30,26 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-145313c4.js"></script>
-  <link rel="stylesheet" href="./assets/index-d234ac41.css">
+  <script type="module" crossorigin src="./assets/index-cd1a041b.js"></script>
+  <link rel="stylesheet" href="./assets/index-ab905e0b.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
     <section class="setup-card">
       <div class="brand-mark">¥</div>
       <h1>Finance Tracker</h1>
-        <p>Track income, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
+        <p>Track income, expenditures, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
       <div class="setup-actions">
+        <button id="setupSignIn" type="button" class="google-sign-in">Sign in with Google</button>
         <button id="startBlank">Start Blank</button>
         <button id="setupLoadDemoData" type="button">Load Demo Data</button>
         <button id="setupImportExcel">Import Backup</button>
       </div>
-      <small>Start fresh, load demo data, or restore a JSON backup.</small>
+      <small>Sign in to sync records between devices, or continue privately on this device.</small>
     </section>
   </div>
 
-  <aside class="sidebar">
+  <aside id="mobileSidebar" class="sidebar">
     <div class="brand">
       <div class="brand-mark">¥</div>
       <div>
@@ -61,8 +62,7 @@
 
       <p class="nav-group" id="navGroupSalary">Salary</p>
       <div class="nav-items" role="group" aria-labelledby="navGroupSalary">
-        <button data-view="salary">Monthly Savings</button>
-        <button data-view="details">Salary Details</button>
+        <button data-view="salary">Salary &amp; Savings</button>
         <button data-view="overtime">Overtime</button>
       </div>
 
@@ -74,17 +74,22 @@
 
       <p class="nav-group" id="navGroupOther">Other</p>
       <div class="nav-items" role="group" aria-labelledby="navGroupOther">
+        <button data-view="expenses">Expenditures</button>
         <button data-view="balances">Debt Records</button>
         <button data-view="data">Backup & Import</button>
         <button data-view="help">Help</button>
       </div>
     </nav>
-    <div class="sidebar-actions">
-      <button id="sidebarImportBackup" type="button">Import Backup</button>
-      <button id="sidebarExportBackup" type="button">Export Backup</button>
-      <button id="sidebarImportExcel" type="button">Import Workbook</button>
-      <button id="sidebarExportExcel" type="button">Export Excel</button>
-    </div>
+    <section class="account-card" aria-labelledby="accountTitle">
+      <div>
+        <p class="eyebrow" id="accountTitle">Account &amp; sync</p>
+        <strong id="accountName">Local only</strong>
+        <span id="accountMode">Records stay on this device</span>
+      </div>
+      <button id="accountSignIn" type="button" class="google-sign-in">Sign in with Google</button>
+      <button id="accountSyncNow" type="button" hidden>Sync now</button>
+      <button id="accountSignOut" type="button" hidden>Sign out</button>
+    </section>
   </aside>
 
   <main class="app">
@@ -93,7 +98,24 @@
         <p class="eyebrow">Finance Tracker Web</p>
         <h2 id="viewTitle">Dashboard</h2>
       </div>
-      <div class="top-actions">
+      <button type="button" id="themeButton" class="theme-switch" role="switch" aria-checked="false"
+        aria-label="Dark theme. Ocean selected" title="Theme: Ocean - switch to Dark">
+        <span class="theme-switch-track" aria-hidden="true">
+          <span class="theme-switch-thumb"></span>
+          <span class="theme-switch-face theme-switch-face-ocean">
+            <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.2"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M15.7 4.3l-1.4 1.4M5.7 14.3l-1.4 1.4"/></svg>
+          </span>
+          <span class="theme-switch-face theme-switch-face-dark">
+            <svg viewBox="0 0 20 20"><path d="M15.8 12.5A6.7 6.7 0 0 1 7.5 4.2 6.7 6.7 0 1 0 15.8 12.5Z"/></svg>
+          </span>
+        </span>
+        <span class="sr-only" id="themeButtonText">Ocean theme</span>
+      </button>
+      <button type="button" id="mobileSearchToggle" class="mobile-search-toggle" aria-label="Open search"
+        aria-controls="topActions" aria-expanded="false">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17"/></svg>
+      </button>
+      <div class="top-actions" id="topActions">
         <div class="search-shell">
           <form id="globalSearchForm" class="global-search-form" role="search">
             <label class="sr-only" for="globalSearch">Search all financial records</label>
@@ -106,7 +128,7 @@
             <div id="globalSearchResultsContent"></div>
           </section>
         </div>
-        <span id="saveState" role="status" aria-live="polite">Loading...</span>
+        <span id="saveState" class="sr-only" role="status" aria-live="polite">Loading...</span>
         <button id="saveNow">Save</button>
       </div>
     </header>
@@ -152,18 +174,11 @@
 
     <section id="salary" class="view">
       <div class="toolbar">
-        <select id="salaryYearFilter" aria-label="Monthly savings year"></select>
-        <button data-add="salary">Add Manual Income</button>
+        <select id="salaryYearFilter" aria-label="Salary and savings year"></select>
+        <button data-add="monthlyDetails">Add Payslip</button>
+        <button data-add="salary">Add Manual Month</button>
       </div>
       <div id="salaryTable"></div>
-    </section>
-
-    <section id="details" class="view">
-      <div class="toolbar">
-        <select id="detailsYearFilter" aria-label="Salary details year"></select>
-        <button data-add="monthlyDetails">Add Salary Detail</button>
-      </div>
-      <div id="detailsTable"></div>
     </section>
 
     <section id="overtime" class="view">
@@ -234,6 +249,16 @@
       <div id="dailyTable"></div>
     </section>
 
+    <section id="expenses" class="view">
+      <div class="toolbar">
+        <select id="expenseYearFilter" aria-label="Expenditure year"></select>
+        <select id="expenseMonthFilter" aria-label="Expenditure month"></select>
+        <button data-add="expenses">Add Expense</button>
+      </div>
+      <div id="expenseSummary" class="expense-summary" aria-live="polite"></div>
+      <div id="expenseTable"></div>
+    </section>
+
     <section id="balances" class="view">
       <div class="toolbar">
         <button data-add="personalBalances">Add Debt Record</button>
@@ -256,8 +281,9 @@
       <div class="data-grid">
         <section class="panel">
           <h3>Saved Records</h3>
-          <p class="muted">Data is stored privately inside this browser on this computer. Export a backup before clearing browser data.</p>
+          <p class="muted">Records keep a private device copy. When signed in, financial records also sync to your Firebase account; archived files stay on this device.</p>
           <dl class="meta-list">
+            <dt>Account</dt><dd id="accountDataText">Local only</dd>
             <dt>Database</dt><dd id="dataPathText">-</dd>
             <dt>Started</dt><dd id="startedAtText">-</dd>
             <dt>Last Updated</dt><dd id="updatedAtText">-</dd>
@@ -295,24 +321,35 @@
         <section class="panel help-panel">
           <h3>How every number is worked out</h3>
           <p class="muted">Amounts are yen. Green means money gained or on track, red means money lost, owed or falling short &mdash; the same rule everywhere in the app. On the dashboard charts, falling short means take-home under half of gross pay, or a stock total below its target.</p>
-          <p><strong>Salary and stock are kept apart.</strong> Salary Details and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
+          <p><strong>Salary and stock are kept apart.</strong> Salary &amp; Savings and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
         </section>
 
         <section class="panel help-panel">
-          <h3>Salary Details</h3>
+          <h3>Salary &amp; Savings</h3>
+          <p>One row per month. The first columns are the money story; the payslip that produced them follows, and stays blank for a month entered by hand.</p>
           <dl class="help-list">
+            <dt>Gross Income</dt>
+            <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
+            <dt>Take-home</dt>
+            <dd>What reached you after payroll deductions: Gross Income &minus; Total Deduction.</dd>
+            <dt>Expenditures</dt>
+            <dd>The sum of that month&rsquo;s records in the Expenditures section.</dd>
+            <dt>Actual Savings</dt>
+            <dd>Take-home &minus; that month&rsquo;s expenditures. It can be negative when spending exceeds take-home. Stock activity and debt balances are never netted off it.</dd>
+            <dt>Savings Goal</dt>
+            <dd>Whatever you set. It is never calculated.</dd>
+            <dt>Cumulative Capital</dt>
+            <dd>A running total of Actual Savings through the year: each month carries on from the one before it, and every new year starts again from zero.</dd>
             <dt>Overtime Pay</dt>
-            <dd>The total of your Overtime entries for that month. Logged overtime wins: the figure typed here is used only for months with no overtime entries.</dd>
-            <dt>Gross Total</dt>
-            <dd>Basic + Allowance + Overtime Pay + Transportation.</dd>
-            <dt>Total Deduction</dt>
-            <dd>Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax.</dd>
-            <dt>Net Received</dt>
-            <dd>Gross Total &minus; Total Deduction.</dd>
+            <dd>The total of your Overtime entries for that month. Logged overtime wins: the figure typed on a payslip is used only for months with no overtime entries.</dd>
+            <dt>Gross Total and Total Deduction</dt>
+            <dd>Basic + Allowance + Overtime Pay + Transportation, and Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax. Both, and the Net Received they produce, are recalculated on save, so the payslip editor shows them read-only.</dd>
             <dt>Income Tax</dt>
             <dd>Your own figure is kept whenever you enter one. Leave it blank and the app estimates it.</dd>
+            <dt>What counts as a month so far</dt>
+            <dd>Simply whether the month has happened yet, by the calendar. A bonus counts from the month it is paid: the year&rsquo;s first bonus from June, a later one from December.</dd>
           </dl>
-          <p class="help-note">Gross Total, Total Deduction and Net Received are always recalculated on save, so they are shown read-only.</p>
+          <p class="help-note"><strong>Payslip</strong> on a row opens that month&rsquo;s payslip, or starts one already set to the month. <strong>Add Manual Month</strong> is for a month with no payslip &mdash; a bonus, say &mdash; where you type gross and take-home yourself. Deleting a month deletes its payslip with it, because the payslip would otherwise rebuild the row. Months that have not happened yet are shaded and tagged <em>projected</em>: the figures are the ones you entered ahead of time, and the dashboard keeps them out of its headline totals.</p>
         </section>
 
         <section class="panel help-panel">
@@ -338,32 +375,27 @@
         </section>
 
         <section class="panel help-panel">
-          <h3>Monthly Savings</h3>
+          <h3>Expenditures</h3>
           <dl class="help-list">
-            <dt>Gross Income</dt>
-            <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
-            <dt>Actual Savings</dt>
-            <dd>What actually reached you: Gross Income &minus; Total Deduction. Stock activity is never netted off it.</dd>
-            <dt>Savings Goal</dt>
-            <dd>Whatever you set. It is never calculated.</dd>
-            <dt>What counts as a month so far</dt>
-            <dd>Simply whether the month has happened yet, by the calendar. A bonus counts from the month it is paid: the year&rsquo;s first bonus from June, a later one from December.</dd>
-            <dt>Cumulative Capital</dt>
-            <dd>A running total of Actual Savings through the year: each month carries on from the one before it, and every new year starts again from zero.</dd>
+            <dt>Expense items</dt>
+            <dd>Add as many dated items as needed. Category / Name identifies what the money was spent on; Note is optional.</dd>
+            <dt>How savings changes</dt>
+            <dd>Each expense is deducted from take-home in its year and month. Editing, moving or deleting an expense recalculates monthly and cumulative savings immediately.</dd>
+            <dt>Debt is separate</dt>
+            <dd>A debt balance is not automatically an expense. Add a payment here only when money was actually spent.</dd>
           </dl>
-          <p class="help-note">Rows generated from Salary Details cannot be deleted here &mdash; delete the matching salary detail instead. Months that have not happened yet are shaded and tagged <em>projected</em>: the figures are the ones you entered ahead of time, and the dashboard keeps them out of its headline totals.</p>
         </section>
 
         <section class="panel help-panel">
           <h3>Dashboard</h3>
           <p class="muted">Each figure is a button: click it to open the section it comes from.</p>
           <dl class="help-list">
-            <dt>Salary &middot; Gross Income</dt>
-            <dd>Gross pay for the months that have already happened, including any bonus already paid. While any months are still to come, the caption gives the projected full-year figure &mdash; the same total with those months included.</dd>
-            <dt>Salary &middot; Take-home Saved</dt>
-            <dd>The same split for what reached you after deductions, with the projected full year in the caption.</dd>
+            <dt>Salary &middot; Income</dt>
+            <dd>Gross pay is the main figure and take-home after payroll deductions is shown below it. Future entered salary months appear only in the projection.</dd>
+            <dt>Savings</dt>
+            <dd>Take-home minus recorded expenditures for months that have already happened. The caption shows both parts of the calculation.</dd>
             <dt>Stock &middot; Win Total</dt>
-            <dd>The latest Actual Win Cumulative recorded that year. The caption gives that same month&rsquo;s Target Cumulative, so you can see the figure against the goal it was measured on.</dd>
+            <dd>The latest Actual Win Cumulative recorded that year. Its tile moves from red through amber to green according to how far it is below or above that month&rsquo;s target; the caption states the gap too.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered. The caption counts the records and the distinct lenders behind that total.</dd>
             <dt>Salary chart</dt>
@@ -412,17 +444,37 @@
         </section>
 
         <section class="panel help-panel">
+          <h3>Account, sync and appearance</h3>
+          <dl class="help-list">
+            <dt>Sign in with Google</dt>
+            <dd>Optional. Signed out, records never leave this device. Signed in, your records are kept in your own Firebase account so another device signed in as you can pick them up.</dd>
+            <dt>What syncs</dt>
+            <dd>Salary months and their payslips, Overtime, Stock Revenue, Daily Records, Expenditures and Debt Records. Archived salary sheets and bill files stay on the device that holds them.</dd>
+            <dt>Which copy wins</dt>
+            <dd>Signing in pulls your account&rsquo;s copy onto this device. From then on, each save sends what changed here. A record edited on two devices keeps whichever was saved last, so reload a device that has been open a while before editing on it.</dd>
+            <dt>Sync now</dt>
+            <dd>Sends this device&rsquo;s records again. Offline, changes are kept here and go up with the next save.</dd>
+            <dt>Importing while signed in</dt>
+            <dd>An imported backup replaces your records and is then sent to your account, so it replaces that copy on every device. Clear All Data does the same with an empty set.</dd>
+            <dt>Ocean and Dark</dt>
+            <dd>The switch beside the search box changes the look. Your choice is remembered on this device and is not part of your records or backups.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
           <h3>Your data</h3>
-          <p>Everything is stored privately in this browser on this computer. Nothing is uploaded. Clearing browser data deletes it, so export a JSON backup regularly &mdash; and before clearing anything.</p>
+          <p>Without an account, everything stays privately in this browser. If you sign in with Google, financial records sync through your private Firebase account path and keep a device cache for offline use. Salary-sheet and bill files remain only on this device. Export a JSON backup regularly in either mode.</p>
         </section>
       </div>
     </section>
 
   </main>
 
-  <button type="button" id="backToMenu" class="back-to-menu" aria-label="Back to menu" hidden>
-    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 12.5 10 7.5l5 5"/></svg>
-    Menu
+  <button type="button" id="mobileMenuBackdrop" class="mobile-menu-backdrop" aria-label="Close menu" tabindex="-1"></button>
+  <button type="button" id="backToMenu" class="back-to-menu" aria-label="Open menu"
+    aria-controls="mobileSidebar" aria-expanded="false" hidden>
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path id="mobileMenuIcon" d="M3 5h14M3 10h14M3 15h14"/></svg>
+    <span id="mobileMenuLabel">Menu</span>
   </button>
 
   <dialog id="recordDialog">
