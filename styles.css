@@ -809,6 +809,40 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; }
   color: var(--muted);
 }
 
+/* Eighteen columns: Year and Month would scroll out of reach exactly when the
+   payslip figures need labelling, so they hold their place while the rest of the
+   row slides under them. The month's offset is measured after render, since a
+   projected row widens the year cell. */
+#salaryTable :is(th, td):nth-child(-n + 2) {
+  position: sticky;
+  z-index: 1;
+}
+
+/* Only the body cells need a fill; the header keeps the one every table's
+   header has, in whichever theme is on. */
+#salaryTable td:nth-child(-n + 2) { background: var(--panel); }
+
+#salaryTable :is(th, td):first-child { left: 0; }
+
+#salaryTable :is(th, td):nth-child(2) {
+  left: var(--sticky-month-left, 90px);
+  box-shadow: 1px 0 0 var(--line);
+}
+
+#salaryTable th:nth-child(-n + 2) { z-index: 2; }
+
+#salaryTable .row-projected td:nth-child(-n + 2) {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(96, 113, 123, .05) 0,
+      rgba(96, 113, 123, .05) 6px,
+      transparent 6px,
+      transparent 12px
+    ),
+    var(--panel);
+}
+
 .empty-cell {
   text-align: center;
   color: var(--muted);

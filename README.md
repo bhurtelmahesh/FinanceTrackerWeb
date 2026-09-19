@@ -5,7 +5,7 @@ Browser-first version of Finance Tracker.
 ## Features
 
 - Dashboard with savings, stock win, debt, and income KPIs
-- Salary and monthly detail records
+- Salary and savings in one table, with each month's payslip breakdown beside it
 - Daily overtime entry and payroll-style summary
 - Stock win target grid
 - Month/day daily records grid

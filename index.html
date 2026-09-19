@@ -60,8 +60,7 @@
 
       <p class="nav-group" id="navGroupSalary">Salary</p>
       <div class="nav-items" role="group" aria-labelledby="navGroupSalary">
-        <button data-view="salary">Monthly Savings</button>
-        <button data-view="details">Salary Details</button>
+        <button data-view="salary">Salary &amp; Savings</button>
         <button data-view="overtime">Overtime</button>
       </div>
 
@@ -179,18 +178,11 @@
 
     <section id="salary" class="view">
       <div class="toolbar">
-        <select id="salaryYearFilter" aria-label="Monthly savings year"></select>
-        <button data-add="salary">Add Manual Income</button>
+        <select id="salaryYearFilter" aria-label="Salary and savings year"></select>
+        <button data-add="monthlyDetails">Add Payslip</button>
+        <button data-add="salary">Add Manual Month</button>
       </div>
       <div id="salaryTable"></div>
-    </section>
-
-    <section id="details" class="view">
-      <div class="toolbar">
-        <select id="detailsYearFilter" aria-label="Salary details year"></select>
-        <button data-add="monthlyDetails">Add Salary Detail</button>
-      </div>
-      <div id="detailsTable"></div>
     </section>
 
     <section id="overtime" class="view">
@@ -333,24 +325,35 @@
         <section class="panel help-panel">
           <h3>How every number is worked out</h3>
           <p class="muted">Amounts are yen. Green means money gained or on track, red means money lost, owed or falling short &mdash; the same rule everywhere in the app. On the dashboard charts, falling short means take-home under half of gross pay, or a stock total below its target.</p>
-          <p><strong>Salary and stock are kept apart.</strong> Salary Details and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
+          <p><strong>Salary and stock are kept apart.</strong> Salary &amp; Savings and Overtime are the salary side. Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
         </section>
 
         <section class="panel help-panel">
-          <h3>Salary Details</h3>
+          <h3>Salary &amp; Savings</h3>
+          <p>One row per month. The first columns are the money story; the payslip that produced them follows, and stays blank for a month entered by hand.</p>
           <dl class="help-list">
+            <dt>Gross Income</dt>
+            <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
+            <dt>Take-home</dt>
+            <dd>What reached you after payroll deductions: Gross Income &minus; Total Deduction.</dd>
+            <dt>Expenditures</dt>
+            <dd>The sum of that month&rsquo;s records in the Expenditures section.</dd>
+            <dt>Actual Savings</dt>
+            <dd>Take-home &minus; that month&rsquo;s expenditures. It can be negative when spending exceeds take-home. Stock activity and debt balances are never netted off it.</dd>
+            <dt>Savings Goal</dt>
+            <dd>Whatever you set. It is never calculated.</dd>
+            <dt>Cumulative Capital</dt>
+            <dd>A running total of Actual Savings through the year: each month carries on from the one before it, and every new year starts again from zero.</dd>
             <dt>Overtime Pay</dt>
-            <dd>The total of your Overtime entries for that month. Logged overtime wins: the figure typed here is used only for months with no overtime entries.</dd>
-            <dt>Gross Total</dt>
-            <dd>Basic + Allowance + Overtime Pay + Transportation.</dd>
-            <dt>Total Deduction</dt>
-            <dd>Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax.</dd>
-            <dt>Net Received</dt>
-            <dd>Gross Total &minus; Total Deduction.</dd>
+            <dd>The total of your Overtime entries for that month. Logged overtime wins: the figure typed on a payslip is used only for months with no overtime entries.</dd>
+            <dt>Gross Total and Total Deduction</dt>
+            <dd>Basic + Allowance + Overtime Pay + Transportation, and Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax. Both, and the Net Received they produce, are recalculated on save, so the payslip editor shows them read-only.</dd>
             <dt>Income Tax</dt>
             <dd>Your own figure is kept whenever you enter one. Leave it blank and the app estimates it.</dd>
+            <dt>What counts as a month so far</dt>
+            <dd>Simply whether the month has happened yet, by the calendar. A bonus counts from the month it is paid: the year&rsquo;s first bonus from June, a later one from December.</dd>
           </dl>
-          <p class="help-note">Gross Total, Total Deduction and Net Received are always recalculated on save, so they are shown read-only.</p>
+          <p class="help-note"><strong>Payslip</strong> on a row opens that month&rsquo;s payslip, or starts one already set to the month. <strong>Add Manual Month</strong> is for a month with no payslip &mdash; a bonus, say &mdash; where you type gross and take-home yourself. Deleting a month deletes its payslip with it, because the payslip would otherwise rebuild the row. Months that have not happened yet are shaded and tagged <em>projected</em>: the figures are the ones you entered ahead of time, and the dashboard keeps them out of its headline totals.</p>
         </section>
 
         <section class="panel help-panel">
@@ -373,25 +376,6 @@
             <dt>Monthly Total</dt>
             <dd>The sum of that month&rsquo;s amounts. A dash means the month has no records at all.</dd>
           </dl>
-        </section>
-
-        <section class="panel help-panel">
-          <h3>Monthly Savings</h3>
-          <dl class="help-list">
-            <dt>Gross Income</dt>
-            <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
-            <dt>Actual Savings</dt>
-            <dd>Take-home &minus; that month&rsquo;s expenditures. It can be negative when spending exceeds take-home. Stock activity and debt balances are never netted off it.</dd>
-            <dt>Take-home</dt>
-            <dd>What reached you after payroll deductions: Gross Income &minus; Total Deduction.</dd>
-            <dt>Savings Goal</dt>
-            <dd>Whatever you set. It is never calculated.</dd>
-            <dt>What counts as a month so far</dt>
-            <dd>Simply whether the month has happened yet, by the calendar. A bonus counts from the month it is paid: the year&rsquo;s first bonus from June, a later one from December.</dd>
-            <dt>Cumulative Capital</dt>
-            <dd>A running total of Actual Savings through the year: each month carries on from the one before it, and every new year starts again from zero.</dd>
-          </dl>
-          <p class="help-note">Rows generated from Salary Details cannot be deleted here &mdash; delete the matching salary detail instead. Months that have not happened yet are shaded and tagged <em>projected</em>: the figures are the ones you entered ahead of time, and the dashboard keeps them out of its headline totals.</p>
         </section>
 
         <section class="panel help-panel">
@@ -469,7 +453,7 @@
             <dt>Sign in with Google</dt>
             <dd>Optional. Signed out, records never leave this device. Signed in, your records are kept in your own Firebase account so another device signed in as you can pick them up.</dd>
             <dt>What syncs</dt>
-            <dd>Salary, Salary Details, Overtime, Stock Revenue, Daily Records, Expenditures and Debt Records. Archived salary sheets and bill files stay on the device that holds them.</dd>
+            <dd>Salary months and their payslips, Overtime, Stock Revenue, Daily Records, Expenditures and Debt Records. Archived salary sheets and bill files stay on the device that holds them.</dd>
             <dt>Which copy wins</dt>
             <dd>Signing in pulls your account&rsquo;s copy onto this device. From then on, each save sends what changed here. A record edited on two devices keeps whichever was saved last, so reload a device that has been open a while before editing on it.</dd>
             <dt>Sync now</dt>

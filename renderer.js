@@ -91,8 +91,7 @@ const schemas = {
 
 const titles = {
   dashboard: 'Dashboard',
-  salary: 'Monthly Savings',
-  details: 'Salary Details',
+  salary: 'Salary & Savings',
   overtime: 'Overtime',
   stocks: 'Stock Revenue',
   daily: 'Daily Records',
@@ -105,8 +104,8 @@ const titles = {
 const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'expenses', 'personalBalances'];
 
 const searchSections = [
-  { collection: 'salary', view: 'salary', label: 'Monthly Savings', keywords: ['salary', 'income', 'savings'] },
-  { collection: 'monthlyDetails', view: 'details', label: 'Salary Details', keywords: ['salary', 'payroll', 'income'] },
+  { collection: 'salary', view: 'salary', label: 'Salary & Savings', keywords: ['salary', 'income', 'savings'] },
+  { collection: 'monthlyDetails', view: 'salary', label: 'Payslip', keywords: ['salary', 'payroll', 'income', 'payslip'] },
   { collection: 'overtime', view: 'overtime', label: 'Overtime', keywords: ['overtime', 'ot'] },
   { collection: 'stockRevenue', view: 'stocks', label: 'Stock Revenue', keywords: ['stock', 'stocks', 'revenue', 'win'] },
   { collection: 'daily', view: 'daily', label: 'Daily Records', keywords: ['daily', 'stock', 'trading'] },
@@ -387,7 +386,7 @@ function setSearchDestinationFilters(section, record) {
   const dailyMonth = narrowScreen() ? month : '';
   const filterValues = {
     salary: [['salaryYearFilter', year]],
-    monthlyDetails: [['detailsYearFilter', year]],
+    monthlyDetails: [['salaryYearFilter', year]],
     overtime: [['otYearFilter', year], ['otMonthFilter', month]],
     stockRevenue: [['stockYearFilter', year]],
     daily: [['dailyYearFilter', year], ['dailyMonthFilter', dailyMonth]],
@@ -419,8 +418,13 @@ function searchTargetFor(result) {
       row.dataset.stockRowMonth === normalizeMonth(record.month)
     ) || null;
   }
+  // A payslip is columns of its month's row rather than a row of its own, so the
+  // hit lands on the salary record that carries it.
+  const id = section.collection === 'monthlyDetails'
+    ? (state.salary || []).find((item) => monthKey(item) === monthKey(record))?.id
+    : record.id;
   return [...view.querySelectorAll('tr[data-record-id]')].find((row) =>
-    row.dataset.recordId === String(record.id)
+    row.dataset.recordId === String(id)
   ) || null;
 }
 
@@ -1964,6 +1968,9 @@ function renderDashboard() {
 }
 
 function formatValue(key, value) {
+  // A month with no payslip has no basic pay, no pension line and so on. Those
+  // cells are empty, not zero, and an em dash says so without reading as a figure.
+  if (value === '' || value === null || value === undefined) return '\u2014';
   if (['salary', 'takeHome', 'plannedSavings', 'expenseTotal', 'actualSavings', 'cumulativeCapital', 'basic', 'allowance', 'overtimePay', 'transportation', 'grossTotal', 'insurance', 'pension', 'employmentInsurance', 'residentTax', 'incomeTax', 'totalDeduction', 'received', 'targetCumulative', 'actualCumulative', 'monthlyRevenue', 'surplus', 'amount', 'rate'].includes(key)) {
     return yen(value);
   }
@@ -1994,15 +2001,12 @@ function cellClass(collection, key, item, type) {
 }
 
 function renderTable(containerId, collection, fields, records, options = {}) {
-  const canDelete = options.canDelete || (() => true);
-  const deleteHint = options.deleteHint || '';
+  const extraAction = options.extraAction || (() => '');
   const rowClass = options.rowClass || (() => '');
   const rows = records.map((item) => `
     <tr class="${rowClass(item)}" data-record-id="${escapeHtml(item.id)}" data-record-collection="${escapeHtml(collection)}">
       ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
-      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${canDelete(item)
-        ? `<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`
-        : `<button class="delete" type="button" disabled title="${escapeHtml(deleteHint)}" aria-label="Delete record">Delete</button>`}</div></td>
+      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${extraAction(item)}<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button></div></td>
     </tr>
   `).join('');
   const html = `
@@ -2017,17 +2021,69 @@ function renderTable(containerId, collection, fields, records, options = {}) {
   document.getElementById(containerId).innerHTML = html;
 }
 
+// Salary Details and Monthly Savings listed the same months and shared two
+// figures - gross and take-home - so they are one table. The money story leads
+// and the payslip behind it follows; Gross Total and Net Received are left out
+// of the breakdown because they are already the first two columns.
+const payslipColumns = schemas.monthlyDetails
+  .filter(([key]) => !['year', 'month', 'grossTotal', 'received'].includes(key));
+const salaryColumns = [...schemas.salary, ...payslipColumns];
+
+function monthKey(record) {
+  return `${Number(record.year)}-${normalizeMonth(record.month)}`;
+}
+
+function payslipFor(record) {
+  return (state.monthlyDetails || []).find((item) => monthKey(item) === monthKey(record));
+}
+
 function renderSalary() {
   const salaryRecords = state.salary || [];
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
-  const records = sortRecordsByMonth(selected ? salaryRecords.filter((item) => String(item.year) === String(selected)) : salaryRecords);
-  renderTable('salaryTable', 'salary', schemas.salary, records, {
+  const details = new Map((state.monthlyDetails || []).map((item) => [monthKey(item), item]));
+  const records = sortRecordsByMonth(selected
+    ? salaryRecords.filter((item) => String(item.year) === String(selected))
+    : salaryRecords)
+    .map((item) => {
+      const detail = details.get(monthKey(item));
+      const payslip = {};
+      payslipColumns.forEach(([key]) => { payslip[key] = detail ? detail[key] : ''; });
+      return { ...item, ...payslip, hasPayslip: Boolean(detail) };
+    });
+  renderTable('salaryTable', 'salary', salaryColumns, records, {
     rowClass: (item) => monthHasElapsed(item, item.year, records) ? '' : 'row-projected',
-    canDelete: (item) => !item.derivedFromDetail,
-    deleteHint: 'This row is generated from Salary Details. Delete the matching salary detail instead.'
+    extraAction: (item) => `<button data-payslip="${escapeHtml(item.id)}" aria-label="${item.hasPayslip ? 'Edit payslip' : 'Add payslip'}">${item.hasPayslip ? 'Payslip' : 'Add payslip'}</button>`
   });
+  // Month sticks beside Year, so it has to know how wide Year came out.
+  const table = document.querySelector('#salaryTable table');
+  const yearCell = table && table.querySelector('thead th');
+  if (yearCell) table.style.setProperty('--sticky-month-left', `${yearCell.getBoundingClientRect().width}px`);
+}
+
+// The payslip is its own record, so a month without one opens a blank editor
+// already set to that month.
+function openPayslipFor(salaryId) {
+  const row = (state.salary || []).find((item) => item.id === salaryId);
+  if (!row) return;
+  openEditor('monthlyDetails', payslipFor(row) || { year: row.year, month: normalizeMonth(row.month) });
+}
+
+// Dropping the savings row alone would not stick: the payslip rebuilds it on the
+// next render. A month goes with its payslip or not at all.
+function deleteSalaryMonth(recordId) {
+  const row = (state.salary || []).find((item) => item.id === recordId);
+  if (!row) return;
+  const detail = payslipFor(row);
+  const question = detail
+    ? `Delete ${normalizeMonth(row.month)} ${row.year}? Its payslip goes with it.`
+    : 'Delete this record?';
+  if (!confirm(question)) return;
+  state.salary = state.salary.filter((item) => item.id !== recordId);
+  if (detail) state.monthlyDetails = state.monthlyDetails.filter((item) => item.id !== detail.id);
+  render();
+  save();
 }
 
 function renderExpenses() {
@@ -2047,14 +2103,6 @@ function renderExpenses() {
     <div><span>${year} annual total</span><strong>${yen(annualTotal)}</strong></div>
     <div><span>Expense items</span><strong>${records.length}</strong></div>`;
   renderTable('expenseTable', 'expenses', schemas.expenses, records);
-}
-
-function renderDetails() {
-  const years = yearsFrom(state.monthlyDetails);
-  const selected = document.getElementById('detailsYearFilter').value || years[years.length - 1] || '';
-  fillSelect('detailsYearFilter', selectableYears(state.monthlyDetails), selected, 'All years');
-  const records = sortRecordsByMonth(selected ? state.monthlyDetails.filter((item) => String(item.year) === String(selected)) : state.monthlyDetails);
-  renderTable('detailsTable', 'monthlyDetails', schemas.monthlyDetails, records);
 }
 
 function renderOvertime() {
@@ -2377,7 +2425,6 @@ function normalizeState() {
 const viewRenderers = {
   dashboard: renderDashboard,
   salary: renderSalary,
-  details: renderDetails,
   overtime: renderOvertime,
   stocks: renderStocks,
   daily: renderDaily,
@@ -3475,10 +3522,15 @@ function bindEvents() {
       const item = state[edit.dataset.edit].find((record) => record.id === edit.dataset.id);
       openEditor(edit.dataset.edit, item);
     }
+    const payslip = event.target.closest('[data-payslip]');
+    if (payslip) openPayslipFor(payslip.dataset.payslip);
     const del = event.target.closest('[data-delete]');
-    if (del) deleteRecord(del.dataset.delete, del.dataset.id);
+    if (del) {
+      if (del.dataset.delete === 'salary') deleteSalaryMonth(del.dataset.id);
+      else deleteRecord(del.dataset.delete, del.dataset.id);
+    }
   });
-  ['dashboardYear', 'salaryYearFilter', 'detailsYearFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'expenseYearFilter', 'expenseMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
+  ['dashboardYear', 'salaryYearFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'expenseYearFilter', 'expenseMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
     document.getElementById(idName).addEventListener('change', render);
   });
   document.body.addEventListener('input', (event) => {
