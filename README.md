@@ -9,7 +9,9 @@ Browser-first version of Finance Tracker.
 - Daily overtime entry and payroll-style summary
 - Stock win target grid
 - Month/day daily records grid
+- Expenditure records with monthly and annual totals
 - Debt records and unpaid bill archive
+- Ocean and Dark themes, remembered per device
 - Demo data, clear-all flow, and JSON backup import/export
 
 ## Run Locally

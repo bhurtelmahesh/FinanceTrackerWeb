@@ -1,4 +1,5 @@
 import { searchRecords as findSearchRecords, searchSnippet } from './search.mjs';
+import { calculateSavings, expenseTotalForPeriod, stockPerformanceTone } from './finance-metrics.mjs';
 
 let firebaseClientPromise = null;
 function firebaseClient() {
@@ -19,11 +20,43 @@ let accountUser = null;
 let cloudSyncEnabled = false;
 let accountTransitioning = false;
 let currentStorageRecordKey = 'finance-records';
+const themeStorageKey = 'finance-records-theme';
+// Ocean and Dark only: the old Light theme differed from Ocean by a few greys and
+// read as the same screen, so a saved 'light' now lands on Ocean.
+const supportedThemes = new Set(['ocean', 'dark']);
+const themeOrder = ['ocean', 'dark'];
+const themeLabels = { ocean: 'Ocean', dark: 'Dark' };
+
+function preferredTheme() {
+  const saved = localStorage.getItem(themeStorageKey);
+  return supportedThemes.has(saved) ? saved : 'ocean';
+}
+
+function applyTheme(theme, persist = true) {
+  const selected = supportedThemes.has(theme) ? theme : 'ocean';
+  document.documentElement.dataset.theme = selected;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', selected === 'dark' ? '#10232c' : selected === 'light' ? '#f3f6f8' : '#2b83a8');
+  const button = document.getElementById('themeButton');
+  const nextTheme = themeOrder[(themeOrder.indexOf(selected) + 1) % themeOrder.length];
+  if (button) {
+    button.dataset.theme = selected;
+    // A switch, so the state lives in aria-checked and the name stays put.
+    button.setAttribute('aria-checked', String(selected === 'dark'));
+    button.setAttribute('aria-label', `Dark theme. ${themeLabels[selected]} selected`);
+    button.title = `Theme: ${themeLabels[selected]} - switch to ${themeLabels[nextTheme]}`;
+  }
+  const buttonText = document.getElementById('themeButtonText');
+  if (buttonText) buttonText.textContent = `${themeLabels[selected]} theme`;
+  Object.assign(chartInk, chartPalettes[selected]);
+  if (persist) localStorage.setItem(themeStorageKey, selected);
+  if (state && activeView === 'dashboard') renderCharts();
+}
 
 const schemas = {
   salary: [
     ['year', 'Year', 'number'], ['month', 'Month'], ['salary', 'Gross Income', 'number'],
-    ['plannedSavings', 'Savings Goal', 'number'], ['actualSavings', 'Actual Savings', 'number'],
+    ['takeHome', 'Take-home', 'number'], ['plannedSavings', 'Savings Goal', 'number'],
+    ['expenseTotal', 'Expenditures', 'number'], ['actualSavings', 'Actual Savings', 'number'],
     ['cumulativeCapital', 'Cumulative Capital', 'number']
   ],
   monthlyDetails: [
@@ -49,6 +82,10 @@ const schemas = {
   ],
   personalBalances: [
     ['group', 'Lender'], ['dateOrLabel', 'Due Date / Name'], ['amount', 'Debt Amount', 'number'], ['note', 'Note']
+  ],
+  expenses: [
+    ['year', 'Year', 'number'], ['month', 'Month'], ['day', 'Day', 'number'],
+    ['category', 'Category / Name'], ['amount', 'Amount', 'number'], ['note', 'Note']
   ]
 };
 
@@ -59,12 +96,13 @@ const titles = {
   overtime: 'Overtime',
   stocks: 'Stock Revenue',
   daily: 'Daily Records',
+  expenses: 'Expenditures',
   balances: 'Debt Records',
   data: 'Backup & Import',
   help: 'Help'
 };
 
-const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'personalBalances'];
+const collections = ['salary', 'monthlyDetails', 'overtime', 'stockRevenue', 'daily', 'expenses', 'personalBalances'];
 
 const searchSections = [
   { collection: 'salary', view: 'salary', label: 'Monthly Savings', keywords: ['salary', 'income', 'savings'] },
@@ -72,6 +110,7 @@ const searchSections = [
   { collection: 'overtime', view: 'overtime', label: 'Overtime', keywords: ['overtime', 'ot'] },
   { collection: 'stockRevenue', view: 'stocks', label: 'Stock Revenue', keywords: ['stock', 'stocks', 'revenue', 'win'] },
   { collection: 'daily', view: 'daily', label: 'Daily Records', keywords: ['daily', 'stock', 'trading'] },
+  { collection: 'expenses', view: 'expenses', label: 'Expenditures', keywords: ['expense', 'expenses', 'spending', 'cost'] },
   { collection: 'personalBalances', view: 'balances', label: 'Debt Records', keywords: ['debt', 'balance', 'lender'] },
   // Last, so records always list ahead of the explanations.
   {
@@ -96,6 +135,7 @@ const workbookSheets = [
   ['Overtime', 'overtime', () => schemas.overtime],
   ['Stock Revenue', 'stockRevenue', () => schemas.stockRevenue],
   ['Daily Records', 'daily', () => schemas.daily],
+  ['Expenditures', 'expenses', () => schemas.expenses],
   ['Debt Records', 'personalBalances', () => schemas.personalBalances],
   ['Salary Sheet Archive', 'salarySheets', () => archiveFields],
   ['Unpaid Bills Archive', 'unpaidBills', () => archiveFields]
@@ -104,7 +144,7 @@ const computedFields = {
   monthlyDetails: ['grossTotal', 'totalDeduction', 'received'],
   overtime: ['amount'],
   stockRevenue: ['monthlyRevenue', 'surplus', 'verdict'],
-  salary: ['savingsRate']
+  salary: ['expenseTotal', 'actualSavings', 'cumulativeCapital', 'savingsRate']
 };
 const monthOptions = [
   ['Jan', 'Jan'], ['Feb', 'Feb'], ['Mar', 'Mar'], ['Apr', 'Apr'], ['May', 'May'], ['Jun', 'Jun'],
@@ -161,8 +201,14 @@ function debounce(fn, wait) {
   };
 }
 
+// 'Ready' and friends say nothing a reader needs, so they stay in the live
+// region for screen readers and out of the header.
+const quietSaveStates = new Set(['Ready', 'Loading...', 'Local mode']);
+
 function setSaveState(text) {
-  document.getElementById('saveState').textContent = text;
+  const element = document.getElementById('saveState');
+  element.textContent = text;
+  element.classList.toggle('sr-only', quietSaveStates.has(text));
 }
 
 function updateSaveButton() {
@@ -345,6 +391,7 @@ function setSearchDestinationFilters(section, record) {
     overtime: [['otYearFilter', year], ['otMonthFilter', month]],
     stockRevenue: [['stockYearFilter', year]],
     daily: [['dailyYearFilter', year], ['dailyMonthFilter', dailyMonth]],
+    expenses: [['expenseYearFilter', year], ['expenseMonthFilter', month]],
     personalBalances: []
   }[section.collection] || [];
   filterValues.forEach(([idName, value]) => {
@@ -653,6 +700,13 @@ function selectableYears(records) {
 function fillSelect(idName, values, current, allLabel) {
   const select = document.getElementById(idName);
   select.innerHTML = '';
+  // The year in hand comes from the dashboard, so it can be one this collection
+  // has no records for - an old backup with no expenditures, say. List it too,
+  // or the picker sits blank on a year the page is plainly showing.
+  if (current !== undefined && current !== null && current !== '' &&
+      !values.some((value) => String(value) === String(current))) {
+    values = [...values, current].sort((a, b) => Number(a) - Number(b));
+  }
   if (allLabel) {
     const opt = document.createElement('option');
     opt.value = '';
@@ -951,6 +1005,10 @@ function withCumulativeCapital(ordered) {
   });
 }
 
+function expenseTotalFor(year, month) {
+  return expenseTotalForPeriod(state.expenses, year, month, normalizeMonth);
+}
+
 function derivedSalaryRecords() {
   const existing = new Map((state.salary || []).map((item) =>
     [`${Number(item.year)}-${normalizeMonth(item.month)}`, item]
@@ -961,16 +1019,18 @@ function derivedSalaryRecords() {
     const month = normalizeMonth(detail.month);
     const previous = existing.get(`${year}-${month}`) || {};
     const { grossTotal, received } = monthlyPayroll(detail, overtimePayFor(detail, year, month));
-    // Savings is take-home pay. Stock movements live in Daily Records and Stock
-    // Revenue and are never netted off the salary side.
-    const actualSavings = received;
+    const takeHome = received;
+    const expenseTotal = expenseTotalFor(year, month);
+    const actualSavings = calculateSavings(takeHome, expenseTotal);
     return {
       ...previous,
       id: previous.id || id('salary'),
       year,
       month,
       salary: grossTotal,
+      takeHome,
       plannedSavings: Number(previous.plannedSavings || 0),
+      expenseTotal,
       actualSavings,
       savingsRate: grossTotal ? actualSavings / grossTotal : 0,
       cumulativeCapital: Number(previous.cumulativeCapital || 0),
@@ -981,7 +1041,18 @@ function derivedSalaryRecords() {
   const detailKeys = new Set(derived.map((item) => `${item.year}-${item.month}`));
   const manualOnly = (state.salary || [])
     .filter((item) => !detailKeys.has(`${Number(item.year)}-${normalizeMonth(item.month)}`))
-    .map(({ derivedFromDetail, ...rest }) => rest);
+    .map(({ derivedFromDetail, ...rest }) => {
+      const takeHome = Number(rest.takeHome ?? rest.actualSavings ?? 0);
+      const expenseTotal = expenseTotalFor(rest.year, rest.month);
+      const actualSavings = calculateSavings(takeHome, expenseTotal);
+      return {
+        ...rest,
+        takeHome,
+        expenseTotal,
+        actualSavings,
+        savingsRate: Number(rest.salary || 0) ? actualSavings / Number(rest.salary || 0) : 0
+      };
+    });
   return withCumulativeCapital(sortRecordsByMonth([...derived, ...manualOnly]));
 }
 
@@ -1002,6 +1073,15 @@ function selectedDailyYear() {
 function selectedStockYear() {
   const years = yearsFrom(state.stockRevenue);
   return Number(document.getElementById('stockYearFilter')?.value || years[years.length - 1] || currentYear());
+}
+
+function selectedExpenseYear() {
+  const years = yearsFrom(state.expenses);
+  return Number(document.getElementById('expenseYearFilter')?.value || years[years.length - 1] || currentYear());
+}
+
+function selectedExpenseMonth() {
+  return document.getElementById('expenseMonthFilter')?.value || '';
 }
 
 // The most recent month that has an actual figure — the one the Win Total reflects.
@@ -1053,7 +1133,7 @@ function recentMoneyTrend(records, key, label) {
   return `Recent ${label} is ${delta > 0 ? 'rising' : 'falling'}: ${last.month} is ${yen(Math.abs(delta))} ${delta > 0 ? 'above' : 'below'} ${first.month}.`;
 }
 
-function renderDashboardSummary({ year, salary, elapsed, elapsedMonths, projectedMonths, actualIncome, actualSavings, stockLatest, stockRecord, stockTarget }) {
+function renderDashboardSummary({ year, salary, elapsed, elapsedMonths, projectedMonths, actualIncome, actualTakeHome, actualExpenses, actualSavings, stockLatest, stockRecord, stockTarget }) {
   const summary = document.querySelector('.dashboard-summary');
   const title = document.getElementById('dashboardSummaryTitle');
   let items;
@@ -1090,10 +1170,11 @@ function renderDashboardSummary({ year, salary, elapsed, elapsedMonths, projecte
       ? `${elapsedMonths} salary month${elapsedMonths === 1 ? '' : 's'} recorded${projectedMonths ? `; ${projectedMonths} future month${projectedMonths === 1 ? '' : 's'} included in projections` : ''}.`
       : `No completed salary months recorded for ${year} yet.`;
     const takeHome = actualIncome
-      ? `Take-home is ${Math.round((actualSavings / actualIncome) * 100)}% of recorded gross income.`
+      ? `Take-home is ${Math.round((actualTakeHome / actualIncome) * 100)}% of recorded gross income.`
       : 'Take-home percentage will appear once salary is recorded.';
     items = [
       `${progress} ${takeHome}`,
+      `Recorded take-home is ${yen(actualTakeHome)}; after ${yen(actualExpenses)} of expenditures, savings are ${yen(actualSavings)}.`,
       extremes
         ? `Highest monthly gross was ${yen(extremes.highest.salary)} in ${extremes.highest.month}; lowest was ${yen(extremes.lowest.salary)} in ${extremes.lowest.month}.`
         : 'Monthly highs and lows will appear once salary is recorded.',
@@ -1115,8 +1196,12 @@ function renderKpis() {
   const debts = state.personalBalances;
   const actualIncome = sum(elapsed, 'salary');
   const projectedIncome = sum(salary, 'salary');
-  const actualSavings = sum(elapsed, 'actualSavings');
-  const projectedSavings = sum(salary, 'actualSavings');
+  const actualTakeHome = sum(elapsed, 'takeHome');
+  const projectedTakeHome = sum(salary, 'takeHome');
+  const yearExpenses = (state.expenses || []).filter((item) => Number(item.year) === year);
+  const elapsedExpenses = yearExpenses.filter((item) => monthHasElapsed(item, year, yearExpenses));
+  const actualExpenses = sum(elapsedExpenses, 'amount');
+  const actualSavings = calculateSavings(actualTakeHome, actualExpenses);
   const stockLatest = latestStockActualForYear(year);
   const stockRecord = latestStockRecordForYear(year);
   const stockTarget = Number(stockRecord?.targetCumulative || 0);
@@ -1124,16 +1209,14 @@ function renderKpis() {
   const lenders = new Set((debts || [])
     .map((item) => String(item.group || '').trim().toLowerCase())
     .filter(Boolean)).size;
-  // Just the figure — the Help tab explains what actual and projected mean.
-  const projection = (value) => projectedMonths ? `Projected ${yen(value)}` : '';
-  // A tone per tile so the rail can be scanned at a glance. The value keeps its
-  // own green/red meaning; the tone only says which figure you are looking at.
+  const { gap: stockGap, performance: stockPerformance } = stockPerformanceTone(stockLatest, stockTarget, Boolean(stockRecord));
+  const stockToneLevel = stockRecord ? Math.round((stockPerformance + 1) * 4) : 'empty';
   const kpis = [
-    ['Salary · Gross Income', yen(actualIncome), '', projection(projectedIncome), 'tone-blue', 'salary'],
-    ['Salary · Take-home Saved', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
-      projection(projectedSavings), 'tone-green', 'salary'],
-    ['Stock · Win Total', yen(stockLatest), stockLatest >= 0 ? 'positive' : 'negative',
-      stockRecord ? `${stockRecord.month} target ${yen(stockTarget)}` : '', 'tone-amber', 'stocks'],
+    ['Salary · Income', yen(actualIncome), '', `Take-home ${yen(actualTakeHome)}${projectedMonths ? ` · projected gross ${yen(projectedIncome)} · take-home ${yen(projectedTakeHome)}` : ''}`, 'tone-blue', 'salary'],
+    ['Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
+      `Take-home ${yen(actualTakeHome)} − expenses ${yen(actualExpenses)}`, actualSavings >= 0 ? 'tone-green' : 'tone-red', 'expenses'],
+    ['Stock · Win Total', yen(stockLatest), stockGap > 0 ? 'positive' : stockGap < 0 ? 'negative' : '',
+      stockRecord ? `${yen(Math.abs(stockGap))} ${stockGap >= 0 ? 'above' : 'below'} ${stockRecord.month} target` : 'No result recorded', `tone-performance performance-${stockToneLevel}`, 'stocks'],
     ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '',
       debts.length ? `${debts.length} record${debts.length === 1 ? '' : 's'} · ${lenders} lender${lenders === 1 ? '' : 's'}` : '',
       'tone-red', 'balances']
@@ -1141,12 +1224,14 @@ function renderKpis() {
   document.getElementById('kpis').innerHTML = kpis.map(([label, value, cls, hint, tone, view]) =>
     `<button type="button" class="kpi ${cls} ${tone}" data-view="${view}" aria-label="${escapeHtml(label)} — open ${escapeHtml(titles[view])}"><span>${label}</span><strong>${value}</strong>${hint ? `<small>${escapeHtml(hint)}</small>` : ''}</button>`
   ).join('');
-  renderDashboardSummary({ year, salary, elapsed, elapsedMonths, projectedMonths, actualIncome, actualSavings, stockLatest, stockRecord, stockTarget });
+  renderDashboardSummary({ year, salary, elapsed, elapsedMonths, projectedMonths, actualIncome, actualTakeHome, actualExpenses, actualSavings, stockLatest, stockRecord, stockTarget });
 }
 
 // Both dashboard charts share one frame — a wrapping legend, a round-number
 // y-axis and one slot per month — and draw their figures over it as lines.
-const chartInk = {
+const chartPalettes = {
+  ocean: {
+  background: '#ffffff', markerSurface: '#ffffff',
   text: '#22313a',
   muted: '#5b6d76',
   grid: '#e8eff2',
@@ -1160,7 +1245,15 @@ const chartInk = {
   below: '#c33f3f',
   goodWash: 'rgba(46, 125, 50, .16)',
   belowWash: 'rgba(195, 63, 63, .16)'
+  },
+  dark: {
+    background: '#131722', markerSurface: '#131722',
+    text: '#d1d4dc', muted: '#9aa4b2', grid: '#2a2e39', baseline: '#4c525e', hover: '#1e222d',
+    bonus: '#302b22', upcoming: '#8b95a5', gross: '#42a5f5', target: '#f0b53d', good: '#26a69a',
+    below: '#f07070', goodWash: 'rgba(101, 200, 121, .18)', belowWash: 'rgba(240, 112, 112, .18)'
+  }
 };
+const chartInk = { ...chartPalettes.ocean };
 const chartFont = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 // Take-home under this share of gross income is drawn red.
 const takeHomeFloor = 0.5;
@@ -1217,7 +1310,7 @@ function prepareCanvas(canvas) {
     canvas.height = pixelHeight;
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = chartInk.background;
   ctx.fillRect(0, 0, w, h);
   return { ctx, w, h };
 }
@@ -1243,10 +1336,10 @@ function drawMarker(ctx, x, y, { color, shape = 'dot', hollow = false, r = 4 }) 
   ctx.setLineDash([]);
   ctx.lineJoin = 'round';
   ctx.lineWidth = 4;
-  ctx.strokeStyle = '#ffffff';
+  ctx.strokeStyle = chartInk.markerSurface;
   path();
   ctx.stroke();
-  ctx.fillStyle = hollow ? '#ffffff' : color;
+  ctx.fillStyle = hollow ? chartInk.markerSurface : color;
   path();
   ctx.fill();
   if (hollow) {
@@ -1401,6 +1494,18 @@ function drawMonthChart(canvas, chart, hoverIndex = -1) {
     ctx.fillText(chartYen(value), plotLeft - 10, y);
   });
 
+  // Trading-chart style vertical time divisions make month-to-month movement
+  // easier to scan without adding visual weight to the data series.
+  ctx.strokeStyle = chartInk.grid;
+  labels.forEach((label, i) => {
+    const x = Math.round(frame.xAt(i)) + 0.5;
+    if (x < plotLeft || x > plotRight) return;
+    ctx.beginPath();
+    ctx.moveTo(x, plotTop);
+    ctx.lineTo(x, plotBottom);
+    ctx.stroke();
+  });
+
   if (!hasData) {
     ctx.textAlign = 'center';
     ctx.fillStyle = chartInk.muted;
@@ -1456,7 +1561,7 @@ function salaryChart(year) {
   const source = (state.salary || []).filter((item) => Number(item.year) === year);
   const rows = source.map((item) => {
     const gross = Number(item.salary || 0);
-    const takeHome = Number(item.actualSavings || 0);
+    const takeHome = Number(item.takeHome || 0);
     return {
       label: item.month,
       gross,
@@ -1597,7 +1702,9 @@ function stockChart(year) {
       const [labelX, labelY] = fitsRight ? [x + 10, y] : [Math.min(x, frame.plotRight - 2 - width / 2), y - 16];
       ctx.lineWidth = 4;
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#ffffff';
+      // The halo hides the lines behind the label, so it wears the chart's own
+      // surface colour - white here turned the label into a smear on dark.
+      ctx.strokeStyle = chartInk.markerSurface;
       ctx.strokeText(text, labelX, labelY);
       ctx.fillStyle = chartInk.text;
       ctx.fillText(text, labelX, labelY);
@@ -1857,7 +1964,7 @@ function renderDashboard() {
 }
 
 function formatValue(key, value) {
-  if (['salary', 'plannedSavings', 'actualSavings', 'cumulativeCapital', 'basic', 'allowance', 'overtimePay', 'transportation', 'grossTotal', 'insurance', 'pension', 'employmentInsurance', 'residentTax', 'incomeTax', 'totalDeduction', 'received', 'targetCumulative', 'actualCumulative', 'monthlyRevenue', 'surplus', 'amount', 'rate'].includes(key)) {
+  if (['salary', 'takeHome', 'plannedSavings', 'expenseTotal', 'actualSavings', 'cumulativeCapital', 'basic', 'allowance', 'overtimePay', 'transportation', 'grossTotal', 'insurance', 'pension', 'employmentInsurance', 'residentTax', 'incomeTax', 'totalDeduction', 'received', 'targetCumulative', 'actualCumulative', 'monthlyRevenue', 'surplus', 'amount', 'rate'].includes(key)) {
     return yen(value);
   }
   if (key === 'savingsRate') return pct(value);
@@ -1921,6 +2028,25 @@ function renderSalary() {
     canDelete: (item) => !item.derivedFromDetail,
     deleteHint: 'This row is generated from Salary Details. Delete the matching salary detail instead.'
   });
+}
+
+function renderExpenses() {
+  const year = selectedExpenseYear();
+  const month = selectedExpenseMonth();
+  fillSelect('expenseYearFilter', selectableYears(state.expenses), year);
+  fillSelectPairs('expenseMonthFilter', [['', 'All months'], ...monthOptions], month);
+  const yearRecords = (state.expenses || [])
+    .filter((item) => Number(item.year) === Number(year));
+  const records = yearRecords
+    .filter((item) => !month || normalizeMonth(item.month) === month)
+    .sort((a, b) => monthIndex(a.month) - monthIndex(b.month) || Number(a.day || 0) - Number(b.day || 0));
+  const selectedTotal = sum(records, 'amount');
+  const annualTotal = sum(yearRecords, 'amount');
+  document.getElementById('expenseSummary').innerHTML = `
+    <div><span>${month ? `${escapeHtml(month)} total` : 'Selected total'}</span><strong>${yen(selectedTotal)}</strong></div>
+    <div><span>${year} annual total</span><strong>${yen(annualTotal)}</strong></div>
+    <div><span>Expense items</span><strong>${records.length}</strong></div>`;
+  renderTable('expenseTable', 'expenses', schemas.expenses, records);
 }
 
 function renderDetails() {
@@ -2255,6 +2381,7 @@ const viewRenderers = {
   overtime: renderOvertime,
   stocks: renderStocks,
   daily: renderDaily,
+  expenses: renderExpenses,
   balances: () => {
     renderBalances();
     renderUnpaidBills();
@@ -2318,7 +2445,10 @@ function openEditor(collection, record) {
   dialogContext = { collection, id: record && record.id };
   document.getElementById('dialogTitle').textContent = record && record.id ? 'Edit record' : 'Add record';
   const fields = schemas[collection];
-  const computed = new Set(computedFields[collection] || []);
+  const computed = new Set([
+    ...(computedFields[collection] || []),
+    ...(collection === 'salary' && record?.derivedFromDetail ? ['salary', 'takeHome'] : [])
+  ]);
   document.getElementById('dialogFields').innerHTML = fields.map(([key, label, type]) => {
     const isComputed = computed.has(key);
     return `
@@ -2349,6 +2479,7 @@ function saveDialogRecord() {
     if (calculatedOtPay > 0) values.overtimePay = calculatedOtPay;
     Object.assign(values, monthlyPayroll(values, Number(values.overtimePay || 0)));
   }
+  if (collection === 'salary' || collection === 'expenses') values.month = normalizeMonth(values.month);
   if (recordId) {
     state[collection] = state[collection].map((item) => item.id === recordId ? values : item);
   } else {
@@ -2593,15 +2724,24 @@ async function buildDemoData() {
     amount: Math.round((hours + miscHours) * rate * 100) / 100,
     note: ''
   }));
+  const expenses = [
+    ['Jan', 6, 'Rent', 78000], ['Jan', 12, 'Groceries', 18500],
+    ['Feb', 6, 'Rent', 78000], ['Feb', 18, 'Utilities', 11200],
+    ['Mar', 6, 'Rent', 78000], ['Mar', 21, 'Transport', 9400]
+  ].map(([month, day, category, amount]) => ({
+    id: id('expenses'), year, month, day, category, amount, note: ''
+  }));
   const salary = monthlyDetails.map((detail, index) => {
-    const dailyTotal = sum(daily.filter((item) => item.month === detail.month), 'amount');
-    const actualSavings = detail.received - Math.max(0, dailyTotal);
+    const expenseTotal = sum(expenses.filter((item) => item.month === detail.month), 'amount');
+    const actualSavings = detail.received - expenseTotal;
     return {
       id: id('salary'),
       year,
       month: detail.month,
-      salary: detail.received,
+      salary: detail.grossTotal,
+      takeHome: detail.received,
       plannedSavings: 120000,
+      expenseTotal,
       actualSavings,
       cumulativeCapital: actualSavings + index * 115000
     };
@@ -2638,6 +2778,7 @@ async function buildDemoData() {
     overtime,
     stockRevenue,
     daily,
+    expenses,
     personalBalances: [
       { id: id('balance'), group: 'Utility bill', dateOrLabel: '2026-07-31', amount: 18500, note: 'Demo unpaid bill' },
       { id: id('balance'), group: 'Credit card', dateOrLabel: '2026-08-10', amount: 42000, note: 'Demo balance' }
@@ -2663,6 +2804,7 @@ function browserEmptyData() {
     overtime: [],
     stockRevenue: [],
     daily: [],
+    expenses: [],
     personalBalances: [],
     salarySheets: [],
     unpaidBills: []
@@ -2684,6 +2826,10 @@ function normalizeLoadedData(data) {
       .filter((record) => record && typeof record === 'object' && !Array.isArray(record))
       .map((record) => (record.id ? record : { ...record, id: id(collection) }));
   });
+  next.salary = next.salary.map((record) => ({
+    ...record,
+    takeHome: Number(record.takeHome ?? record.actualSavings ?? 0)
+  }));
   return next;
 }
 
@@ -3002,6 +3148,10 @@ window.financeApi = {
     addSheet('Summary', years.map((year) => {
       const rows = (next.salary || []).filter((item) => Number(item.year) === year);
       const elapsed = rows.filter((item) => monthHasElapsed(item, year, rows));
+      const yearExpenses = (next.expenses || []).filter((item) => Number(item.year) === year);
+      const elapsedExpenses = yearExpenses.filter((item) => monthHasElapsed(item, year, yearExpenses));
+      const takeHome = sum(elapsed, 'takeHome');
+      const expenditureTotal = sum(elapsedExpenses, 'amount');
       const stock = (next.stockRevenue || [])
         .filter((item) => Number(item.year) === year && Number(item.actualCumulative || 0) !== 0)
         .sort((a, b) => monthIndex(a.month) - monthIndex(b.month)).at(-1);
@@ -3009,12 +3159,14 @@ window.financeApi = {
         'Year': year,
         'Gross Income (so far)': sum(elapsed, 'salary'),
         'Gross Income (full year)': sum(rows, 'salary'),
-        'Take-home Saved (so far)': sum(elapsed, 'actualSavings'),
+        'Take-home (so far)': takeHome,
+        'Expenditures (so far)': expenditureTotal,
+        'Savings (so far)': calculateSavings(takeHome, expenditureTotal),
         'Savings Goal (so far)': sum(elapsed, 'plannedSavings'),
         'Stock Win Total': Number(stock?.actualCumulative || 0),
         'Daily Stock Entries': (next.daily || []).filter((item) => Number(item.year) === year && Number(item.amount) !== 0).length
       };
-    }), [{ wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 22 }, { wch: 20 }, { wch: 16 }, { wch: 18 }]);
+    }), [{ wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 20 }, { wch: 23 }, { wch: 20 }, { wch: 16 }, { wch: 18 }]);
 
     workbookSheets.forEach(([sheetName, collection, fieldsFor]) => {
       const fields = fieldsFor();
@@ -3230,8 +3382,6 @@ function bindEvents() {
   const sidebar = document.getElementById('mobileSidebar');
   const backToMenu = document.getElementById('backToMenu');
   const menuBackdrop = document.getElementById('mobileMenuBackdrop');
-  const menuLabel = document.getElementById('mobileMenuLabel');
-  const menuIcon = document.getElementById('mobileMenuIcon');
   const topbar = document.querySelector('.topbar');
   const mobileSearchToggle = document.getElementById('mobileSearchToggle');
   const narrowLayout = window.matchMedia('(max-width: 980px)');
@@ -3252,8 +3402,6 @@ function bindEvents() {
     sidebar.setAttribute('aria-hidden', narrowLayout.matches && !isOpen ? 'true' : 'false');
     backToMenu.setAttribute('aria-expanded', String(isOpen));
     backToMenu.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
-    menuLabel.textContent = isOpen ? 'Close' : 'Menu';
-    menuIcon.setAttribute('d', isOpen ? 'M4 4l12 12M16 4 4 16' : 'M3 5h14M3 10h14M3 15h14');
     if (isOpen) nav.querySelector('button.active')?.focus({ preventScroll: true });
   };
 
@@ -3330,7 +3478,7 @@ function bindEvents() {
     const del = event.target.closest('[data-delete]');
     if (del) deleteRecord(del.dataset.delete, del.dataset.id);
   });
-  ['dashboardYear', 'salaryYearFilter', 'detailsYearFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
+  ['dashboardYear', 'salaryYearFilter', 'detailsYearFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'expenseYearFilter', 'expenseMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
     document.getElementById(idName).addEventListener('change', render);
   });
   document.body.addEventListener('input', (event) => {
@@ -3360,6 +3508,10 @@ function bindEvents() {
   document.getElementById('otQuickForm').addEventListener('submit', addQuickOtEntry);
   document.getElementById('editOtSalaryDetail').addEventListener('click', editCurrentOtSalaryDetail);
   document.getElementById('saveNow').addEventListener('click', save);
+  document.getElementById('themeButton').addEventListener('click', () => {
+    const current = document.documentElement.dataset.theme || 'ocean';
+    applyTheme(themeOrder[(themeOrder.indexOf(current) + 1) % themeOrder.length]);
+  });
   document.getElementById('setupSignIn').addEventListener('click', beginGoogleSignIn);
   document.getElementById('accountSignIn').addEventListener('click', beginGoogleSignIn);
   document.getElementById('accountSyncNow').addEventListener('click', syncAccountNow);
@@ -3487,6 +3639,7 @@ function bindEvents() {
 }
 
 async function init() {
+  applyTheme(preferredTheme(), false);
   try {
     state = await window.financeApi.load();
   } catch (error) {

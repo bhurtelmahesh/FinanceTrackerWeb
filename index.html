@@ -36,7 +36,7 @@
     <section class="setup-card">
       <div class="brand-mark">¥</div>
       <h1>Finance Tracker</h1>
-        <p>Track income, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
+        <p>Track income, expenditures, savings, stock wins, overtime, daily records, and debts without living in spreadsheets.</p>
       <div class="setup-actions">
         <button id="setupSignIn" type="button" class="google-sign-in">Sign in with Google</button>
         <button id="startBlank">Start Blank</button>
@@ -73,6 +73,7 @@
 
       <p class="nav-group" id="navGroupOther">Other</p>
       <div class="nav-items" role="group" aria-labelledby="navGroupOther">
+        <button data-view="expenses">Expenditures</button>
         <button data-view="balances">Debt Records</button>
         <button data-view="data">Backup & Import</button>
         <button data-view="help">Help</button>
@@ -102,6 +103,19 @@
         <p class="eyebrow">Finance Tracker Web</p>
         <h2 id="viewTitle">Dashboard</h2>
       </div>
+      <button type="button" id="themeButton" class="theme-switch" role="switch" aria-checked="false"
+        aria-label="Dark theme. Ocean selected" title="Theme: Ocean - switch to Dark">
+        <span class="theme-switch-track" aria-hidden="true">
+          <span class="theme-switch-thumb"></span>
+          <span class="theme-switch-face theme-switch-face-ocean">
+            <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.2"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M15.7 4.3l-1.4 1.4M5.7 14.3l-1.4 1.4"/></svg>
+          </span>
+          <span class="theme-switch-face theme-switch-face-dark">
+            <svg viewBox="0 0 20 20"><path d="M15.8 12.5A6.7 6.7 0 0 1 7.5 4.2 6.7 6.7 0 1 0 15.8 12.5Z"/></svg>
+          </span>
+        </span>
+        <span class="sr-only" id="themeButtonText">Ocean theme</span>
+      </button>
       <button type="button" id="mobileSearchToggle" class="mobile-search-toggle" aria-label="Open search"
         aria-controls="topActions" aria-expanded="false">
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 17 17"/></svg>
@@ -119,7 +133,7 @@
             <div id="globalSearchResultsContent"></div>
           </section>
         </div>
-        <span id="saveState" role="status" aria-live="polite">Loading...</span>
+        <span id="saveState" class="sr-only" role="status" aria-live="polite">Loading...</span>
         <button id="saveNow">Save</button>
       </div>
     </header>
@@ -247,6 +261,16 @@
       <div id="dailyTable"></div>
     </section>
 
+    <section id="expenses" class="view">
+      <div class="toolbar">
+        <select id="expenseYearFilter" aria-label="Expenditure year"></select>
+        <select id="expenseMonthFilter" aria-label="Expenditure month"></select>
+        <button data-add="expenses">Add Expense</button>
+      </div>
+      <div id="expenseSummary" class="expense-summary" aria-live="polite"></div>
+      <div id="expenseTable"></div>
+    </section>
+
     <section id="balances" class="view">
       <div class="toolbar">
         <button data-add="personalBalances">Add Debt Record</button>
@@ -357,7 +381,9 @@
             <dt>Gross Income</dt>
             <dd>The month&rsquo;s Gross Total &mdash; the same Total shown on the Overtime page.</dd>
             <dt>Actual Savings</dt>
-            <dd>What actually reached you: Gross Income &minus; Total Deduction. Stock activity is never netted off it.</dd>
+            <dd>Take-home &minus; that month&rsquo;s expenditures. It can be negative when spending exceeds take-home. Stock activity and debt balances are never netted off it.</dd>
+            <dt>Take-home</dt>
+            <dd>What reached you after payroll deductions: Gross Income &minus; Total Deduction.</dd>
             <dt>Savings Goal</dt>
             <dd>Whatever you set. It is never calculated.</dd>
             <dt>What counts as a month so far</dt>
@@ -369,15 +395,27 @@
         </section>
 
         <section class="panel help-panel">
+          <h3>Expenditures</h3>
+          <dl class="help-list">
+            <dt>Expense items</dt>
+            <dd>Add as many dated items as needed. Category / Name identifies what the money was spent on; Note is optional.</dd>
+            <dt>How savings changes</dt>
+            <dd>Each expense is deducted from take-home in its year and month. Editing, moving or deleting an expense recalculates monthly and cumulative savings immediately.</dd>
+            <dt>Debt is separate</dt>
+            <dd>A debt balance is not automatically an expense. Add a payment here only when money was actually spent.</dd>
+          </dl>
+        </section>
+
+        <section class="panel help-panel">
           <h3>Dashboard</h3>
           <p class="muted">Each figure is a button: click it to open the section it comes from.</p>
           <dl class="help-list">
-            <dt>Salary &middot; Gross Income</dt>
-            <dd>Gross pay for the months that have already happened, including any bonus already paid. While any months are still to come, the caption gives the projected full-year figure &mdash; the same total with those months included.</dd>
-            <dt>Salary &middot; Take-home Saved</dt>
-            <dd>The same split for what reached you after deductions, with the projected full year in the caption.</dd>
+            <dt>Salary &middot; Income</dt>
+            <dd>Gross pay is the main figure and take-home after payroll deductions is shown below it. Future entered salary months appear only in the projection.</dd>
+            <dt>Savings</dt>
+            <dd>Take-home minus recorded expenditures for months that have already happened. The caption shows both parts of the calculation.</dd>
             <dt>Stock &middot; Win Total</dt>
-            <dd>The latest Actual Win Cumulative recorded that year. The caption gives that same month&rsquo;s Target Cumulative, so you can see the figure against the goal it was measured on.</dd>
+            <dd>The latest Actual Win Cumulative recorded that year. Its tile moves from red through amber to green according to how far it is below or above that month&rsquo;s target; the caption states the gap too.</dd>
             <dt>Outstanding Debt</dt>
             <dd>Every Debt Amount added together, exactly as entered. The caption counts the records and the distinct lenders behind that total.</dd>
             <dt>Salary chart</dt>
@@ -423,6 +461,24 @@
           </dl>
           <p class="help-note"><strong>Starting from a spreadsheet?</strong> Export a workbook first, even with no records in it. That gives you the exact sheet names and column headings the importer expects &mdash; fill those sheets in, then import the file back. Building a spreadsheet from scratch and hoping it matches will not work.</p>
           <p>Importing a workbook replaces the current records too, so export a backup before you try it. Rows come back in as new entries, so a workbook is best for setting records up or reworking them in bulk rather than for merging into what is already there.</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h3>Account, sync and appearance</h3>
+          <dl class="help-list">
+            <dt>Sign in with Google</dt>
+            <dd>Optional. Signed out, records never leave this device. Signed in, your records are kept in your own Firebase account so another device signed in as you can pick them up.</dd>
+            <dt>What syncs</dt>
+            <dd>Salary, Salary Details, Overtime, Stock Revenue, Daily Records, Expenditures and Debt Records. Archived salary sheets and bill files stay on the device that holds them.</dd>
+            <dt>Which copy wins</dt>
+            <dd>Signing in pulls your account&rsquo;s copy onto this device. From then on, each save sends what changed here. A record edited on two devices keeps whichever was saved last, so reload a device that has been open a while before editing on it.</dd>
+            <dt>Sync now</dt>
+            <dd>Sends this device&rsquo;s records again. Offline, changes are kept here and go up with the next save.</dd>
+            <dt>Importing while signed in</dt>
+            <dd>An imported backup replaces your records and is then sent to your account, so it replaces that copy on every device. Clear All Data does the same with an empty set.</dd>
+            <dt>Ocean and Dark</dt>
+            <dd>The switch beside the search box changes the look. Your choice is remembered on this device and is not part of your records or backups.</dd>
+          </dl>
         </section>
 
         <section class="panel help-panel">

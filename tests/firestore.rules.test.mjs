@@ -35,6 +35,16 @@ test('a signed-in user can write and read their own valid record', async () => {
   await assertSucceeds(getDoc(reference));
 });
 
+test('a signed-in user can store an expense in their own account', async () => {
+  const db = testEnvironment.authenticatedContext('alice').firestore();
+  const reference = doc(db, 'users/alice/expenses/rent-jan');
+  await assertSucceeds(setDoc(reference, {
+    id: 'rent-jan', year: 2026, month: 'Jan', day: 6,
+    category: 'Rent', amount: 78000, note: ''
+  }));
+  await assertSucceeds(getDoc(reference));
+});
+
 test('legacy salary notes can sync to an account', async () => {
   const db = testEnvironment.authenticatedContext('alice').firestore();
   await assertSucceeds(setDoc(doc(db, 'users/alice/salary/legacy'), {

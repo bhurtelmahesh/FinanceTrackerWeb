@@ -5,8 +5,8 @@
 // dropped on upload rather than making Firestore reject the whole batch.
 export const cloudRecordFields = {
   salary: [
-    'id', 'year', 'month', 'salary', 'plannedSavings', 'actualSavings',
-    'cumulativeCapital', 'savingsRate', 'note'
+    'id', 'year', 'month', 'salary', 'takeHome', 'plannedSavings',
+    'expenseTotal', 'actualSavings', 'cumulativeCapital', 'savingsRate', 'note'
   ],
   monthlyDetails: [
     'id', 'year', 'month', 'basic', 'allowance', 'overtimePay',
@@ -20,6 +20,7 @@ export const cloudRecordFields = {
     'monthlyRevenue', 'surplus', 'verdict'
   ],
   daily: ['id', 'year', 'month', 'day', 'amount', 'status', 'note'],
+  expenses: ['id', 'year', 'month', 'day', 'category', 'amount', 'note'],
   personalBalances: ['id', 'group', 'dateOrLabel', 'amount', 'note']
 };
 

@@ -24,8 +24,8 @@ service cloud.firestore {
     match /users/{userId}/salary/{recordId} {
       allow read, delete: if owns(userId);
       allow create, update: if owns(userId) && validRecord([
-        'id', 'year', 'month', 'salary', 'plannedSavings', 'actualSavings',
-        'cumulativeCapital', 'savingsRate', 'note'
+        'id', 'year', 'month', 'salary', 'takeHome', 'plannedSavings',
+        'expenseTotal', 'actualSavings', 'cumulativeCapital', 'savingsRate', 'note'
       ]);
     }
 
@@ -58,6 +58,13 @@ service cloud.firestore {
       allow read, delete: if owns(userId);
       allow create, update: if owns(userId) && validRecord([
         'id', 'year', 'month', 'day', 'amount', 'status', 'note'
+      ]);
+    }
+
+    match /users/{userId}/expenses/{recordId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validRecord([
+        'id', 'year', 'month', 'day', 'category', 'amount', 'note'
       ]);
     }
 

@@ -2,12 +2,12 @@
   "name": "finance-tracker-web",
   "version": "0.1.0",
   "private": true,
-  "description": "Browser-based finance tracker for savings, salary, overtime, stock wins, daily records, and debts.",
+  "description": "Browser-based finance tracker for salary, expenditures, savings, overtime, stock wins, daily records, and debts.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/search.test.mjs tests/cloud-fields.test.mjs",
+    "test": "node --test tests/search.test.mjs tests/cloud-fields.test.mjs tests/finance-metrics.test.mjs",
     "test:rules": "npx firebase-tools@13.35.1 emulators:exec --only firestore 'node --test tests/firestore.rules.test.mjs' --project demo-finance-records"
   },
   "devDependencies": {

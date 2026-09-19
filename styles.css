@@ -18,6 +18,26 @@
   color-scheme: light;
 }
 
+:root[data-theme="dark"] {
+  --ink: #e7f1f4;
+  --muted: #a8bbc3;
+  --line: #314b56;
+  --control-line: #66808b;
+  --focus: #69c5e8;
+  --blue: #5bb7dc;
+  --teal: #57bba3;
+  --green: #65c879;
+  --red: #f07070;
+  --amber: #f0b53d;
+  --yellow: #43391d;
+  --bg: #10232c;
+  --panel: #172d37;
+  --panel-blue: #1b3540;
+  --panel-mint: #19362f;
+  --shadow: 0 18px 46px rgba(0, 0, 0, .28);
+  color-scheme: dark;
+}
+
 * { box-sizing: border-box; }
 
 .sr-only {
@@ -45,6 +65,13 @@ body {
     radial-gradient(circle at 100% 100%, rgba(55, 149, 115, .13), transparent 30%),
     linear-gradient(155deg, #f3f9fb 0%, var(--bg) 52%, #e8f4f1 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(45, 139, 174, .18), transparent 34%),
+    radial-gradient(circle at 100% 100%, rgba(55, 149, 115, .12), transparent 30%),
+    linear-gradient(155deg, #0c1c23 0%, var(--bg) 52%, #102820 100%);
 }
 
 :where(h1, h2, h3) {
@@ -313,6 +340,70 @@ nav button:not(.active):hover {
   align-items: center;
 }
 
+/* A two-position slide switch: Ocean on the left, Dark on the right, with the
+   thumb sliding under the icon in use. Both sides stay visible on every width -
+   the compact header has room for it beside the search button. */
+.theme-switch {
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+}
+
+.theme-switch-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  width: 72px;
+  height: 34px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: inset 0 1px 3px rgba(35, 70, 88, .08);
+}
+
+.theme-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 32px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--panel-blue);
+  box-shadow: 0 1px 3px rgba(35, 70, 88, .18);
+  transition: transform .18s ease;
+}
+
+.theme-switch[aria-checked="true"] .theme-switch-thumb { transform: translateX(34px); }
+
+.theme-switch-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.theme-switch[aria-checked="false"] .theme-switch-face-ocean,
+.theme-switch[aria-checked="true"] .theme-switch-face-dark { color: var(--blue); }
+
+.theme-switch-face svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-switch:hover .theme-switch-track { border-color: var(--control-line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch-thumb { transition: none; }
+}
+
 .mobile-search-toggle { display: none; }
 
 .mobile-search-toggle svg {
@@ -484,6 +575,25 @@ nav button:not(.active):hover {
 .kpi.tone-green span { color: #246a2b; }
 .kpi.tone-amber span { color: #8a6100; }
 .kpi.tone-red span { color: #a93232; }
+.kpi.tone-performance {
+  --tone: hsl(var(--kpi-hue) 66% 38%);
+  background: linear-gradient(135deg,
+    hsl(var(--kpi-hue) 55% 90%) 0%,
+    hsl(var(--kpi-hue) 55% 98%) 54%,
+    hsl(var(--kpi-hue) 42% 93%) 100%);
+  border-color: hsl(var(--kpi-hue) 42% 72%);
+}
+.kpi.performance-0 { --kpi-hue: 0; }
+.kpi.performance-1 { --kpi-hue: 10; }
+.kpi.performance-2 { --kpi-hue: 21; }
+.kpi.performance-3 { --kpi-hue: 31; }
+.kpi.performance-4 { --kpi-hue: 42; }
+.kpi.performance-5 { --kpi-hue: 62; }
+.kpi.performance-6 { --kpi-hue: 81; }
+.kpi.performance-7 { --kpi-hue: 101; }
+.kpi.performance-8 { --kpi-hue: 120; }
+.kpi.performance-empty { --kpi-hue: 205; }
+.kpi.tone-performance span { color: hsl(var(--kpi-hue) 66% 30%); }
 
 
 /* The tiles are tall; a tone wash and a faint category glyph stop them reading as
@@ -532,6 +642,7 @@ nav button:not(.active):hover {
 }
 
 .kpi.tone-amber::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%238a6100%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E"); }
+.kpi.tone-performance::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%235c7280%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E"); opacity: .18; }
 
 .kpi.tone-red {
   background: linear-gradient(135deg, #f8eaea 0%, #fff9f8 54%, #f6eeee 100%);
@@ -600,6 +711,29 @@ button.kpi:focus-visible {
   background: var(--blue);
   color: white;
   border-color: var(--blue);
+}
+
+.expense-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.expense-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #bdd7e0;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #e9f6fa, #f5fbf9);
+}
+
+.expense-summary span { color: var(--muted); font-size: 12px; font-weight: 700; }
+.expense-summary strong { color: #205e78; font-size: 18px; }
+
+@media (max-width: 640px) {
+  .expense-summary { grid-template-columns: 1fr; }
 }
 
 select, input {
@@ -911,6 +1045,9 @@ canvas {
   position: relative;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .chart-panel[hidden] { display: none; }
@@ -2006,6 +2143,14 @@ canvas {
 
 .mobile-menu-backdrop { display: none; }
 
+/* Once the drawer is visible, it replaces the floating launcher. The backdrop,
+   a navigation choice, or Escape closes it, so a second control is redundant. */
+body.mobile-menu-open .back-to-menu {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 @media (min-width: 981px) {
   .back-to-menu { display: none; }
 }
@@ -2114,3 +2259,179 @@ canvas {
   .sidebar,
   .mobile-menu-backdrop { transition: none; }
 }
+
+/* Theme overrides live last so older, section-specific light fills cannot make
+   isolated white islands in dark mode. Semantic green/red/amber colors stay
+   intact, while structural surfaces follow the selected theme. */
+:root[data-theme="dark"] :is(.sidebar, .topbar) {
+  background: linear-gradient(180deg, rgba(20, 44, 54, .98), rgba(18, 50, 43, .96));
+}
+
+:root[data-theme="dark"] #dashboard .chart-stack {
+  background: #131722;
+  background-image: none;
+  border-color: #2a2e39;
+}
+
+:root[data-theme="dark"] #dashboard :is(.chart-tabs, .chart-panel) {
+  background: #131722;
+  border-color: #2a2e39;
+}
+
+:root[data-theme="dark"] #dashboard .chart-tablist button { background: transparent; color: #8f9aa8; }
+:root[data-theme="dark"] #dashboard .chart-tablist button:hover { background: #1e222d; }
+:root[data-theme="dark"] #dashboard .chart-tablist button[aria-selected="true"] {
+  background: #1e2a36;
+  color: #70c7ec;
+  border-bottom-color: #42a5f5;
+}
+:root[data-theme="dark"] #dashboard .chart-zoom button { background: #1e222d; border-color: #363c4a; }
+:root[data-theme="dark"] #dashboard .chart-tooltip { background: #1e222d; border-color: #434957; box-shadow: 0 12px 32px rgba(0, 0, 0, .42); }
+
+:root[data-theme="dark"] :is(.topbar h2, .panel-head h3, th, .stock-month-cell, .daily-month-cell, .daily-annual-label) {
+  color: #b9e2f0;
+}
+
+:root[data-theme="dark"] :is(
+  nav button,
+  #sidebarImportExcel,
+  #sidebarExportExcel,
+  .account-card,
+  .setup-card,
+  .top-actions,
+  .panel,
+  .table-wrap,
+  table,
+  .search-results,
+  .search-results-head,
+  .stock-grid-wrap,
+  .stock-grid,
+  .daily-grid-wrap,
+  .daily-grid,
+  .salary-sheet-item,
+  .salary-sheet-drop,
+  .chart-panel,
+  .preview-body,
+  dialog,
+  dialog header,
+  dialog footer,
+  input,
+  select,
+  button
+) {
+  background-color: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] :is(.panel, .account-card) {
+  background-image: linear-gradient(145deg, rgba(58, 131, 156, .12), transparent 48%);
+}
+
+:root[data-theme="dark"] :is(nav button, .search-results, dialog, dialog header, dialog footer, .salary-sheet-drop) {
+  background-image: none;
+}
+
+:root[data-theme="dark"] nav button.active {
+  background: linear-gradient(90deg, #214b5b, #214b40);
+  border-color: #4c8497;
+  color: #c9edf8;
+}
+
+:root[data-theme="dark"] nav button:not(.active):hover { background: #244652; color: #d9f1f8; }
+:root[data-theme="dark"] .account-card strong { color: #c3e9f5; }
+:root[data-theme="dark"] .search-results-head { background: #1c3944; }
+:root[data-theme="dark"] .search-result-group { border-color: var(--line); }
+:root[data-theme="dark"] .search-result-item:hover { background: #203d48; }
+
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] .daily-grid thead th,
+:root[data-theme="dark"] .stock-month-cell,
+:root[data-theme="dark"] .daily-month-cell,
+:root[data-theme="dark"] .daily-grid thead th.daily-total-head,
+:root[data-theme="dark"] .daily-grid thead th.daily-corner-head {
+  background: #1d3a45;
+}
+
+:root[data-theme="dark"] :is(.calculated-cell, .row-projected td, .daily-grid tfoot th, .daily-grid tfoot td) {
+  background-color: #20343c;
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .grid-input { background: #132a34; color: var(--ink); }
+:root[data-theme="dark"] .grid-input:hover,
+:root[data-theme="dark"] .grid-input:focus { background: #193743; }
+:root[data-theme="dark"] .daily-grid td.daily-total-cell { background: var(--panel); }
+:root[data-theme="dark"] .daily-grid td.daily-total-cell.daily-plus,
+:root[data-theme="dark"] .daily-plus { background: #19382a; }
+:root[data-theme="dark"] .daily-grid td.daily-total-cell.daily-minus,
+:root[data-theme="dark"] .daily-minus { background: #402527; }
+:root[data-theme="dark"] .daily-grid td.daily-total-cell.daily-zero { background: var(--panel); }
+
+:root[data-theme="dark"] .expense-summary > div {
+  background: linear-gradient(145deg, #1b3b47, #1a3931);
+  border-color: #3e6573;
+}
+:root[data-theme="dark"] .expense-summary strong { color: #b9e2f0; }
+
+:root[data-theme="dark"] .dashboard-summary,
+:root[data-theme="dark"] .dashboard-summary[data-focus="salary"],
+:root[data-theme="dark"] .dashboard-summary[data-focus="stock"] {
+  background: linear-gradient(145deg, #18313b, #172d37);
+  border-color: #3a5965;
+}
+:root[data-theme="dark"] .dashboard-summary h3 { color: #d6e9ef; }
+
+:root[data-theme="dark"] .kpi.tone-blue { background: linear-gradient(135deg, #173b4a, #1b3440); border-color: #397186; }
+:root[data-theme="dark"] .kpi.tone-green { background: linear-gradient(135deg, #1a3c28, #1b352b); border-color: #477b54; }
+:root[data-theme="dark"] .kpi.tone-red { background: linear-gradient(135deg, #452627, #35272b); border-color: #875253; }
+:root[data-theme="dark"] .kpi.tone-blue span { color: #78c7e6; }
+:root[data-theme="dark"] .kpi.tone-green span { color: #84d591; }
+:root[data-theme="dark"] .kpi.tone-red span { color: #ff9696; }
+:root[data-theme="dark"] .kpi.tone-performance {
+  background: linear-gradient(135deg, hsl(var(--kpi-hue) 42% 20%), hsl(var(--kpi-hue) 28% 15%));
+  border-color: hsl(var(--kpi-hue) 36% 42%);
+}
+:root[data-theme="dark"] .kpi.tone-performance span { color: hsl(var(--kpi-hue) 58% 70%); }
+
+@media (max-width: 980px) {
+}
+
+/* Desktop header: the title takes up the slack so search, theme and the save
+   status finish as one group on the right, in that reading order. */
+@media (min-width: 981px) {
+  .topbar { gap: 14px; }
+  .topbar > div:first-child { flex: 1 1 auto; min-width: 0; }
+  .topbar .top-actions { order: 1; }
+  .topbar .theme-switch { order: 2; }
+}
+
+/* The header's round buttons carry their own light fills, which stranded them as
+   pale chips on the dark bar. */
+:root[data-theme="dark"] :is(.mobile-search-toggle, .back-to-menu) {
+  border-color: rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .08);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] :is(.mobile-search-toggle, .back-to-menu):hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+/* Compact header: the title takes the slack so search and the theme switch finish
+   as a pair on the right, the same reading order the desktop header uses. */
+@media (max-width: 980px) {
+  .topbar { gap: 8px; }
+  .topbar > div:first-child { flex: 1 1 auto; min-width: 0; }
+  .topbar .mobile-search-toggle { order: 2; margin-left: auto; }
+  .topbar .theme-switch { order: 3; margin-left: 0; }
+}
+
+/* Dark: the switch track and the header's round buttons follow the dark surface. */
+:root[data-theme="dark"] .theme-switch-track {
+  border-color: rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .06);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .theme-switch-thumb { background: rgba(255, 255, 255, .16); }
