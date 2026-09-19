@@ -64,7 +64,7 @@ service cloud.firestore {
     match /users/{userId}/expenses/{recordId} {
       allow read, delete: if owns(userId);
       allow create, update: if owns(userId) && validRecord([
-        'id', 'year', 'month', 'day', 'category', 'amount', 'note'
+        'id', 'date', 'year', 'month', 'day', 'category', 'amount', 'note'
       ]);
     }
 

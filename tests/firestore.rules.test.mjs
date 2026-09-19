@@ -39,7 +39,7 @@ test('a signed-in user can store an expense in their own account', async () => {
   const db = testEnvironment.authenticatedContext('alice').firestore();
   const reference = doc(db, 'users/alice/expenses/rent-jan');
   await assertSucceeds(setDoc(reference, {
-    id: 'rent-jan', year: 2026, month: 'Jan', day: 6,
+    id: 'rent-jan', date: '2026-01-06', year: 2026, month: 'Jan', day: 6,
     category: 'Rent', amount: 78000, note: ''
   }));
   await assertSucceeds(getDoc(reference));

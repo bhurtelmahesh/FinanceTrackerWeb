@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isBonusMonth, monthHasElapsed, monthIndex, normalizeMonth } from '../finance-calendar.mjs';
+import { effectiveSalaryMonth, isBonusMonth, monthHasElapsed, monthIndex, normalizeMonth } from '../finance-calendar.mjs';
 
 test('months are read however they were written', () => {
   assert.equal(normalizeMonth('january'), 'Jan');
@@ -29,6 +29,15 @@ test('the first bonus of a year is paid in June and a later one in December', ()
 
   const inDecember = new Date('2026-12-02T00:00:00Z');
   assert.ok(monthHasElapsed(december, 2026, records, inDecember));
+});
+
+test('bonus records expose their effective savings month', () => {
+  const records = [
+    { id: 'summer', year: 2026, month: 'Bonus' },
+    { id: 'winter', year: 2026, month: 'Bonus 2' }
+  ];
+  assert.equal(effectiveSalaryMonth(records[0], records), 'Jun');
+  assert.equal(effectiveSalaryMonth(records[1], records), 'Dec');
 });
 
 test('an ordinary month is measured against the calendar', () => {

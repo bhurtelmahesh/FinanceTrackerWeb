@@ -249,40 +249,6 @@ nav { display: grid; gap: 4px; cursor: pointer; }
   color: var(--ink);
 }
 
-/* Backup actions sit at the foot of the sidebar, as in the desktop app. */
-.sidebar-actions {
-  margin-top: auto;
-  display: grid;
-  gap: 8px;
-}
-
-.sidebar-actions button {
-  width: 100%;
-  padding: 11px 14px;
-  font-weight: 700;
-}
-
-#sidebarImportBackup {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
-}
-
-#sidebarExportBackup {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: #fff;
-}
-
-#sidebarImportBackup:hover,
-#sidebarExportBackup:hover { filter: brightness(.94); }
-
-#sidebarImportExcel,
-#sidebarExportExcel {
-  background: #fff;
-  border-color: var(--line);
-  color: var(--ink);
-}
 /* Every item looks like a button at rest — a light tile — so it is plain which
    labels open a page without hovering over them first. */
 nav button {
@@ -576,24 +542,27 @@ nav button:not(.active):hover {
 .kpi.tone-amber span { color: #8a6100; }
 .kpi.tone-red span { color: #a93232; }
 .kpi.tone-performance {
-  --tone: hsl(var(--kpi-hue) 66% 38%);
-  background: linear-gradient(135deg,
-    hsl(var(--kpi-hue) 55% 90%) 0%,
-    hsl(var(--kpi-hue) 55% 98%) 54%,
-    hsl(var(--kpi-hue) 42% 93%) 100%);
-  border-color: hsl(var(--kpi-hue) 42% 72%);
+  --tone: hsl(var(--kpi-hue) 72% 38%);
+  background:
+    linear-gradient(135deg,
+      hsl(var(--kpi-hue) 78% 48% / var(--kpi-wash-strong)) 0%,
+      hsl(var(--kpi-hue) 68% 58% / var(--kpi-wash-soft)) 56%,
+      hsl(var(--kpi-hue) 64% 48% / var(--kpi-wash-soft)) 100%),
+    var(--panel);
+  border-color: hsl(var(--kpi-hue) 58% 44% / var(--kpi-border-alpha));
 }
-.kpi.performance-0 { --kpi-hue: 0; }
-.kpi.performance-1 { --kpi-hue: 10; }
-.kpi.performance-2 { --kpi-hue: 21; }
-.kpi.performance-3 { --kpi-hue: 31; }
-.kpi.performance-4 { --kpi-hue: 42; }
-.kpi.performance-5 { --kpi-hue: 62; }
-.kpi.performance-6 { --kpi-hue: 81; }
-.kpi.performance-7 { --kpi-hue: 101; }
-.kpi.performance-8 { --kpi-hue: 120; }
+.kpi.tone-performance span,
+.kpi.tone-performance strong { color: hsl(var(--kpi-hue) 72% 27%); }
+/* Rakuten-style binary status: losses stay red and gains stay green. Distance
+   from target changes intensity only; it never changes the meaning's hue. */
+.kpi.performance-loss { --kpi-hue: 0; }
+.kpi.performance-gain { --kpi-hue: 125; }
 .kpi.performance-empty { --kpi-hue: 205; }
-.kpi.tone-performance span { color: hsl(var(--kpi-hue) 66% 30%); }
+.kpi.performance-intensity-0 { --kpi-wash-strong: .18; --kpi-wash-soft: .08; --kpi-border-alpha: .44; }
+.kpi.performance-intensity-1 { --kpi-wash-strong: .24; --kpi-wash-soft: .11; --kpi-border-alpha: .50; }
+.kpi.performance-intensity-2 { --kpi-wash-strong: .32; --kpi-wash-soft: .15; --kpi-border-alpha: .57; }
+.kpi.performance-intensity-3 { --kpi-wash-strong: .40; --kpi-wash-soft: .19; --kpi-border-alpha: .65; }
+.kpi.performance-intensity-4 { --kpi-wash-strong: .48; --kpi-wash-soft: .23; --kpi-border-alpha: .73; }
 
 
 /* The tiles are tall; a tone wash and a faint category glyph stop them reading as
@@ -642,7 +611,13 @@ nav button:not(.active):hover {
 }
 
 .kpi.tone-amber::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%238a6100%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E"); }
-.kpi.tone-performance::after { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%235c7280%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E"); opacity: .18; }
+.kpi.tone-performance::after {
+  background-color: var(--tone);
+  background-image: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%271.7%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M3%2016.5l5.5-5.5%203.5%203%206.5-7.5%27%2F%3E%3Cpath%20d%3D%27M14.5%206.5H19v4.5%27%2F%3E%3C%2Fsvg%3E") center / contain no-repeat;
+  opacity: .28;
+}
 
 .kpi.tone-red {
   background: linear-gradient(135deg, #f8eaea 0%, #fff9f8 54%, #f6eeee 100%);
@@ -664,7 +639,6 @@ button.kpi {
 
 button.kpi:hover {
   transform: translateY(-2px);
-  border-color: var(--tone);
   box-shadow: inset 4px 0 0 0 var(--tone), 0 20px 44px rgba(35, 70, 88, .17);
 }
 
@@ -1850,9 +1824,6 @@ canvas {
     visibility: visible;
     pointer-events: auto;
   }
-  /* These shortcuts duplicate the complete controls on Backup & Import and
-     otherwise push the primary page content too far down on narrow screens. */
-  .sidebar-actions { display: none; }
   .nav-items {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2328,8 +2299,6 @@ body.mobile-menu-open .back-to-menu {
 
 :root[data-theme="dark"] :is(
   nav button,
-  #sidebarImportExcel,
-  #sidebarExportExcel,
   .account-card,
   .setup-card,
   .top-actions,
@@ -2426,7 +2395,8 @@ body.mobile-menu-open .back-to-menu {
   background: linear-gradient(135deg, hsl(var(--kpi-hue) 42% 20%), hsl(var(--kpi-hue) 28% 15%));
   border-color: hsl(var(--kpi-hue) 36% 42%);
 }
-:root[data-theme="dark"] .kpi.tone-performance span { color: hsl(var(--kpi-hue) 58% 70%); }
+:root[data-theme="dark"] .kpi.tone-performance span,
+:root[data-theme="dark"] .kpi.tone-performance strong { color: hsl(var(--kpi-hue) 58% 70%); }
 
 @media (max-width: 980px) {
 }
@@ -2469,3 +2439,202 @@ body.mobile-menu-open .back-to-menu {
 }
 
 :root[data-theme="dark"] .theme-switch-thumb { background: rgba(255, 255, 255, .16); }
+
+/* Desktop navigation is the navigation only. Backup and workbook controls live
+   on their dedicated page, leaving every menu item visible without a sidebar
+   scrollbar even on a shorter laptop display. */
+@media (min-width: 981px) {
+  .sidebar {
+    overflow-y: hidden;
+    padding: clamp(14px, 2.4vh, 26px) 20px;
+    gap: clamp(8px, 1.7vh, 18px);
+  }
+  .sidebar nav { flex: 1 1 auto; min-height: 0; align-content: start; }
+  .sidebar .nav-group { margin-top: clamp(6px, 1.25vh, 14px); }
+  .sidebar nav button { padding-block: clamp(7px, 1.05vh, 11px); }
+  .sidebar .account-card { margin-top: auto; }
+}
+
+@media (min-width: 981px) and (max-height: 650px) {
+  .sidebar { padding-block: 10px; gap: 6px; }
+  .sidebar .brand { padding-bottom: 7px; }
+  .sidebar .brand-mark { width: 38px; height: 38px; font-size: 21px; }
+  .sidebar .brand p,
+  .sidebar #accountMode { display: none; }
+  .sidebar .nav-group { margin: 3px 0 1px; }
+  .sidebar .nav-items { gap: 3px; }
+  .sidebar nav button { padding-block: 5px; }
+  .sidebar .account-card { gap: 5px; padding: 7px 10px; }
+  .sidebar .account-card button { padding-block: 6px; }
+}
+
+@media (max-width: 980px) {
+  /* The launcher disappears while the drawer is open, so reserving its width in
+     the drawer centred the brand for no reason. */
+  .sidebar .brand { padding-left: 0; text-align: left; }
+}
+
+/* Dark-mode contrast audit: semantic states must win over the broad structural
+   surface rules above. */
+:root[data-theme="dark"] tr:hover td { background: #1d3b45; }
+
+:root[data-theme="dark"] .search-target,
+:root[data-theme="dark"] .search-target > td,
+:root[data-theme="dark"] .search-target > th,
+:root[data-theme="dark"] .search-target input {
+  background: #285364 !important;
+  color: #f0fbff !important;
+}
+
+:root[data-theme="dark"] .row-projected td,
+:root[data-theme="dark"] #salaryTable .row-projected td:nth-child(-n + 2) {
+  color: #afc2ca;
+  background:
+    repeating-linear-gradient(135deg, rgba(140, 174, 188, .08) 0 6px, transparent 6px 12px),
+    #1b3039;
+}
+
+:root[data-theme="dark"] .row-actions [data-edit] {
+  background: #1c4254;
+  border-color: #3e7890;
+  color: #bdeaff;
+}
+:root[data-theme="dark"] .row-actions [data-payslip] {
+  background: #1b443d;
+  border-color: #3f7e70;
+  color: #bff4e5;
+}
+:root[data-theme="dark"] .row-actions .delete {
+  background: #48282c;
+  border-color: #8b4b53;
+  color: #ffb1b1;
+}
+
+:root[data-theme="dark"] :is(
+  .toolbar button,
+  .ot-form button,
+  .ot-filter button,
+  #globalSearchButton,
+  #chooseSalarySheets,
+  #chooseUnpaidBills,
+  .google-sign-in
+) {
+  background: #287b9d;
+  border-color: #4ca5c6;
+  color: #fff;
+}
+
+:root[data-theme="dark"] :is(#saveNow, #dataExportBackup, #dataExportExcel, #loadDemoData) {
+  background: #267b67;
+  border-color: #4ca68e;
+  color: #fff;
+}
+
+:root[data-theme="dark"] #dataImportBackup {
+  background: #287b9d;
+  border-color: #4ca5c6;
+  color: #fff;
+}
+
+:root[data-theme="dark"] #dataImportExcel {
+  background: #203f4c;
+  border-color: #527987;
+  color: #d7edf4;
+}
+
+:root[data-theme="dark"] :is(.danger-button, #clearAllData) {
+  background: #48282c !important;
+  border-color: #8b4b53 !important;
+  color: #ffb1b1 !important;
+}
+
+:root[data-theme="dark"] .dialog-fields input[readonly] {
+  background: #14262e;
+  color: #91a9b3;
+}
+
+:root[data-theme="dark"] .ot-received {
+  background: #1a4833;
+  color: #a9efc1;
+  border: 1px solid #3b7651;
+}
+
+:root[data-theme="dark"] .calculated-cell.amount-plus {
+  color: #8ae49a;
+  background: #19382a;
+}
+:root[data-theme="dark"] .calculated-cell.amount-minus {
+  color: #ff9696;
+  background: #402527;
+}
+:root[data-theme="dark"] .stock-pass { color: #8ae49a; }
+:root[data-theme="dark"] .stock-fail { color: #ff9696; }
+
+:root[data-theme="dark"] .daily-grid td.daily-day-cell {
+  background: #142a34;
+  border-color: #3b5661;
+}
+:root[data-theme="dark"] .daily-day-cell.has-records { background: #183744; }
+:root[data-theme="dark"] .daily-day-cell.weekend {
+  background: #38262b;
+  border-color: #704249;
+}
+:root[data-theme="dark"] .daily-day-cell.invalid-day {
+  background-color: #17252b;
+  border-color: #30434b;
+  background-image: repeating-linear-gradient(135deg, rgba(150, 174, 184, .08) 0 6px, transparent 6px 12px);
+}
+:root[data-theme="dark"] .daily-day-cell:hover:not(.invalid-day) { background: #214553; }
+:root[data-theme="dark"] .daily-day-cell:hover:not(.invalid-day) .daily-cell-input,
+:root[data-theme="dark"] .daily-cell-input:focus {
+  background: #1d3f4c;
+  border-color: #5b91a6;
+}
+:root[data-theme="dark"] .daily-status {
+  color: #c1d0d6;
+  background: #263740;
+  border-color: #4d626c;
+}
+:root[data-theme="dark"] .daily-plus { color: #8ae49a; background: #19382a; border-color: #3c6f4c; }
+:root[data-theme="dark"] .daily-minus { color: #ff9696; background: #402527; border-color: #784349; }
+:root[data-theme="dark"] .daily-zero { color: #a8bbc3; background: #172d37; }
+
+:root[data-theme="dark"] .daily-list caption,
+:root[data-theme="dark"] .daily-list thead th,
+:root[data-theme="dark"] .daily-list tfoot th,
+:root[data-theme="dark"] .daily-list tfoot td {
+  background: #1d3a45;
+  color: #c5e6f1;
+}
+:root[data-theme="dark"] .daily-list tbody th { background: #182f39; border-color: var(--line); }
+:root[data-theme="dark"] .daily-list .weekend-row th { background: #38262b; color: #ff9696; }
+:root[data-theme="dark"] .daily-list tbody td { border-color: var(--line); }
+:root[data-theme="dark"] .daily-list .daily-cell-input { background: #142a34; border-color: #3b5661; }
+:root[data-theme="dark"] .daily-list .daily-cell-input:focus { background: #1d3f4c; }
+
+:root[data-theme="dark"] :is(.help-note, .help-warn) { color: #c5d5db; }
+:root[data-theme="dark"] .help-note { background: #183743; border-left-color: #5bb7dc; }
+:root[data-theme="dark"] .help-warn { background: #402527; border-left-color: #f07070; }
+:root[data-theme="dark"] .help-panel h3 { color: #9edcf1; }
+:root[data-theme="dark"] .archive-count { background: #203d48; color: #bfd2d9; }
+
+/* A performance card should read as coloured at a glance, not as another dark
+   panel with a faint border. Hue remains continuously data-driven. */
+:root[data-theme="dark"] .kpi.tone-performance {
+  background:
+    linear-gradient(135deg,
+      hsl(var(--kpi-hue) 74% 46% / var(--kpi-wash-strong)) 0%,
+      hsl(var(--kpi-hue) 62% 42% / var(--kpi-wash-soft)) 56%,
+      hsl(var(--kpi-hue) 58% 36% / var(--kpi-wash-soft)) 100%),
+    #172d37;
+  border-color: hsl(var(--kpi-hue) 62% 62% / var(--kpi-border-alpha));
+  box-shadow: inset 4px 0 0 var(--tone), var(--shadow);
+}
+:root[data-theme="dark"] .kpi.tone-performance span,
+:root[data-theme="dark"] .kpi.tone-performance strong {
+  color: hsl(var(--kpi-hue) 78% 78%);
+}
+:root[data-theme="dark"] .kpi.tone-performance small {
+  color: hsl(var(--kpi-hue) 32% 76%);
+}
+:root[data-theme="dark"] .kpi.tone-performance::after { opacity: .34; }

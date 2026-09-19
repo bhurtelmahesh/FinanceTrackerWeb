@@ -20,7 +20,7 @@ export const cloudRecordFields = {
     'monthlyRevenue', 'surplus', 'verdict'
   ],
   daily: ['id', 'year', 'month', 'day', 'amount', 'status', 'note'],
-  expenses: ['id', 'year', 'month', 'day', 'category', 'amount', 'note'],
+  expenses: ['id', 'date', 'year', 'month', 'day', 'category', 'amount', 'note'],
   personalBalances: ['id', 'group', 'dateOrLabel', 'amount', 'note']
 };
 

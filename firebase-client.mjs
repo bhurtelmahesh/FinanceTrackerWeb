@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 
 import { cloudCollections, forCloud } from './cloud-fields.mjs';
+import { cloudMetaOperation, cloudRecordKey, planCloudChanges } from './cloud-sync-plan.mjs';
 
 const firebaseConfig = {
   projectId: 'bhurtel-finance-tracker',
@@ -59,10 +60,6 @@ function cloudRecord(collectionName, source) {
   return record;
 }
 
-function recordKey(collectionName, recordId) {
-  return `${collectionName}/${String(recordId)}`;
-}
-
 function recordDocumentId(recordId) {
   return encodeURIComponent(String(recordId));
 }
@@ -71,7 +68,7 @@ function setBaseline(data) {
   baseline = new Map();
   cloudCollections.forEach((collectionName) => {
     (data[collectionName] || []).forEach((record) => {
-      baseline.set(recordKey(collectionName, record.id), JSON.stringify(cloudRecord(collectionName, record)));
+      baseline.set(cloudRecordKey(collectionName, record.id), JSON.stringify(cloudRecord(collectionName, record)));
     });
   });
 }
@@ -113,52 +110,17 @@ export async function loadCloudState(uid) {
 }
 
 async function commitCloudState(uid, data) {
-  const operations = [];
-  const nextBaseline = new Map();
+  const { operations, nextBaseline } = planCloudChanges(
+    cloudCollections, data, baseline, cloudRecord);
 
-  cloudCollections.forEach((collectionName) => {
-    (data[collectionName] || []).forEach((source) => {
-      const record = cloudRecord(collectionName, source);
-      const key = recordKey(collectionName, record.id);
-      const serialized = JSON.stringify(record);
-      nextBaseline.set(key, serialized);
-      if (baseline.get(key) === serialized) return;
-      operations.push({
-        type: 'set',
-        ref: doc(db, 'users', uid, collectionName, recordDocumentId(record.id)),
-        data: record
-      });
-    });
-  });
-
-  baseline.forEach((_, key) => {
-    if (nextBaseline.has(key)) return;
-    const separator = key.indexOf('/');
-    const collectionName = key.slice(0, separator);
-    const recordId = key.slice(separator + 1);
-    operations.push({
-      type: 'delete',
-      ref: doc(db, 'users', uid, collectionName, recordDocumentId(recordId))
-    });
-  });
-
-  operations.push({
-    type: 'set',
-    ref: doc(db, 'users', uid, 'app', 'meta'),
-    data: {
-      version: Number(data.meta?.version || 1),
-      startedAt: data.meta?.startedAt || '',
-      importedAt: data.meta?.importedAt || '',
-      sourceFile: data.meta?.sourceFile || '',
-      updatedAt: new Date().toISOString()
-    }
-  });
+  operations.push(cloudMetaOperation(data));
 
   for (let start = 0; start < operations.length; start += 450) {
     const batch = writeBatch(db);
     operations.slice(start, start + 450).forEach((operation) => {
-      if (operation.type === 'delete') batch.delete(operation.ref);
-      else batch.set(operation.ref, operation.data);
+      const reference = doc(db, 'users', uid, operation.collectionName, recordDocumentId(operation.recordId));
+      if (operation.type === 'delete') batch.delete(reference);
+      else batch.set(reference, operation.data);
     });
     await batch.commit();
   }

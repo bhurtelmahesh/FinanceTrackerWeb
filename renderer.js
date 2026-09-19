@@ -1,7 +1,8 @@
 import { searchRecords as findSearchRecords, searchSnippet } from './search.mjs';
-import { calculateSavings, expenseTotalForPeriod, stockPerformanceTone } from './finance-metrics.mjs';
+import { calculateSavings, stockPerformanceTone } from './finance-metrics.mjs';
+import { buildSalaryLedger } from './salary-ledger.mjs';
 import { isBonusMonth, monthHasElapsed, monthIndex, monthOptions, normalizeMonth } from './finance-calendar.mjs';
-import { migrateLoadedData, withDetachedArchives } from './backup-migration.mjs';
+import { migrateLoadedData, normalizeExpenseRecord, withDetachedArchives } from './backup-migration.mjs';
 
 let firebaseClientPromise = null;
 function firebaseClient() {
@@ -86,10 +87,15 @@ const schemas = {
     ['group', 'Lender'], ['dateOrLabel', 'Due Date / Name'], ['amount', 'Debt Amount', 'number'], ['note', 'Note']
   ],
   expenses: [
-    ['year', 'Year', 'number'], ['month', 'Month'], ['day', 'Day', 'number'],
+    ['date', 'Date', 'date'],
     ['category', 'Category / Name'], ['amount', 'Amount', 'number'], ['note', 'Note']
   ]
 };
+
+const legacyExpenseFields = [
+  ['year', 'Year', 'number'], ['month', 'Month'], ['day', 'Day', 'number'],
+  ['category', 'Category / Name'], ['amount', 'Amount', 'number'], ['note', 'Note']
+];
 
 const titles = {
   dashboard: 'Dashboard',
@@ -136,7 +142,7 @@ const workbookSheets = [
   ['Overtime', 'overtime', () => schemas.overtime],
   ['Stock Revenue', 'stockRevenue', () => schemas.stockRevenue],
   ['Daily Records', 'daily', () => schemas.daily],
-  ['Expenditures', 'expenses', () => schemas.expenses],
+  ['Expenses', 'expenses', () => schemas.expenses],
   ['Debt Records', 'personalBalances', () => schemas.personalBalances],
   ['Salary Sheet Archive', 'salarySheets', () => archiveFields],
   ['Unpaid Bills Archive', 'unpaidBills', () => archiveFields]
@@ -964,24 +970,6 @@ function overtimeAmountFor(year, month) {
   return sum(records, 'amount');
 }
 
-// Each month carries on from the month before it; every new year starts from zero.
-function withCumulativeCapital(ordered) {
-  let year = null;
-  let running = 0;
-  return ordered.map((item) => {
-    if (Number(item.year) !== year) {
-      year = Number(item.year);
-      running = 0;
-    }
-    running += Number(item.actualSavings || 0);
-    return { ...item, cumulativeCapital: running };
-  });
-}
-
-function expenseTotalFor(year, month) {
-  return expenseTotalForPeriod(state.expenses, year, month, normalizeMonth);
-}
-
 function derivedSalaryRecords() {
   const existing = new Map((state.salary || []).map((item) =>
     [`${Number(item.year)}-${normalizeMonth(item.month)}`, item]
@@ -993,8 +981,6 @@ function derivedSalaryRecords() {
     const previous = existing.get(`${year}-${month}`) || {};
     const { grossTotal, received } = monthlyPayroll(detail, overtimePayFor(detail, year, month));
     const takeHome = received;
-    const expenseTotal = expenseTotalFor(year, month);
-    const actualSavings = calculateSavings(takeHome, expenseTotal);
     return {
       ...previous,
       id: previous.id || id('salary'),
@@ -1003,9 +989,9 @@ function derivedSalaryRecords() {
       salary: grossTotal,
       takeHome,
       plannedSavings: Number(previous.plannedSavings || 0),
-      expenseTotal,
-      actualSavings,
-      savingsRate: grossTotal ? actualSavings / grossTotal : 0,
+      expenseTotal: 0,
+      actualSavings: takeHome,
+      savingsRate: grossTotal ? takeHome / grossTotal : 0,
       cumulativeCapital: Number(previous.cumulativeCapital || 0),
       note: previous.note || '',
       derivedFromDetail: true
@@ -1016,17 +1002,16 @@ function derivedSalaryRecords() {
     .filter((item) => !detailKeys.has(`${Number(item.year)}-${normalizeMonth(item.month)}`))
     .map(({ derivedFromDetail, ...rest }) => {
       const takeHome = Number(rest.takeHome ?? rest.actualSavings ?? 0);
-      const expenseTotal = expenseTotalFor(rest.year, rest.month);
-      const actualSavings = calculateSavings(takeHome, expenseTotal);
       return {
         ...rest,
         takeHome,
-        expenseTotal,
-        actualSavings,
-        savingsRate: Number(rest.salary || 0) ? actualSavings / Number(rest.salary || 0) : 0
+        expenseTotal: 0,
+        actualSavings: takeHome,
+        savingsRate: Number(rest.salary || 0) ? takeHome / Number(rest.salary || 0) : 0
       };
     });
-  return withCumulativeCapital(sortRecordsByMonth([...derived, ...manualOnly]));
+  return buildSalaryLedger(sortRecordsByMonth([...derived, ...manualOnly]), state.expenses)
+    .filter((item) => !item.derivedFromExpenses);
 }
 
 function selectedOtYear() {
@@ -1168,13 +1153,18 @@ function renderKpis() {
     .map((item) => String(item.group || '').trim().toLowerCase())
     .filter(Boolean)).size;
   const { gap: stockGap, performance: stockPerformance } = stockPerformanceTone(stockLatest, stockTarget, Boolean(stockRecord));
-  const stockToneLevel = stockRecord ? Math.round((stockPerformance + 1) * 4) : 'empty';
+  // CSP blocks inline style properties, so direction and intensity are separate
+  // classes. This also guarantees that even a tiny shortfall stays red.
+  const stockToneDirection = stockRecord ? (stockGap < 0 ? 'loss' : 'gain') : 'empty';
+  const stockToneIntensity = stockRecord
+    ? Math.max(stockGap === 0 ? 0 : 1, Math.round(Math.abs(stockPerformance) * 4))
+    : 0;
   const kpis = [
     ['Salary · Income', yen(actualIncome), '', `Take-home ${yen(actualTakeHome)}${projectedMonths ? ` · projected gross ${yen(projectedIncome)} · take-home ${yen(projectedTakeHome)}` : ''}`, 'tone-blue', 'salary'],
     ['Savings', yen(actualSavings), actualSavings >= 0 ? 'positive' : 'negative',
       `Take-home ${yen(actualTakeHome)} − expenses ${yen(actualExpenses)}`, actualSavings >= 0 ? 'tone-green' : 'tone-red', 'expenses'],
-    ['Stock · Win Total', yen(stockLatest), stockGap > 0 ? 'positive' : stockGap < 0 ? 'negative' : '',
-      stockRecord ? `${yen(Math.abs(stockGap))} ${stockGap >= 0 ? 'above' : 'below'} ${stockRecord.month} target` : 'No result recorded', `tone-performance performance-${stockToneLevel}`, 'stocks'],
+    ['Stock · Win Total', yen(stockLatest), '',
+      stockRecord ? `${yen(Math.abs(stockGap))} ${stockGap >= 0 ? 'above' : 'below'} ${stockRecord.month} target` : 'No result recorded', `tone-performance performance-${stockToneDirection} performance-intensity-${stockToneIntensity}`, 'stocks'],
     ['Outstanding Debt', yen(debtTotal), debtTotal > 0 ? 'debt' : '',
       debts.length ? `${debts.length} record${debts.length === 1 ? '' : 's'} · ${lenders} lender${lenders === 1 ? '' : 's'}` : '',
       'tone-red', 'balances']
@@ -1956,11 +1946,12 @@ function cellClass(collection, key, item, type) {
 
 function renderTable(containerId, collection, fields, records, options = {}) {
   const extraAction = options.extraAction || (() => '');
+  const actions = options.actions || ((item) => `<button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${extraAction(item)}<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`);
   const rowClass = options.rowClass || (() => '');
   const rows = records.map((item) => `
     <tr class="${rowClass(item)}" data-record-id="${escapeHtml(item.id)}" data-record-collection="${escapeHtml(collection)}">
       ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
-      <td><div class="row-actions"><button data-edit="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button>${extraAction(item)}<button class="delete" data-delete="${collection}" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button></div></td>
+      <td><div class="row-actions">${actions(item)}</div></td>
     </tr>
   `).join('');
   const html = `
@@ -1992,7 +1983,7 @@ function payslipFor(record) {
 }
 
 function renderSalary() {
-  const salaryRecords = state.salary || [];
+  const salaryRecords = buildSalaryLedger(state.salary || [], state.expenses || []);
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
@@ -2008,7 +1999,10 @@ function renderSalary() {
     });
   renderTable('salaryTable', 'salary', salaryColumns, records, {
     rowClass: (item) => monthHasElapsed(item, item.year, records) ? '' : 'row-projected',
-    extraAction: (item) => `<button data-payslip="${escapeHtml(item.id)}" aria-label="${item.hasPayslip ? 'Edit payslip' : 'Add payslip'}">${item.hasPayslip ? 'Payslip' : 'Add payslip'}</button>`
+    extraAction: (item) => `<button data-payslip="${escapeHtml(item.id)}" aria-label="${item.hasPayslip ? 'Edit payslip' : 'Add payslip'}">${item.hasPayslip ? 'Payslip' : 'Add payslip'}</button>`,
+    actions: (item) => item.derivedFromExpenses
+      ? '<span class="muted">Calculated</span>'
+      : `<button data-edit="salary" data-id="${escapeHtml(item.id)}" aria-label="Edit record">Edit</button><button data-payslip="${escapeHtml(item.id)}" aria-label="${item.hasPayslip ? 'Edit payslip' : 'Add payslip'}">${item.hasPayslip ? 'Payslip' : 'Add payslip'}</button><button class="delete" data-delete="salary" data-id="${escapeHtml(item.id)}" aria-label="Delete record">Delete</button>`
   });
   // Month sticks beside Year, so it has to know how wide Year came out.
   const table = document.querySelector('#salaryTable table');
@@ -2372,6 +2366,7 @@ function renderUnpaidBills() {
 function normalizeState() {
   state.overtime = (state.overtime || []).map(normalizeOvertimeRecord);
   state.daily = (state.daily || []).map(normalizeDailyRecord);
+  state.expenses = (state.expenses || []).map(normalizeExpenseRecord);
   state.monthlyDetails = (state.monthlyDetails || []).map(normalizeMonthlyDetail);
   state.salary = derivedSalaryRecords();
 }
@@ -2452,10 +2447,11 @@ function openEditor(collection, record) {
   ]);
   document.getElementById('dialogFields').innerHTML = fields.map(([key, label, type]) => {
     const isComputed = computed.has(key);
+    const inputType = type === 'number' ? 'number' : type === 'date' ? 'date' : 'text';
     return `
     <div class="field ${key === 'note' ? 'full' : ''}">
       <label for="field-${key}">${escapeHtml(label)}${isComputed ? ' <span class="field-computed">calculated</span>' : ''}</label>
-      <input id="field-${key}" name="${key}" type="${type === 'number' ? 'number' : 'text'}" step="any"${isComputed ? ' readonly tabindex="-1" title="Calculated from the other fields when you save."' : ''} value="${record && record[key] !== undefined ? escapeHtml(record[key]) : ''}">
+      <input id="field-${key}" name="${key}" type="${inputType}"${type === 'number' ? ' step="any"' : ''}${isComputed ? ' readonly tabindex="-1" title="Calculated from the other fields when you save."' : ''} value="${record && record[key] !== undefined ? escapeHtml(record[key]) : ''}">
     </div>
   `;
   }).join('');
@@ -2480,7 +2476,8 @@ function saveDialogRecord() {
     if (calculatedOtPay > 0) values.overtimePay = calculatedOtPay;
     Object.assign(values, monthlyPayroll(values, Number(values.overtimePay || 0)));
   }
-  if (collection === 'salary' || collection === 'expenses') values.month = normalizeMonth(values.month);
+  if (collection === 'salary') values.month = normalizeMonth(values.month);
+  if (collection === 'expenses') Object.assign(values, normalizeExpenseRecord(values));
   if (recordId) {
     state[collection] = state[collection].map((item) => item.id === recordId ? values : item);
   } else {
@@ -2730,7 +2727,9 @@ async function buildDemoData() {
     ['Feb', 6, 'Rent', 78000], ['Feb', 18, 'Utilities', 11200],
     ['Mar', 6, 'Rent', 78000], ['Mar', 21, 'Transport', 9400]
   ].map(([month, day, category, amount]) => ({
-    id: id('expenses'), year, month, day, category, amount, note: ''
+    id: id('expenses'),
+    date: `${year}-${String(monthIndex(month)).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+    year, month, day, category, amount, note: ''
   }));
   const salary = monthlyDetails.map((detail, index) => {
     const expenseTotal = sum(expenses.filter((item) => item.month === detail.month), 'amount');
@@ -3138,9 +3137,12 @@ window.financeApi = {
     };
     // Read back the sheets this app writes, mapping the column headings to fields.
     workbookSheets.forEach(([sheetName, collection, fieldsFor]) => {
-      const ws = workbook.Sheets[sheetName];
+      const legacyExpenseSheet = collection === 'expenses' && !workbook.Sheets[sheetName]
+        ? workbook.Sheets.Expenditures
+        : null;
+      const ws = workbook.Sheets[sheetName] || legacyExpenseSheet;
       if (!ws) { imported[collection] = []; return; }
-      const fields = fieldsFor();
+      const fields = legacyExpenseSheet ? legacyExpenseFields : fieldsFor();
       imported[collection] = XLSX.utils.sheet_to_json(ws).map((row) => {
         const record = {};
         fields.forEach(([key, label, type]) => {
@@ -3525,10 +3527,6 @@ function bindEvents() {
   }, 150));
   document.getElementById('setupImportExcel').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataImportExcel').addEventListener('click', importWorkbookWithConfirmation);
-  document.getElementById('sidebarImportBackup').addEventListener('click', importExcelWithConfirmation);
-  document.getElementById('sidebarExportBackup').addEventListener('click', exportBackupData);
-  document.getElementById('sidebarImportExcel').addEventListener('click', importWorkbookWithConfirmation);
-  document.getElementById('sidebarExportExcel').addEventListener('click', exportWorkbook);
   document.getElementById('dataImportBackup').addEventListener('click', importExcelWithConfirmation);
   document.getElementById('dataExportBackup').addEventListener('click', exportBackupData);
   document.getElementById('setupLoadDemoData').addEventListener('click', loadDemoData);

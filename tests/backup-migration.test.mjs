@@ -55,6 +55,12 @@ test('a take-home already on the record is left alone', () => {
   assert.equal(data.salary[0].takeHome, 288000);
 });
 
+test('an old split expense date migrates to an ISO date', () => {
+  const data = migrate({ expenses: [{ id: 'rent', year: 2026, month: 'January', day: 6, category: 'Rent', amount: 78000 }] });
+  assert.equal(data.expenses[0].date, '2026-01-06');
+  assert.equal(data.expenses[0].month, 'Jan');
+});
+
 test('rows saved without an id are named on the way in', () => {
   const data = migrate(structuredClone(legacyBackup));
   assert.equal(data.salary[0].id, 'salary-1');

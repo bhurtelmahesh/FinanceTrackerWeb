@@ -39,17 +39,24 @@ export function isBonusMonth(month) {
   return /bonus|賞与|ボーナス/i.test(String(month || ''));
 }
 
+// A bonus participates in the savings ledger in the month it is paid while
+// keeping its own editable row and label. The first bonus is June; later ones
+// are December. An id match makes this stable across recalculated object copies.
+export function effectiveSalaryMonth(record, records = []) {
+  if (!isBonusMonth(record?.month)) return normalizeMonth(record?.month);
+  const bonuses = records.filter((item) =>
+    Number(item.year) === Number(record.year) && isBonusMonth(item.month));
+  const index = bonuses.findIndex((item) => item === record ||
+    (record?.id && String(item.id) === String(record.id)));
+  return index > 0 ? 'Dec' : 'Jun';
+}
+
 // Whether a month has happened is a calendar question. A bonus counts from the
 // month it is paid in: June for the year's first, December for any later one - the
 // order sortRecordsByMonth files them in. `records` is the list the row came from,
 // which says which of the year's bonuses it is.
 export function monthHasElapsed(record, year, records, now = new Date()) {
-  let monthNumber = monthIndex(record.month);
-  if (isBonusMonth(record.month)) {
-    const bonuses = (records || []).filter((item) =>
-      Number(item.year) === Number(year) && isBonusMonth(item.month));
-    monthNumber = bonuses.indexOf(record) > 0 ? 12 : 6;
-  }
+  const monthNumber = monthIndex(effectiveSalaryMonth(record, records));
   if (!monthNumber) return true;
   if (Number(year) !== now.getFullYear()) return Number(year) < now.getFullYear();
   return monthNumber <= now.getMonth() + 1;
