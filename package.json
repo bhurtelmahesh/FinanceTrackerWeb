@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/search.test.mjs tests/cloud-fields.test.mjs tests/finance-metrics.test.mjs",
+    "test": "node --test tests/search.test.mjs tests/cloud-fields.test.mjs tests/finance-metrics.test.mjs tests/finance-calendar.test.mjs tests/backup-migration.test.mjs",
     "test:rules": "npx firebase-tools@13.35.1 emulators:exec --only firestore 'node --test tests/firestore.rules.test.mjs' --project demo-finance-records"
   },
   "devDependencies": {

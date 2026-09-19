@@ -1,5 +1,7 @@
 import { searchRecords as findSearchRecords, searchSnippet } from './search.mjs';
 import { calculateSavings, expenseTotalForPeriod, stockPerformanceTone } from './finance-metrics.mjs';
+import { isBonusMonth, monthHasElapsed, monthIndex, monthOptions, normalizeMonth } from './finance-calendar.mjs';
+import { migrateLoadedData, withDetachedArchives } from './backup-migration.mjs';
 
 let firebaseClientPromise = null;
 function firebaseClient() {
@@ -145,15 +147,6 @@ const computedFields = {
   stockRevenue: ['monthlyRevenue', 'surplus', 'verdict'],
   salary: ['expenseTotal', 'actualSavings', 'cumulativeCapital', 'savingsRate']
 };
-const monthOptions = [
-  ['Jan', 'Jan'], ['Feb', 'Feb'], ['Mar', 'Mar'], ['Apr', 'Apr'], ['May', 'May'], ['Jun', 'Jun'],
-  ['Jul', 'Jul'], ['Aug', 'Aug'], ['Sep', 'Sep'], ['Oct', 'Oct'], ['Nov', 'Nov'], ['Dec', 'Dec']
-];
-const fullMonthNames = {
-  january: 'Jan', february: 'Feb', march: 'Mar', april: 'Apr', may: 'May', june: 'Jun', july: 'Jul',
-  august: 'Aug', september: 'Sep', october: 'Oct', november: 'Nov', december: 'Dec'
-};
-
 function yen(value) {
   return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(Number(value || 0));
 }
@@ -753,32 +746,8 @@ function sum(records, key) {
   return (records || []).reduce((total, item) => total + Number(item[key] || 0), 0);
 }
 
-function monthIndex(month) {
-  const value = String(month || '').trim();
-  const lower = value.toLowerCase();
-  const fullName = fullMonthNames[lower];
-  if (fullName) return monthOptions.findIndex(([key]) => key === fullName) + 1;
-  const prefixedIdx = monthOptions.findIndex(([key]) => lower.startsWith(key.toLowerCase()));
-  if (prefixedIdx >= 0) return prefixedIdx + 1;
-  const idx = monthOptions.findIndex(([key]) => key.toLowerCase() === lower);
-  if (idx >= 0) return idx + 1;
-  const parsed = Number(value.replace(/[^0-9]/g, ''));
-  return Number.isFinite(parsed) && parsed >= 1 && parsed <= 12 ? parsed : 0;
-}
 
-function normalizeMonth(month) {
-  const lower = String(month || '').trim().toLowerCase();
-  const fullName = fullMonthNames[lower];
-  if (fullName) return fullName;
-  const prefixed = monthOptions.find(([key]) => lower.startsWith(key.toLowerCase()));
-  if (prefixed) return prefixed[0];
-  const idx = monthIndex(month);
-  return idx ? monthOptions[idx - 1][0] : String(month || '');
-}
 
-function isBonusMonth(month) {
-  return /bonus|賞与|ボーナス/i.test(String(month || ''));
-}
 
 function sortRecordsByMonth(records) {
   const bonusCountByYear = new Map();
@@ -1100,21 +1069,6 @@ function latestStockActualForYear(year) {
   return Number(latestStockRecordForYear(year)?.actualCumulative || 0);
 }
 
-// Whether a month has happened is a calendar question. A bonus counts from the
-// month it is paid in: June for the year's first, December for any later one — the
-// order sortRecordsByMonth files them in. `records` is the list the row came from,
-// which says which of the year's bonuses it is.
-function monthHasElapsed(record, year, records) {
-  let monthNumber = monthIndex(record.month);
-  if (isBonusMonth(record.month)) {
-    const bonuses = records.filter((item) => Number(item.year) === Number(year) && isBonusMonth(item.month));
-    monthNumber = bonuses.indexOf(record) > 0 ? 12 : 6;
-  }
-  if (!monthNumber) return true;
-  const now = new Date();
-  if (Number(year) !== now.getFullYear()) return Number(year) < now.getFullYear();
-  return monthNumber <= now.getMonth() + 1;
-}
 
 function valueExtremes(records, key) {
   if (!records.length) return null;
@@ -2865,70 +2819,14 @@ const dbStore = 'app-data';
 const dbRecordKey = 'finance-records';
 
 function normalizeLoadedData(data) {
-  const next = rehydrateArchives({ ...browserEmptyData(), ...(data || {}) });
-  next.meta = { ...browserEmptyData().meta, ...(data?.meta || {}) };
-  [...collections, 'salarySheets', 'unpaidBills'].forEach((collection) => {
-    const records = Array.isArray(next[collection]) ? next[collection] : [];
-    next[collection] = records
-      .filter((record) => record && typeof record === 'object' && !Array.isArray(record))
-      .map((record) => (record.id ? record : { ...record, id: id(collection) }));
+  return migrateLoadedData(data, {
+    empty: browserEmptyData(),
+    collections: [...collections, 'salarySheets', 'unpaidBills'],
+    makeId: id
   });
-  next.salary = next.salary.map((record) => ({
-    ...record,
-    takeHome: Number(record.takeHome ?? record.actualSavings ?? 0)
-  }));
-  return next;
-}
-
-// Backups written by the desktop app keep file bytes in `_archives` instead of an
-// inline dataUrl. Rehydrate them so archived files are actually openable.
-function rehydrateArchives(data) {
-  const archives = data && data._archives;
-  if (!archives) return data;
-  const remaining = {};
-  ['salarySheets', 'unpaidBills'].forEach((collection) => {
-    const stored = Array.isArray(archives[collection]) ? archives[collection] : [];
-    remaining[collection] = stored;
-    if (!stored.length || !Array.isArray(data[collection])) return;
-    const byName = new Map(stored.map((entry) => [entry.storedName, entry.contentBase64]));
-    const merged = new Set();
-    data[collection] = data[collection].map((item) => {
-      if (item.dataUrl || !byName.get(item.storedName)) return item;
-      const mime = /\.pdf$/i.test(item.originalName || '') ? 'application/pdf' : 'application/octet-stream';
-      merged.add(item.storedName);
-      return { ...item, dataUrl: `data:${mime};base64,${byName.get(item.storedName)}` };
-    });
-    // Drop what we folded in, so exports don't carry the same bytes twice.
-    remaining[collection] = stored.filter((entry) => !merged.has(entry.storedName));
-  });
-  const leftover = Object.values(remaining).reduce((total, list) => total + list.length, 0);
-  if (leftover) {
-    data._archives = { ...archives, ...remaining };
-  } else {
-    delete data._archives;
-  }
-  return data;
 }
 
 const backupVersion = 1;
-
-// Move archived file bytes out of the records and into _archives.
-function withDetachedArchives(data) {
-  const next = { ...data };
-  const archives = {};
-  ['salarySheets', 'unpaidBills'].forEach((collection) => {
-    const records = next[collection] || [];
-    archives[collection] = records
-      .filter((item) => typeof item.dataUrl === 'string' && item.dataUrl.includes(','))
-      .map((item) => ({
-        storedName: item.storedName,
-        contentBase64: item.dataUrl.slice(item.dataUrl.indexOf(',') + 1)
-      }));
-    next[collection] = records.map(({ dataUrl, ...rest }) => rest);
-  });
-  next._archives = archives;
-  return next;
-}
 
 function checkBackupVersion(data) {
   const version = Number(data?.meta?.version || 0);
