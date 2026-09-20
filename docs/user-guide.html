@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Finance Tracker — User Guide</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm; }
+  :root {
+    --ink: #17323d;
+    --muted: #5d7681;
+    --blue: #1d6f8d;
+    --teal: #1f7a6a;
+    --green: #27672b;
+    --red: #a93232;
+    --line: #d3e2e8;
+    --panel: #ffffff;
+    --tint: #eef6f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 10.5pt/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1, h2, h3 { line-height: 1.25; }
+  h2 {
+    font-size: 16pt;
+    margin: 0 0 10pt;
+    padding-bottom: 5pt;
+    border-bottom: 2px solid var(--blue);
+    color: var(--blue);
+  }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; color: var(--ink); }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 16pt; }
+  li { margin-bottom: 3pt; }
+  strong { color: var(--ink); }
+  /* Sections flow into each other: a page break per section left short ones -
+     Debt records, Overtime - sitting alone above half a blank page. What must
+     not break is a heading from the text under it, or a table down its middle. */
+  section { margin-bottom: 16pt; }
+  h2 { break-after: avoid; page-break-after: avoid; }
+  h3 { break-after: avoid; page-break-after: avoid; }
+  h2 + p, h3 + p, h2 + table, h3 + table { break-before: avoid; page-break-before: avoid; }
+  ul, ol, .steps li { break-inside: avoid; }
+
+  /* Cover */
+  .cover {
+    height: 240mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .mark {
+    width: 56pt; height: 56pt;
+    display: grid; place-items: center;
+    border-radius: 14pt;
+    background: linear-gradient(145deg, #2b8db0, #146c8b);
+    color: #fff; font-size: 30pt; font-weight: 800;
+    margin-bottom: 16pt;
+  }
+  .cover h1 { font-size: 30pt; margin: 0 0 4pt; }
+  .cover .sub { font-size: 13pt; color: var(--muted); margin-bottom: 22pt; }
+  .cover .lede { font-size: 11pt; max-width: 118mm; color: var(--ink); }
+  .cover .meta { margin-top: 26pt; font-size: 9pt; color: var(--muted); }
+
+  /* Contents */
+  .colophon {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3pt 14pt;
+    margin: 20pt 0 0;
+    font-size: 9.5pt;
+    max-width: 90mm;
+  }
+  .colophon dt { color: var(--muted); }
+  .colophon dd { margin: 0; font-weight: 700; }
+  .copyright { margin-top: 14pt; font-size: 9pt; color: var(--muted); }
+
+  .toc { list-style: none; padding: 0; column-count: 2; column-gap: 14mm; }
+  .toc li { margin-bottom: 5pt; break-inside: avoid; }
+  .toc .n { display: inline-block; width: 16pt; color: var(--blue); font-weight: 700; }
+
+  /* Callouts */
+  .note, .warn {
+    margin: 9pt 0;
+    padding: 7pt 10pt;
+    border-left: 3px solid var(--blue);
+    background: var(--tint);
+    break-inside: avoid;
+  }
+  .warn { border-left-color: var(--red); background: #fdf1f1; }
+  .note p:last-child, .warn p:last-child { margin-bottom: 0; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 10pt; font-size: 9.5pt; break-inside: avoid; }
+  th, td { text-align: left; padding: 5pt 7pt; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--tint); color: var(--blue); font-size: 9pt; text-transform: uppercase; letter-spacing: .04em; }
+  td.f { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9pt; white-space: nowrap; }
+
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 22pt;
+    margin-bottom: 7pt;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 1pt;
+    width: 14pt; height: 14pt;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--blue); color: #fff;
+    font-size: 8pt; font-weight: 700;
+  }
+  .pos { color: var(--green); font-weight: 700; }
+  .neg { color: var(--red); font-weight: 700; }
+  .kbd {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 9pt; padding: 1pt 4pt;
+    border: 1px solid var(--line); border-radius: 3pt; background: #fff;
+  }
+  .install-figures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7pt;
+    margin: 9pt 0 11pt;
+    break-inside: avoid;
+  }
+  .install-figures figure {
+    margin: 0;
+    padding: 6pt 7pt 4pt;
+    border: 1px solid var(--line);
+    border-radius: 7pt;
+    background: #fff;
+  }
+  .install-figures svg { display: block; width: 100%; height: auto; }
+  .install-figures figcaption {
+    margin-top: 3pt;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  footer.end { margin-top: 14pt; padding-top: 8pt; border-top: 1px solid var(--line); font-size: 9pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="mark">¥</div>
+  <h1>Finance Tracker</h1>
+  <p class="sub">User Guide</p>
+  <p class="lede">A private record of salary, spending, savings, stock results and debts — kept in your own browser, backed up as a file you hold, and synced between your devices only if you ask it to.</p>
+  <p class="meta">Covers the web app at finance-records.web.app and the Finance Records desktop app.</p>
+  <dl class="colophon">
+    <dt>Author</dt><dd>Maheshwor Bhurtel</dd>
+    <dt>Date</dt><dd>20 September 2026</dd>
+    <dt>Revision</dt><dd>1.0</dd>
+  </dl>
+  <p class="copyright">&copy; 2026 Maheshwor Bhurtel. All rights reserved.</p>
+</section>
+
+<section class="first" style="page-break-before: always;">
+  <h2>Contents</h2>
+  <ul class="toc">
+    <li><span class="n">1</span>Where your data lives</li>
+    <li><span class="n">2</span>Getting started</li>
+    <li><span class="n">3</span>Installing it as an app</li>
+    <li><span class="n">4</span>Finding your way around</li>
+    <li><span class="n">5</span>The dashboard</li>
+    <li><span class="n">6</span>Recording a month</li>
+    <li><span class="n">7</span>Overtime</li>
+    <li><span class="n">8</span>Expenditures</li>
+    <li><span class="n">9</span>Stock: daily records and targets</li>
+    <li><span class="n">10</span>Debt records</li>
+    <li><span class="n">11</span>How every number is worked out</li>
+    <li><span class="n">12</span>Backups and workbooks</li>
+    <li><span class="n">13</span>Signing in and syncing</li>
+    <li><span class="n">14</span>Quick answers</li>
+  </ul>
+
+  <h2 style="margin-top:18pt">1. Where your data lives</h2>
+  <p>Nothing is uploaded unless you sign in. Signed out, every record stays in this browser, on this device, and is read straight from it.</p>
+  <p>Sign in with Google and your records are kept in your own private area of the app's database, so a second device signed in as you picks them up. Even then, a copy stays on the device, so an open app keeps working if the connection drops.</p>
+  <p>Archived files — salary sheets and bill documents you attach — never leave the device that holds them. They travel only inside a JSON backup.</p>
+  <div class="note">
+    <p><strong>The one habit worth keeping:</strong> export a JSON backup now and then, whichever mode you use. It is the only copy that contains everything, and it is yours.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. Getting started</h2>
+  <p>The first time the app opens it offers four ways in:</p>
+  <ol class="steps">
+    <li><strong>Sign in with Google</strong> — start an account that syncs between devices.</li>
+    <li><strong>Start Blank</strong> — an empty set of records, private to this device.</li>
+    <li><strong>Load Demo Data</strong> — invented figures, to see how the app behaves before committing anything real.</li>
+    <li><strong>Import Backup</strong> — restore a <span class="kbd">.json</span> backup you exported before.</li>
+  </ol>
+  <p>Demo data can be replaced at any time from <strong>Backup &amp; Import</strong>, and Clear All Data empties everything and starts again.</p>
+
+  <h3>The usual first month</h3>
+  <ol class="steps">
+    <li>Open <strong>Salary &amp; Savings</strong> and choose <strong>Add Payslip</strong>. Enter the month's basic pay, allowance, transportation and the deductions from your payslip.</li>
+    <li>Leave <strong>Income Tax</strong> blank if you do not have the figure to hand — the app estimates it — and enter the real number when you do.</li>
+    <li>Log overtime days under <strong>Overtime</strong>. The total flows into that month's payslip automatically.</li>
+    <li>Add what you spent under <strong>Expenditures</strong>. Savings for the month fall as you add them.</li>
+    <li>Open <strong>Dashboard</strong> to see the year so far.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>3. Installing it as an app</h2>
+  <p>Finance Tracker can be installed from the browser. It then has its own icon and its own window, with no tabs or address bar around it, and opens like any other app.</p>
+  <table>
+    <tr><th>Where</th><th>How</th></tr>
+    <tr><td><strong>Chrome or Edge</strong><br>Windows, macOS, Linux</td><td>Open the app, then use the install icon at the right of the address bar — or the browser menu, under <em>Cast, save and share ▸ Install page as app</em>.</td></tr>
+    <tr><td><strong>Safari</strong><br>macOS Sonoma or later</td><td>Share ▸ <em>Add to Dock</em>.</td></tr>
+    <tr><td><strong>iPhone and iPad</strong></td><td>Share ▸ <em>Add to Home Screen</em>.</td></tr>
+    <tr><td><strong>Android</strong></td><td>Chrome menu ▸ <em>Install app</em> or <em>Add to Home screen</em>.</td></tr>
+  </table>
+
+  <div class="install-figures">
+    <figure>
+      <svg viewBox="0 0 320 132" role="img" aria-label="The install icon at the right of the Chrome address bar">
+        <rect x="8" y="14" width="304" height="40" rx="20" fill="var(--panel)" stroke="var(--line)"/>
+        <path d="M30 34v-4a4 4 0 0 1 8 0v4" fill="none" stroke="var(--muted)" stroke-width="1.6"/>
+        <rect x="27" y="33" width="14" height="11" rx="2" fill="none" stroke="var(--muted)" stroke-width="1.6"/>
+        <text x="52" y="39" font-size="11.5" fill="var(--muted)">finance-records.web.app</text>
+        <g stroke="var(--blue)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="266" y="26" width="18" height="14" rx="2"/>
+          <path d="M275 29v7M272 33l3 3 3-3"/>
+        </g>
+        <circle cx="275" cy="34" r="17" fill="none" stroke="var(--blue)" stroke-width="2"/>
+        <path d="M275 53v22h-52" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-dasharray="3 3"/>
+        <text x="216" y="90" font-size="11.5" font-weight="700" fill="var(--blue)" text-anchor="end">Install icon</text>
+        <text x="8" y="90" font-size="11" fill="var(--muted)">Chrome and Edge</text>
+        <text x="8" y="108" font-size="10.5" fill="var(--muted)">Or: menu &#8250; Cast, save and share &#8250; Install page as app</text>
+      </svg>
+      <figcaption>Chrome or Edge</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 320 132" role="img" aria-label="Safari's Share menu with Add to Dock">
+        <rect x="8" y="10" width="304" height="34" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+        <g stroke="var(--blue)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M104 33v-14M99 24l5-5 5 5"/>
+          <path d="M96 27v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        </g>
+        <circle cx="104" cy="27" r="15" fill="none" stroke="var(--blue)" stroke-width="2"/>
+        <text x="130" y="31" font-size="11.5" fill="var(--muted)">finance-records.web.app</text>
+        <rect x="88" y="50" width="150" height="56" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+        <rect x="92" y="54" width="142" height="22" rx="5" fill="var(--blue)" opacity=".14"/>
+        <text x="102" y="69" font-size="11.5" font-weight="700" fill="var(--blue)">Add to Dock</text>
+        <text x="102" y="93" font-size="11.5" fill="var(--muted)">Add Bookmark</text>
+        <text x="8" y="69" font-size="11" fill="var(--muted)">Safari</text>
+        <text x="8" y="87" font-size="10.5" fill="var(--muted)">macOS Sonoma</text>
+        <text x="8" y="103" font-size="10.5" fill="var(--muted)">or later</text>
+      </svg>
+      <figcaption>Safari on macOS</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 320 132" role="img" aria-label="The iPhone share sheet with Add to Home Screen">
+        <rect x="14" y="8" width="74" height="116" rx="12" fill="var(--panel)" stroke="var(--line)"/>
+        <rect x="22" y="100" width="58" height="16" rx="8" fill="none" stroke="var(--line)"/>
+        <g stroke="var(--blue)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M51 114v-9M47.5 108l3.5-3.5 3.5 3.5"/>
+        </g>
+        <circle cx="51" cy="108" r="11" fill="none" stroke="var(--blue)" stroke-width="1.8"/>
+        <text x="22" y="30" font-size="8" fill="var(--muted)">Finance</text>
+        <text x="22" y="42" font-size="8" fill="var(--muted)">Tracker</text>
+        <path d="M62 108h34" fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-dasharray="3 3"/>
+        <rect x="104" y="30" width="200" height="76" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="116" y="50" font-size="11" fill="var(--muted)">Copy</text>
+        <rect x="108" y="58" width="192" height="24" rx="6" fill="var(--blue)" opacity=".14"/>
+        <g stroke="var(--blue)" stroke-width="1.6" fill="none" stroke-linecap="round">
+          <rect x="116" y="63" width="13" height="13" rx="3"/>
+          <path d="M122.5 66.5v6M119.5 69.5h6"/>
+        </g>
+        <text x="136" y="75" font-size="11.5" font-weight="700" fill="var(--blue)">Add to Home Screen</text>
+        <text x="116" y="98" font-size="11" fill="var(--muted)">Add to Reading List</text>
+        <text x="104" y="22" font-size="11" fill="var(--muted)">iPhone and iPad</text>
+      </svg>
+      <figcaption>iPhone and iPad</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 320 132" role="img" aria-label="Chrome's menu on Android with Install app">
+        <rect x="8" y="10" width="304" height="32" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="22" y="30" font-size="11.5" fill="var(--muted)">finance-records.web.app</text>
+        <g fill="var(--blue)">
+          <circle cx="288" cy="19" r="2"/>
+          <circle cx="288" cy="26" r="2"/>
+          <circle cx="288" cy="33" r="2"/>
+        </g>
+        <circle cx="288" cy="26" r="14" fill="none" stroke="var(--blue)" stroke-width="2"/>
+        <rect x="150" y="50" width="162" height="70" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="162" y="70" font-size="11.5" fill="var(--muted)">New tab</text>
+        <rect x="154" y="78" width="154" height="24" rx="6" fill="var(--blue)" opacity=".14"/>
+        <g stroke="var(--blue)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M168 84v9M164.5 89.5l3.5 3.5 3.5-3.5"/>
+        </g>
+        <text x="182" y="95" font-size="11.5" font-weight="700" fill="var(--blue)">Install app</text>
+        <text x="162" y="115" font-size="11.5" fill="var(--muted)">Downloads</text>
+        <text x="8" y="70" font-size="11" fill="var(--muted)">Android</text>
+        <text x="8" y="88" font-size="10.5" fill="var(--muted)">Chrome menu,</text>
+        <text x="8" y="104" font-size="10.5" fill="var(--muted)">top right</text>
+      </svg>
+      <figcaption>Android</figcaption>
+    </figure>
+  </div>
+
+  <h3>What installing changes — and what it does not</h3>
+  <ul>
+    <li>You get an icon and a standalone window. Nothing else about the app differs.</li>
+    <li><strong>The records are the same records.</strong> The installed app uses the same browser profile underneath, so it and the tab show the same data on that device.</li>
+    <li><strong>It still needs a connection to start.</strong> The app is not bundled for offline launch, so opening it with no network shows the browser's error page. Once it is open, your records are read from the device.</li>
+    <li>Uninstalling removes the icon, not your records. They stay in the browser profile until you clear the site's data — so export a backup before removing anything.</li>
+  </ul>
+
+  <div class="note">
+    <p><strong>Prefer a real desktop app?</strong> Finance Records is also packaged as a macOS application. It keeps its records in a file on your Mac rather than in a browser profile, and stores attached salary sheets and bill documents on disk. Backups written by either app open in the other.</p>
+  </div>
+</section>
+
+<section>
+  <h2>4. Finding your way around</h2>
+  <p>The menu down the left side groups the sections: <strong>Salary</strong> (Salary &amp; Savings, Overtime), <strong>Stocks</strong> (Stock Revenue, Daily Records) and <strong>Other</strong> (Expenditures, Debt Records, Backup &amp; Import, Help). On a phone the menu slides in from the <strong>Menu</strong> button.</p>
+
+  <h3>Search</h3>
+  <p>The search box at the top searches your records <em>and</em> the Help page at once. Results are grouped by section; pick one and the app opens that section with the matching row highlighted and the right year already selected. Month names, formatted amounts and plain words all work.</p>
+
+  <h3>Ocean and Dark</h3>
+  <p>The switch beside the search box changes the look between the light Ocean theme and Dark. Your choice is remembered on this device and is not part of your records or backups.</p>
+
+  <h3>Colour, everywhere</h3>
+  <p><span class="pos">Green</span> means money gained or on track. <span class="neg">Red</span> means money lost, owed, or falling short. On the dashboard charts, falling short means take-home under half of gross pay, or a stock total below its target.</p>
+  <div class="note">
+    <p><strong>Salary and stock are kept apart.</strong> Salary &amp; Savings and Overtime are the salary side; Daily Records and Stock Revenue are the stock side. Stock movements are never netted off your pay, so a heavy trading month cannot make your salary savings look bad.</p>
+  </div>
+</section>
+
+<section>
+  <h2>5. The dashboard</h2>
+  <p>Four figures across the top, then two charts. Every figure is a button — click it to open the section it came from.</p>
+  <table>
+    <tr><th>Tile</th><th>What it shows</th></tr>
+    <tr><td><strong>Salary · Income</strong></td><td>Gross pay for the year so far, with take-home beneath it. Months still to come appear only in the projection line.</td></tr>
+    <tr><td><strong>Savings</strong></td><td>Take-home minus recorded expenditures, for months that have already happened. The caption shows both parts.</td></tr>
+    <tr><td><strong>Stock · Win Total</strong></td><td>The latest actual cumulative win that year. The tile moves from red through amber to green by how far it sits below or above that month's target, and the caption states the gap in yen.</td></tr>
+    <tr><td><strong>Outstanding Debt</strong></td><td>Every debt amount added together, with a count of records and distinct lenders.</td></tr>
+  </table>
+
+  <h3>The charts</h3>
+  <ul>
+    <li><strong>Salary</strong> — gross income in blue and take-home in green, month by month, with the gap between them shaded. Take-home under half of gross turns red.</li>
+    <li><strong>Stock</strong> — the target line against your actual cumulative, with a marker each month: ▲ when you are at or above target, ▼ when below.</li>
+    <li><strong>Months still to come</strong> are dashed, with hollow markers. On the salary chart they are the projected months the headline totals leave out.</li>
+  </ul>
+
+  <h3>Hover and zoom</h3>
+  <p>Hover or tap a month to read its figures. Scroll or pinch to zoom into a few months — on a narrow window hold <span class="kbd">Ctrl</span> or <span class="kbd">⌘</span> while scrolling — drag sideways to move along the year, and double-click or press <strong>Reset</strong> to see the whole year again. Zoomed in, the axis refits to the months in view.</p>
+</section>
+
+<section>
+  <h2>6. Recording a month</h2>
+  <p><strong>Salary &amp; Savings</strong> holds one row per month. The first columns are the money story — gross, take-home, expenditures, savings goal, actual savings, cumulative capital — and the payslip that produced them follows in the same row. Year and month stay in place while you scroll across the payslip columns.</p>
+
+  <h3>Two kinds of month</h3>
+  <ul>
+    <li><strong>With a payslip.</strong> Press <strong>Payslip</strong> on the row, or <strong>Add Payslip</strong> in the toolbar. Gross income and take-home are then calculated from what you enter, and the row's payslip columns fill in.</li>
+    <li><strong>Entered by hand.</strong> <strong>Add Manual Month</strong> is for a month with no payslip — a bonus, typically — where you type gross and take-home yourself. Its payslip columns stay blank.</li>
+  </ul>
+
+  <h3>Bonuses</h3>
+  <p>A bonus is its own row, entered as a manual month. It counts from the month it is paid: the year's first bonus from June, a later one from December. Until that month arrives the dashboard treats it as projected and keeps it out of the headline totals.</p>
+
+  <h3>Projected months</h3>
+  <p>Months that have not happened yet are shaded and tagged <em>projected</em>. The figures are whatever you entered ahead of time; the dashboard shows them separately rather than in its totals.</p>
+
+  <div class="warn">
+    <p><strong>Deleting a month deletes its payslip with it.</strong> That is deliberate — the payslip would otherwise rebuild the row on the next render. The confirmation names the month so you know what is going.</p>
+  </div>
+</section>
+
+<section>
+  <h2>7. Overtime</h2>
+  <p>Log overtime a day at a time: hours, any extra hours, and the hourly rate. The amount is worked out for you.</p>
+  <table>
+    <tr><th>Field</th><th>How it is worked out</th></tr>
+    <tr><td><strong>Amount</strong></td><td class="f">(OT Hours + Extra OT) × Hourly Rate</td></tr>
+    <tr><td><strong>Monthly OT Summary</strong></td><td>Adds that month's entries and shows them against the matching payslip, so you can check a payslip before entering it.</td></tr>
+  </table>
+  <div class="note">
+    <p><strong>Logged overtime wins.</strong> A month's overtime entries become that month's Overtime Pay on the payslip. The figure typed into a payslip is used only for months with no overtime entries at all.</p>
+  </div>
+</section>
+
+<section>
+  <h2>8. Expenditures</h2>
+  <p>Dated records of what you actually spent. Category / Name identifies the spending; the note is optional. Filter by year and month, and the page totals the selection and the year.</p>
+  <ul>
+    <li>Each expense is deducted from take-home in its own year and month.</li>
+    <li>Editing, moving or deleting an expense recalculates monthly savings and cumulative capital immediately.</li>
+    <li>Savings can go negative when spending exceeds take-home — that is shown in red, not hidden.</li>
+  </ul>
+  <div class="note">
+    <p><strong>Debt is separate.</strong> A debt balance is not automatically an expense. Record a payment here only when money actually left your hands, so nothing is counted twice.</p>
+  </div>
+</section>
+
+<section>
+  <h2>9. Stock: daily records and targets</h2>
+  <h3>Daily Records</h3>
+  <p>A day-by-day log of stock results: a gain is positive, a loss negative. It rolls up into the stock side and is never subtracted from your salary.</p>
+  <table>
+    <tr><th>Situation</th><th>What to do</th></tr>
+    <tr><td>A day with no trading</td><td>Type a word instead of an amount — <strong>CLOSED</strong> for a holiday, say. The day is stored as zero with that marker.</td></tr>
+    <tr><td>Zero versus empty</td><td>A cell showing 0 is a day recorded as zero. An empty cell has no record at all. Clearing a cell deletes its record.</td></tr>
+    <tr><td>Weekends</td><td>Saturday and Sunday show as a red chip until you enter something. They are fully editable.</td></tr>
+    <tr><td>Monthly Total</td><td>The sum of that month's amounts. A dash means the month has no records at all.</td></tr>
+  </table>
+
+  <h3>Stock Revenue</h3>
+  <p>One row a month: the target you set and the actual cumulative you reached.</p>
+  <table>
+    <tr><th>Column</th><th>How it is worked out</th></tr>
+    <tr><td><strong>Monthly Win</strong></td><td class="f">this month's Actual Win Cumulative − the previous recorded month's</td></tr>
+    <tr><td><strong>Vs Target</strong></td><td class="f">Actual Win Cumulative − Target Cumulative</td></tr>
+    <tr><td><strong>Result</strong></td><td>A tick above target, a cross below, a dash when the month has no actual figure or lands exactly on target.</td></tr>
+  </table>
+  <p>The first month with a figure shows a zero monthly win, as there is nothing before it to compare against.</p>
+</section>
+
+<section>
+  <h2>10. Debt records</h2>
+  <p>What you owe, as you understand it: a lender or group, a label or date, the amount, and an optional note. The dashboard adds every amount exactly as entered and counts the distinct lenders behind the total.</p>
+  <p>Debts are never netted off savings or stock results. They sit alongside them, so a balance you are carrying does not quietly flatter or spoil another figure.</p>
+</section>
+
+<section>
+  <h2>11. How every number is worked out</h2>
+  <p>Amounts are yen throughout. Nothing here is rounded away: what you enter is what is added.</p>
+  <table>
+    <tr><th>Figure</th><th>Formula</th></tr>
+    <tr><td><strong>Gross Total</strong></td><td class="f">Basic + Allowance + Overtime Pay + Transportation</td></tr>
+    <tr><td><strong>Total Deduction</strong></td><td class="f">Health Insurance + Pension + Employment Insurance + Residence Tax + Income Tax</td></tr>
+    <tr><td><strong>Take-home</strong> (Net Received)</td><td class="f">Gross Total − Total Deduction</td></tr>
+    <tr><td><strong>Expenditures</strong></td><td>The sum of that month's records in the Expenditures section</td></tr>
+    <tr><td><strong>Actual Savings</strong></td><td class="f">Take-home − that month's expenditures</td></tr>
+    <tr><td><strong>Savings Goal</strong></td><td>Whatever you set. It is never calculated.</td></tr>
+    <tr><td><strong>Cumulative Capital</strong></td><td>A running total of actual savings through the year; every new year starts again from zero</td></tr>
+    <tr><td><strong>Overtime Amount</strong></td><td class="f">(OT Hours + Extra OT) × Hourly Rate</td></tr>
+  </table>
+  <p>Gross Total, Total Deduction and Net Received are recalculated every time a payslip is saved, which is why the payslip editor shows them read-only.</p>
+
+  <h3>The income tax estimate</h3>
+  <p>Used only when Income Tax is left blank. It annualises Basic + Allowance + Overtime — transportation is excluded, as commuting allowance is not taxable — subtracts the employment-income deduction, then social insurance and the basic deduction, applies the tax brackets with the surtax, and divides by twelve.</p>
+  <div class="warn">
+    <p><strong>Treat this as a rough guide</strong> — it ignores bonuses and will not match a payslip exactly. Enter the figure from your payslip whenever you have it; your own number is always kept.</p>
+  </div>
+</section>
+
+<section>
+  <h2>12. Backups and workbooks</h2>
+  <table>
+    <tr><th>File</th><th>What it holds</th></tr>
+    <tr><td><strong>Backup (.json)</strong></td><td>Everything: every record, plus archived salary sheets and bill files. This is the one to keep.</td></tr>
+    <tr><td><strong>Workbook (.xlsx)</strong></td><td>The records only, one sheet per section, plus a Summary sheet of the dashboard figures. Archived files are listed but not included.</td></tr>
+  </table>
+  <div class="warn">
+    <p><strong>Importing replaces.</strong> Importing a backup or a workbook replaces all current records rather than merging into them. Export a backup first, every time.</p>
+  </div>
+  <p>Old backups still open: a file written before a feature existed comes back with that section empty, and figures recorded under earlier names are carried across to their current ones.</p>
+
+  <h3>Starting from a spreadsheet</h3>
+  <p>Export a workbook first, even with no records in it. That gives you the exact sheet names and column headings the importer expects — fill those sheets in, then import the file back. Building a spreadsheet from scratch and hoping it matches will not work.</p>
+  <p>Rows come back in as new entries, so a workbook suits setting records up or reworking them in bulk rather than merging into what is already there.</p>
+</section>
+
+<section>
+  <h2>13. Signing in and syncing</h2>
+  <p>Signing in is optional and reversible. Signed out, records never leave the device.</p>
+  <table>
+    <tr><th>Question</th><th>Answer</th></tr>
+    <tr><td><strong>What syncs?</strong></td><td>Salary months and their payslips, Overtime, Stock Revenue, Daily Records, Expenditures and Debt Records.</td></tr>
+    <tr><td><strong>What does not?</strong></td><td>Archived salary sheets and bill files. They stay on the device that holds them and travel only in a JSON backup.</td></tr>
+    <tr><td><strong>Which copy wins?</strong></td><td>Signing in pulls your account's copy onto this device. After that, each save sends what changed here, record by record. A record edited on two devices keeps whichever was saved last.</td></tr>
+    <tr><td><strong>Offline?</strong></td><td>Changes are kept on the device and go up with the next save. <strong>Sync now</strong> sends everything again.</td></tr>
+    <tr><td><strong>Importing while signed in?</strong></td><td>An imported backup replaces your records and is then sent to your account, so it replaces that copy on every device. Clear All Data does the same with an empty set.</td></tr>
+  </table>
+  <div class="note">
+    <p><strong>Before editing on a device that has been open a while</strong>, reload it. Last save wins per record, so a stale page can overwrite something newer from another device.</p>
+  </div>
+</section>
+
+<section>
+  <h2>14. Quick answers</h2>
+  <h3>A month is missing from the dashboard totals</h3>
+  <p>It has not happened yet. Projected months are shaded in the table and shown separately on the dashboard. A bonus counts from June or December depending on whether it is the year's first.</p>
+
+  <h3>The estimated income tax does not match my payslip</h3>
+  <p>It will not — it annualises rather than following the monthly withholding table, and it ignores bonuses. Enter the figure from the payslip; your own number is always kept.</p>
+
+  <h3>Some payslip fields will not let me type in them</h3>
+  <p>Gross Total, Total Deduction and Net Received are calculated from the other fields and rewritten on save.</p>
+
+  <h3>I cannot delete a row</h3>
+  <p>Deleting a salary month removes its payslip too, and says so. If you want to keep the month but drop the payslip, delete the payslip from its own editor instead.</p>
+
+  <h3>Where did my archived files go after restoring on another device?</h3>
+  <p>Only a JSON backup carries them. A workbook lists them by name but not their contents, and sync never uploads them.</p>
+
+  <h3>How do I start over?</h3>
+  <p><strong>Backup &amp; Import → Clear All Data</strong> empties everything. Export a backup first if there is any chance you will want it back.</p>
+
+  <footer class="end">
+    <p>Finance Tracker — the Help page inside the app carries the same reference material, and searching the app searches it too.</p>
+    <p>User Guide revision 1.0, 20 September 2026. &copy; 2026 Maheshwor Bhurtel. All rights reserved.</p>
+  </footer>
+</section>
+
+</body>
+</html>
