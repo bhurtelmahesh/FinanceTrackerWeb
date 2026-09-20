@@ -2104,6 +2104,34 @@ canvas {
   line-height: 1.55;
 }
 
+/* The guide is the one thing on the Help page you take away with you, so it
+   reads as a control rather than another paragraph. */
+.guide-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--blue);
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.guide-download::before {
+  content: "\2193";
+  font-weight: 800;
+}
+
+.guide-download:hover { filter: brightness(.94); }
+
+:root[data-theme="dark"] .guide-download {
+  border-color: #2f7f9e;
+  background: #1c5f78;
+  color: #eaf6fa;
+}
+
 .help-note {
   padding: 10px 12px;
   border-left: 3px solid var(--blue);
@@ -2581,12 +2609,6 @@ body.mobile-menu-open .back-to-menu {
   color: #91a9b3;
 }
 
-:root[data-theme="dark"] .ot-received {
-  background: #1a4833;
-  color: #a9efc1;
-  border: 1px solid #3b7651;
-}
-
 :root[data-theme="dark"] .calculated-cell.amount-plus {
   color: #8ae49a;
   background: #19382a;
@@ -2599,33 +2621,40 @@ body.mobile-menu-open .back-to-menu {
 :root[data-theme="dark"] .stock-fail { color: #ff9696; }
 
 :root[data-theme="dark"] .daily-grid td.daily-day-cell {
-  background: #142a34;
+  background: #172d37;
   border-color: #3b5661;
 }
 :root[data-theme="dark"] .daily-day-cell.has-records { background: #183744; }
-:root[data-theme="dark"] .daily-day-cell.weekend {
-  background: #38262b;
-  border-color: #704249;
-}
 :root[data-theme="dark"] .daily-day-cell.invalid-day {
-  background-color: #17252b;
-  border-color: #30434b;
-  background-image: repeating-linear-gradient(135deg, rgba(150, 174, 184, .08) 0 6px, transparent 6px 12px);
+  background-color: #13262f;
+  border-color: #29434e;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(125, 151, 162, .07) 0,
+    rgba(125, 151, 162, .07) 6px,
+    transparent 6px,
+    transparent 12px
+  );
 }
 :root[data-theme="dark"] .daily-day-cell:hover:not(.invalid-day) { background: #214553; }
 :root[data-theme="dark"] .daily-day-cell:hover:not(.invalid-day) .daily-cell-input,
 :root[data-theme="dark"] .daily-cell-input:focus {
   background: #1d3f4c;
-  border-color: #5b91a6;
+  border-color: #557581;
 }
 :root[data-theme="dark"] .daily-status {
-  color: #c1d0d6;
-  background: #263740;
-  border-color: #4d626c;
+  color: #ffd48a;
+  background: #3d3422;
+  border-color: #766039;
 }
 :root[data-theme="dark"] .daily-plus { color: #8ae49a; background: #19382a; border-color: #3c6f4c; }
 :root[data-theme="dark"] .daily-minus { color: #ff9696; background: #402527; border-color: #784349; }
 :root[data-theme="dark"] .daily-zero { color: #a8bbc3; background: #172d37; }
+
+/* The grid wrappers and the annual-total row carry light fills of their own, so
+   they stayed as pale slabs behind a dark grid until they were told otherwise. */
+:root[data-theme="dark"] :is(.daily-grid-wrap, .stock-grid-wrap) { background: var(--panel); }
+:root[data-theme="dark"] .daily-grid tfoot td.daily-annual-total { background: #172d37; }
 
 :root[data-theme="dark"] .daily-list caption,
 :root[data-theme="dark"] .daily-list thead th,
