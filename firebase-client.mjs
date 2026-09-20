@@ -3,11 +3,9 @@ import {
   browserLocalPersistence,
   getAuth,
   GoogleAuthProvider,
-  getRedirectResult,
   onAuthStateChanged,
   setPersistence,
   signInWithPopup,
-  signInWithRedirect,
   signOut
 } from 'firebase/auth';
 import {
@@ -27,7 +25,7 @@ const firebaseConfig = {
   appId: '1:933813388738:web:c1ba834dfa2d4116ba025b',
   storageBucket: 'bhurtel-finance-tracker.firebasestorage.app',
   apiKey: 'AIzaSyBWgSU64aAEJPtONBzaZKFtNgfnNdylNFo',
-  authDomain: 'finance-records.web.app',
+  authDomain: 'bhurtel-finance-tracker.firebaseapp.com',
   messagingSenderId: '933813388738'
 };
 
@@ -86,35 +84,10 @@ function publicUser(user) {
 
 export async function initializeAccountSession(callback) {
   await setPersistence(auth, browserLocalPersistence);
-  // Collect a redirect that has just come back, before anything asks who is
-  // signed in. A failure here is the sign-in failing, not the app: it carries on
-  // signed out rather than refusing to start.
-  try {
-    await getRedirectResult(auth);
-  } catch (error) {
-    console.error('Google sign-in did not complete.', error);
-  }
   return onAuthStateChanged(auth, (user) => callback(publicUser(user)));
 }
 
-// A phone has nowhere good to put a popup: in a browser it becomes a second tab
-// you have to find your way back from, and in an app added to the Home Screen it
-// becomes an in-app sheet whose text fields will not take focus. Redirecting
-// keeps the whole thing in one view, which is the ordinary mobile pattern.
-// Desktop keeps the popup, where it is the better of the two.
-function prefersRedirect() {
-  if (window.navigator.standalone) return true;
-  const query = window.matchMedia;
-  if (!query) return false;
-  return query('(display-mode: standalone)').matches || query('(pointer: coarse)').matches;
-}
-
 export async function signInWithGoogle() {
-  if (prefersRedirect()) {
-    // The page leaves for Google and comes back into initializeAccountSession.
-    await signInWithRedirect(auth, googleProvider);
-    return null;
-  }
   const credential = await signInWithPopup(auth, googleProvider);
   return publicUser(credential.user);
 }
