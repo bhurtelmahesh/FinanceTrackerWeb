@@ -97,16 +97,20 @@ export async function initializeAccountSession(callback) {
   return onAuthStateChanged(auth, (user) => callback(publicUser(user)));
 }
 
-// An app added to an iPhone's Home Screen has no tabs, so a popup lands in an
-// in-app sheet whose text fields never take focus - the keyboard simply never
-// appears. Redirecting keeps the whole flow in the one view.
-function standaloneApp() {
-  return Boolean(window.navigator.standalone) ||
-    Boolean(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+// A phone has nowhere good to put a popup: in a browser it becomes a second tab
+// you have to find your way back from, and in an app added to the Home Screen it
+// becomes an in-app sheet whose text fields will not take focus. Redirecting
+// keeps the whole thing in one view, which is the ordinary mobile pattern.
+// Desktop keeps the popup, where it is the better of the two.
+function prefersRedirect() {
+  if (window.navigator.standalone) return true;
+  const query = window.matchMedia;
+  if (!query) return false;
+  return query('(display-mode: standalone)').matches || query('(pointer: coarse)').matches;
 }
 
 export async function signInWithGoogle() {
-  if (standaloneApp()) {
+  if (prefersRedirect()) {
     // The page leaves for Google and comes back into initializeAccountSession.
     await signInWithRedirect(auth, googleProvider);
     return null;
