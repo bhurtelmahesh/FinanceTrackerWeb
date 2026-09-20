@@ -624,6 +624,8 @@ async function beginGoogleSignIn() {
   setSaveState('Opening sign in...');
   try {
     const { signInWithGoogle } = await firebaseClient();
+    // Standalone apps leave for Google and return through the session listener,
+    // so there is nothing to report here and no UI to settle.
     await signInWithGoogle();
   } catch (error) {
     console.error(error);
