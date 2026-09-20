@@ -30,8 +30,8 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="manifest" href="./manifest.webmanifest">
   
-  <script type="module" crossorigin src="./assets/index-a2e114b6.js"></script>
-  <link rel="stylesheet" href="./assets/index-58528744.css">
+  <script type="module" crossorigin src="./assets/index-387b014a.js"></script>
+  <link rel="stylesheet" href="./assets/index-d6a77e6f.css">
 </head>
 <body>
   <div id="setupOverlay" class="setup-overlay" hidden>
@@ -175,6 +175,7 @@
     <section id="salary" class="view">
       <div class="toolbar">
         <select id="salaryYearFilter" aria-label="Salary and savings year"></select>
+        <select id="salaryMonthFilter" aria-label="Salary and savings month"></select>
         <button data-add="monthlyDetails">Add Payslip</button>
         <button data-add="salary">Add Manual Month</button>
       </div>
@@ -261,6 +262,7 @@
 
     <section id="balances" class="view">
       <div class="toolbar">
+        <select id="balanceMonthFilter" aria-label="Debt due month"></select>
         <button data-add="personalBalances">Add Debt Record</button>
       </div>
       <div id="balanceTable"></div>
