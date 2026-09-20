@@ -1866,6 +1866,88 @@ canvas {
 }
 
 @media (max-width: 640px) {
+  /* Wide record tables become readable, labelled cards on phones. Desktop and
+     tablet layouts keep their normal tables. Empty optional payslip fields do
+     not consume vertical space. */
+  :is(#salaryTable, #expenseTable, #balanceTable) .table-wrap {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) :is(table, tbody) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) thead { display: none; }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody {
+    display: grid;
+    gap: 12px;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody tr {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel);
+    box-shadow: 0 7px 18px rgba(35, 70, 88, .08);
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody td {
+    position: static !important;
+    display: grid;
+    grid-template-columns: minmax(104px, 42%) minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody td:last-child { border-bottom: 0; }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody td:empty { display: none; }
+  :is(#salaryTable, #expenseTable, #balanceTable) tbody td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) .row-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) .empty-cell {
+    display: block;
+    text-align: center;
+  }
+  :is(#salaryTable, #expenseTable, #balanceTable) .empty-cell::before { content: none; }
+  #salaryTable .row-projected {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(96, 113, 123, .05) 0,
+      rgba(96, 113, 123, .05) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  }
+
+  /* Stock Revenue stays a spreadsheet, but uses a denser mobile resolution so
+     more of the row is visible with much less horizontal travel. */
+  .stock-grid { min-width: 650px; table-layout: fixed; }
+  .stock-grid th,
+  .stock-grid td { padding: 7px 5px; font-size: 11px; }
+  .stock-grid th:first-child,
+  .stock-grid .stock-month-cell { width: 58px; }
+  .stock-grid .grid-input { padding: 7px 3px; font-size: 11px; }
+
   #dashboard .kpi-grid { grid-template-columns: minmax(0, 1fr); }
   .top-actions,
   .backup-actions,

@@ -384,13 +384,13 @@ function setSearchDestinationFilters(section, record) {
   const month = normalizeMonth(record.month);
   const dailyMonth = narrowScreen() ? month : '';
   const filterValues = {
-    salary: [['salaryYearFilter', year]],
-    monthlyDetails: [['salaryYearFilter', year]],
+    salary: [['salaryYearFilter', year], ['salaryMonthFilter', month]],
+    monthlyDetails: [['salaryYearFilter', year], ['salaryMonthFilter', month]],
     overtime: [['otYearFilter', year], ['otMonthFilter', month]],
     stockRevenue: [['stockYearFilter', year]],
     daily: [['dailyYearFilter', year], ['dailyMonthFilter', dailyMonth]],
     expenses: [['expenseYearFilter', year], ['expenseMonthFilter', month]],
-    personalBalances: []
+    personalBalances: [['balanceMonthFilter', month]]
   }[section.collection] || [];
   filterValues.forEach(([idName, value]) => {
     if (value !== undefined && value !== null && document.getElementById(idName)) {
@@ -1967,8 +1967,8 @@ function renderTable(containerId, collection, fields, records, options = {}) {
   const rowClass = options.rowClass || (() => '');
   const rows = records.map((item) => `
     <tr class="${rowClass(item)}" data-record-id="${escapeHtml(item.id)}" data-record-collection="${escapeHtml(collection)}">
-      ${fields.map(([key, , type]) => `<td class="${cellClass(collection, key, item, type)}">${tableValue(key, item[key])}</td>`).join('')}
-      <td><div class="row-actions">${actions(item)}</div></td>
+      ${fields.map(([key, label, type]) => `<td class="${cellClass(collection, key, item, type)}" data-label="${escapeHtml(label)}">${tableValue(key, item[key])}</td>`).join('')}
+      <td data-label="Actions"><div class="row-actions">${actions(item)}</div></td>
     </tr>
   `).join('');
   const html = `
@@ -2003,11 +2003,14 @@ function renderSalary() {
   const salaryRecords = buildSalaryLedger(state.salary || [], state.expenses || []);
   const years = yearsFrom(salaryRecords);
   const selected = document.getElementById('salaryYearFilter').value || years[years.length - 1] || '';
+  const selectedMonth = document.getElementById('salaryMonthFilter').value || '';
   fillSelect('salaryYearFilter', selectableYears(salaryRecords), selected, 'All years');
+  fillSelectPairs('salaryMonthFilter', [['', 'All months'], ...monthOptions], selectedMonth);
   const details = new Map((state.monthlyDetails || []).map((item) => [monthKey(item), item]));
   const records = sortRecordsByMonth(selected
     ? salaryRecords.filter((item) => String(item.year) === String(selected))
     : salaryRecords)
+    .filter((item) => !selectedMonth || normalizeMonth(item.month) === selectedMonth)
     .map((item) => {
       const detail = details.get(monthKey(item));
       const payslip = {};
@@ -2270,7 +2273,14 @@ function renderDailyGrid(records, selectedMonth, year) {
 }
 
 function renderBalances() {
-  renderTable('balanceTable', 'personalBalances', schemas.personalBalances, state.personalBalances);
+  const selectedMonth = document.getElementById('balanceMonthFilter').value || '';
+  fillSelectPairs('balanceMonthFilter', [['', 'All months'], ...monthOptions], selectedMonth);
+  const records = (state.personalBalances || []).filter((item) => {
+    if (!selectedMonth) return true;
+    const match = String(item.dateOrLabel || '').match(/^\d{4}-(\d{2})-\d{2}$/);
+    return Boolean(match) && monthOptions[Number(match[1]) - 1]?.[0] === selectedMonth;
+  });
+  renderTable('balanceTable', 'personalBalances', schemas.personalBalances, records);
 }
 
 function renderOtSummary(year, month, records) {
@@ -3447,7 +3457,7 @@ function bindEvents() {
       else deleteRecord(del.dataset.delete, del.dataset.id);
     }
   });
-  ['dashboardYear', 'salaryYearFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'expenseYearFilter', 'expenseMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
+  ['dashboardYear', 'salaryYearFilter', 'salaryMonthFilter', 'stockYearFilter', 'dailyYearFilter', 'dailyMonthFilter', 'expenseYearFilter', 'expenseMonthFilter', 'balanceMonthFilter', 'otYearFilter', 'otMonthFilter'].forEach((idName) => {
     document.getElementById(idName).addEventListener('change', render);
   });
   document.body.addEventListener('input', (event) => {
