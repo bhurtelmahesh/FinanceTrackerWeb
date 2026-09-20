@@ -2104,6 +2104,42 @@ canvas {
   line-height: 1.55;
 }
 
+/* The install routes, drawn rather than photographed: two to a row on a wide
+   window, one at a time on a phone, where the reader is probably following the
+   iPhone figure anyway. */
+.install-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.install-figures figure {
+  margin: 0;
+  padding: 10px 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.install-figures svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.install-figures figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+:root[data-theme="dark"] .install-figures figure {
+  border-color: rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .03);
+}
+
 /* The guide is the one thing on the Help page you take away with you, so it
    reads as a control rather than another paragraph. */
 .guide-download {
